@@ -1,3 +1,18 @@
 # AeUniverse
 
 Ecosystem of applications for the AEUniverse Conference.
+
+## Project Structure
+
+* **client** Client application to be used by assistants to connect to the Point-of-Sale service.Should run under Base-Aepp
+
+* **posclient** Client application to be used by sellers.
+
+* **posservice** Backend application that coordinates buyers and sellers.
+
+## Prerequisites
+
+The Aepp-SDK is a constantly evolving software base and at this time is **not considered ready for production**. For that reason, we choose to lock development on a fixed version, unless a showstopper bug is encountered and it's already fixed in a newer release.
+  
+
+
