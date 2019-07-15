@@ -10,6 +10,11 @@ npm install
 npm run serve
 ```
 
+### Serve in another port 
+```
+npm run serve -- --port 3000
+```
+
 ### Compiles and minifies for production
 ```
 npm run build
@@ -27,3 +32,6 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+
