@@ -21,10 +21,6 @@
 import { BrowserQRCodeReader } from '@zxing/library/esm5/browser/BrowserQRCodeReader';
 export default {
   name: "QrCodeReader",
-  props: {
-    //resolve: { type: Function, required: true },
-    //reject: { type: Function, required: true },
-  },
   data: () => ({
     cameraAllowed: false,
     browserReader: new BrowserQRCodeReader(),
@@ -35,7 +31,8 @@ export default {
         this.stopReading();
         return;
       }
-      this.resolve(await this.scan());
+      let scanData = await this.scan();
+      this.$emit('hasData', scanData.text);
     },
   },
   async mounted() {
@@ -63,14 +60,14 @@ export default {
       return await this.browserReader.decodeFromInputVideoDevice(
           undefined,
           this.$refs.qrCodeVideo,
-        ).getText();
+        );
     },
     stopReading() {
       this.browserReader.reset();
     },
     cancelReading() {
       this.stopReading();
-      this.reject(new Error('Cancelled by user'));
+      this.$emit('error',new Error('Cancelled by user'));
     },
   },
 };
