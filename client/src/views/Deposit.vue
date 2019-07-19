@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     deposit() {
-      this.$router.push('ConfirmTx');
+      this.$router.push({ name: 'confirm-tx', params: { txKind: this.initialDeposit ? 'initial-deposit' : 'deposit' }});
     }
   }
 };

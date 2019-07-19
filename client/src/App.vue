@@ -40,7 +40,7 @@ export default {
   text-align: center;
 }
 #ae-logo {
-  width: 80%;
+  height: 10%;
 }
 #content {
   margin-top: 20px;
