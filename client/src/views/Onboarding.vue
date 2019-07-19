@@ -31,7 +31,7 @@ export default {
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
       if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY) {
-        this.$router.push('deposit');
+        this.$router.push( { name: 'deposit', params: { initialDeposit: true } } );
       }
       else {
         try {

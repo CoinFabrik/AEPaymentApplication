@@ -1,12 +1,14 @@
 <template>
   <div id="app">
-    <AeMain>
+    <AeMain style="padding: 20px; height: 100%;">
       <img alt="AE-logo" src="assets/ae2x.png" />
         <div>
           <ae-text fill="primary" face="sans-l">Aternity Universe</ae-text>
         </div>
       <ae-text fill="secondary" face="sans-base">Developers Conference</ae-text>
-      <router-view/>
+      <transition name="slide" mode="out-in">
+        <router-view></router-view>
+      </transition>
     </AeMain>
   </div>
 </template>
@@ -29,10 +31,10 @@ export default {
 
 <style>
 #app {
+  height: 100%;
   text-align: center;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  margin-top: 60px;
 }
 </style>
