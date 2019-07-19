@@ -1,14 +1,16 @@
 <template>
   <div id="app">
     <AeMain style="padding: 20px; height: 100%;">
-      <img alt="AE-logo" src="assets/ae2x.png" />
+      <img id="ae-logo" alt="AE-logo" src="./assets/ae2x.png" />
         <div>
           <ae-text fill="primary" face="sans-l">Aternity Universe</ae-text>
         </div>
       <ae-text fill="secondary" face="sans-base">Developers Conference</ae-text>
-      <transition name="slide" mode="out-in">
-        <router-view></router-view>
-      </transition>
+      <div id="content">
+        <transition name="slide" mode="out-in">
+          <router-view></router-view>
+        </transition>
+      </div>
     </AeMain>
   </div>
 </template>
@@ -36,5 +38,11 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+}
+#ae-logo {
+  width: 80%;
+}
+#content {
+  margin-top: 20px;
 }
 </style>

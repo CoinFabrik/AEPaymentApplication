@@ -72,14 +72,14 @@ export default {
   },
 };
 </script>
-<!--
-<style lang="scss" scoped>
-//@import '../styles/globals/functions.scss';
+
+<style>
 .qr-code-reader {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   min-height: 100vh;
+}
   .permission-denied {
     text-align: center;
     line-height: 1.56;
@@ -91,13 +91,13 @@ export default {
     flex-grow: 1;
     overflow: hidden;
     position: relative;
-    video {
+
+  }
+   video {
+      padding: 2px;
+      border: grey 1px solid;
       object-fit: cover;
-      position: absolute;
       width: 100%;
       height: 100%;
-    }
-  }
 }
 </style>
--->
