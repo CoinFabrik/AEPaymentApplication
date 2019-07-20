@@ -4,10 +4,9 @@ import ConnectToWallet from './views/ConnectToWallet.vue'
 import Onboarding from './views/Onboarding.vue'
 import Deposit from './views/Deposit.vue'
 import ConfirmTx from './views/ConfirmTx.vue'
-import Main from './views/Main.vue'
 import WaitTx from './views/WaitTx.vue'
 import Success from './views/Success.vue'
-
+import MainMenu from './views/MainMenu.vue'
 
 Vue.use(Router)
 
@@ -43,9 +42,8 @@ export default new Router({
     },
     {
       path: '/mainmenu',
-      name: 'main-menu',
-      component: Main,
-      props: true
+      name: 'mainmenu',
+      component: MainMenu
     },
     {
       path: '/success',
@@ -53,6 +51,5 @@ export default new Router({
       component: Success,
       props: true
     }
-
   ]
 })

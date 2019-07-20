@@ -3,7 +3,7 @@
         <AeText >{{ properInfoText }}</AeText>
         <ae-icon fill="secondary" face="round" name="check" />
         <AeDivider/>
-        <AeButton fill="primary" face="round">Dismiss</AeButton>
+        <AeButton fill="primary" face="round" @click="dismiss()">Dismiss</AeButton>
     </div>
 </template>
 
@@ -41,16 +41,28 @@ export default {
           switch (this.txKind) {
               case 'initial-deposit':
                   return "Your initial deposit transaction has been confirmed";
-                  break;
+
               case 'deposit':
                   return "Your deposit into the channel transaction has been confirmed";
-                  break;
+                  
               default:
-                  return "Your requested transaction has been confirmed"
+                  return "Unknown txKind";
           }
       }
   },
   methods: {
+    dismiss: function() {
+       switch (this.txKind) {
+              case 'initial-deposit':
+                  this.$router.replace('main-menu');
+                  break;
+              case 'deposit':
+                  this.$router.replace('main-menu');
+                  break;
+              default:
+                  this.$router.replace('main-menu');
+          }
+    }
   },
   mounted: function() {
   }
