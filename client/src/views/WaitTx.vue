@@ -10,8 +10,6 @@
 
 const WAIT_BLOCKS = 8
 const BLOCK_TIME_MSEC = 600
-
-import aeternity from '../controllers/network.js'
 import {
   AeText,
   AeLoader

@@ -35,7 +35,6 @@
 </template>
 
 <script>
-  import aeternity from '../controllers/network.js'
   import {
     AeText,
     AeQRCode,

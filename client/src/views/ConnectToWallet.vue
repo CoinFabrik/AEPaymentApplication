@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import aeternity from '../controllers/network.js'
+import aeternity from '../controllers/aeternity.js'
 import {
   AeText,
   AeButton,
@@ -60,12 +60,15 @@ export default {
         this.status = STATUS_CONNECTED;
         this.$router.push( { name: 'scanqr', params: { subview: 'onboarding'}});
       } else {
-        this.setError(connectStatus.error);
+        this.setError(connectStatus.error.toString());
       }
     },
     setError(errorText) {
-      this.status = STATUS_ERROR;
-      this.error = errorText;
+      this.$router.push( { name: 'error', 
+        params: { errorTitle: 'We could not connect to your wallet', 
+          errorDescription: errorText, 
+          retryCancel: false
+        }})
     }
   }
 };

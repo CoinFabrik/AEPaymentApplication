@@ -6,6 +6,7 @@ import Deposit from './views/Deposit.vue'
 import ConfirmTx from './views/ConfirmTx.vue'
 import WaitTx from './views/WaitTx.vue'
 import Success from './views/Success.vue'
+import ErrorView from './views/ErrorView.vue'
 import MainMenu from './views/MainMenu.vue'
 import History from './views/History.vue'
 
@@ -51,6 +52,12 @@ export default new Router({
       path: '/success',
       name: 'success',
       component: Success,
+      props: true
+    },
+    {
+      path: '/error',
+      name: 'error',
+      component: ErrorView,
       props: true
     },
     {

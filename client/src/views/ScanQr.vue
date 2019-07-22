@@ -7,7 +7,7 @@
     <div v-if="this.subview === 'scantxqr'">
       <AeText>Scan a QR Code for your desired transaction</AeText>
     </div>
-    <div id="scan_qr_container">
+    <div id="scan_qr_container" @click="onQrClick">
       <QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
     </div>
   </div>
@@ -43,8 +43,9 @@
     methods: {
       onQrHasData(scanData) {
         console.log("Obtained QR Data: " + scanData);
-        if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY) {
-          this.$router.push({ name: 'deposit', params: { initialDeposit: true } });
+
+        if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
+          this.navigateOut();
         }
         else {
           try {
@@ -60,6 +61,19 @@
       },
       onQrHasError(event, error) {
         alert(error)
+      },
+      onQrClick() {
+        if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === 1) {
+          this.navigateOut();
+        }
+      },
+      navigateOut() {
+        if (this.subview === 'onboarding') {
+          this.$router.push({ name: 'deposit', params: { initialDeposit: true } });
+        }
+        if (this.subview === 'scantxqr') {
+          this.$router.push({ name: 'confirmtx', params: { txKind: 'transact-from-qr' } });
+        }
       }
     }
   };
