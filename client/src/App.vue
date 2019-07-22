@@ -26,8 +26,12 @@ import "@aeternity/aepp-components/dist/aepp.components.css";
 
 export default {
   name: "App",
-  components: { AeMain, AeText }
-
+  components: { AeMain, AeText },
+  computed: {
+    getAppState: function() {
+      return this.$store.state.appState;
+    }
+  }
 }
 </script>
 

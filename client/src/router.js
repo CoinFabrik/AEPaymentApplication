@@ -1,12 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import ConnectToWallet from './views/ConnectToWallet.vue'
-import Onboarding from './views/Onboarding.vue'
+import ScanQR from './views/ScanQr.vue'
 import Deposit from './views/Deposit.vue'
 import ConfirmTx from './views/ConfirmTx.vue'
 import WaitTx from './views/WaitTx.vue'
 import Success from './views/Success.vue'
 import MainMenu from './views/MainMenu.vue'
+import History from './views/History.vue'
 
 Vue.use(Router)
 
@@ -18,9 +19,10 @@ export default new Router({
       component: ConnectToWallet
     },
     {
-      path: '/onboarding',
-      name: 'onboarding',
-      component: Onboarding
+      path: '/scanqr',
+      name: 'scanqr',
+      component: ScanQR,
+      props: true
     },
     {
       path: '/deposit',
@@ -50,6 +52,11 @@ export default new Router({
       name: 'success',
       component: Success,
       props: true
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: History
     }
   ]
 })

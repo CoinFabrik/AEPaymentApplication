@@ -58,7 +58,7 @@ export default {
       console.log(connectStatus);
       if (connectStatus.status) {
         this.status = STATUS_CONNECTED;
-        this.$router.push("onboarding");
+        this.$router.push( { name: 'scanqr', params: { subview: 'onboarding'}});
       } else {
         this.setError(connectStatus.error);
       }

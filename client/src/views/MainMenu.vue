@@ -14,7 +14,7 @@
         <AeButton face="round" fill="primary" extend @click="deposit()">Deposit</AeButton>
       </div>
       <div class="row">
-        <AeButton face="round" fill="primary" extend @click="scanqr()">Scan Qr</AeButton>
+        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Qr</AeButton>
       </div>
       <div class="row">
         <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
@@ -26,12 +26,9 @@
 </template>
 
 <script>
-import aeternity from '../controllers/network.js'
 import {
   AeText,
   AeQRCode,
-  AeDivider,
-  AeLabel,
   AeAmount,
   AeButton
 } from "@aeternity/aepp-components";
@@ -41,8 +38,6 @@ export default {
   components: {
     AeText,
     AeQRCode,
-    AeDivider,
-    AeLabel,
     AeAmount,
     AeButton
   },
@@ -53,14 +48,14 @@ export default {
     deposit: function() {
       this.$router.push('deposit');
     },
-    scanqr: function() {
-
+    scanTxQr: function() {
+      this.$router.push( { name: 'scanqr', params: { subview: 'scantxqr'} } )
     },
     closeChannel: function() {
-
+      this.$router.push( { name: 'confirm-tx', params: { txKind: 'close-channel'} } )
     },
     history: function() {
-
+      this.$router.push('history')
     }
   }
 };
