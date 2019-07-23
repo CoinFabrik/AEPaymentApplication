@@ -1,17 +1,17 @@
 <template>
-    <div class="connectToWallet" >
-      <div v-if="isAtInitialState">
-        <AeText>We need access to your wallet. Please click the button below to authorize this application</AeText>
-        <AeButton face="round" fill="primary" extend @click="connectToBaseApp()">Connect your wallet</AeButton>
-      </div>
-      <div v-if="isConnecting">
-        <AeText>Please wait...</AeText>
-        <AeLoader />
-      </div>
-      <div v-if="isAtError">
-          <ae-backdrop>{{ error }}</ae-backdrop>
-      </div>
+  <div class="connectToWallet">
+    <div v-if="isAtInitialState">
+      <AeText>We need access to your wallet. Please click the button below to authorize this application</AeText>
+      <AeButton face="round" fill="primary" extend @click="connectToBaseApp()">Connect your wallet</AeButton>
     </div>
+    <div v-if="isConnecting">
+      <AeText>Please wait...</AeText>
+      <AeLoader />
+    </div>
+    <div v-if="isAtError">
+      <ae-backdrop>{{ error }}</ae-backdrop>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -54,13 +54,19 @@ export default {
   methods: {
     async connectToBaseApp() {
       this.status = STATUS_CONNECTING;
-      const connectStatus = await aeternity.connectToBaseApp();
-      console.log(connectStatus);
-      if (connectStatus.status) {
-        this.status = STATUS_CONNECTED;
-        this.$router.push( { name: 'scanqr', params: { subview: 'onboarding'}});
-      } else {
-        this.setError(connectStatus.error.toString());
+      try {
+        const connectStatus = await aeternity.connectToBaseApp();
+        console.log(connectStatus);
+        if (connectStatus.status) {
+          this.$store.commit('setAeObject', aeternity);
+          this.status = STATUS_CONNECTED;
+          this.$router.push( { name: 'scanqr', params: { subview: 'onboarding'}});
+        } else {
+          this.setError(connectStatus.error.toString());
+        }
+      }
+      catch(e) {
+        this.setError(e.toString());
       }
     },
     setError(errorText) {
