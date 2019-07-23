@@ -43,6 +43,8 @@ aeternity.connectToBaseApp = async function () {
             compilerUrl: null
         }
 
+        aeternity.address = process.env.VUE_APP_TEST_WALLET_ADDRESS;
+
         try {
             console.log ("Initiating test Universal object with params:");
             console.log(params);
@@ -79,6 +81,10 @@ aeternity.getPk = function () {
 
 aeternity.getApiServerUrl = function () {
     return aeternity.api_server_proto + '://' + aeternity.api_server_address + ':' + aeternity.api_server_port
+}
+
+aeternity.getAccountBalance = async function() {
+    return await aeternity.client.balance(aeternity.address);
 }
 
 export default aeternity;

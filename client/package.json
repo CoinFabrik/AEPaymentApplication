@@ -9,8 +9,9 @@
   },
   "dependencies": {
     "@aeternity/aepp-components": "git+https://github.com/aeternity/aepp-components.git#develop",
-    "@aeternity/aepp-sdk": "4.1.0",
+    "@aeternity/aepp-sdk": "4.2.0",
     "@zxing/library": "^0.14.2",
+    "bignumber.js": "^9.0.0",
     "core-js": "^2.6.5",
     "sass-loader": "^7.1.0",
     "vue": "^2.6.10",
