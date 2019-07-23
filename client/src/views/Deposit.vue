@@ -19,7 +19,7 @@
             { symbol: 'AE', name: 'æternity' }
           ]"
       @input="onAmountInput"
-      v-bind:visible="isQueryingBalance"
+      v-bind:disabled="isInError || isQueryingBalance"
     />
     <div v-if="isQueryingBalance">
       <AeText>Please wait while Checking your account balance</AeText>
@@ -34,6 +34,10 @@
         :disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
       >Deposit</AeButton>
     </div>
+
+    <ae-modal v-if="isInError" @close="setWaitingInputState" title>
+      <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
+    </ae-modal>
   </div>
 </template>
 
@@ -43,20 +47,25 @@ const STATUS_USER_INPUT = 0,
   STATUS_ERROR = 2;
 
 import {
+  AeModal,
   AeText,
   AeAmountInput,
   AeLoader,
   AeButton
 } from "@aeternity/aepp-components";
+
+import ErrorContent from "../components/ErrorContent";
 import BigNumber from "bignumber.js";
 
 export default {
   name: "Deposit",
   components: {
+    AeModal,
     AeButton,
     AeText,
     AeLoader,
-    AeAmountInput
+    AeAmountInput,
+    ErrorContent
   },
   props: {
     initialDeposit: Boolean
@@ -86,6 +95,9 @@ export default {
     }
   },
   methods: {
+    setWaitingInputState() {
+      this.viewState = STATUS_USER_INPUT;
+    },
     async deposit() {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
@@ -99,9 +111,10 @@ export default {
 
         console.log("balance: " + this.$store.state.balance);
 
-        if (balanceBN.lt(inputBN.multipliedBy(10**18))) {
+        if (balanceBN.lt(inputBN.multipliedBy(10 ** 18))) {
           this.errorReason = "Not enough funds.";
           this.viewState = STATUS_ERROR;
+          console.log("Setting not enough funds error state");
         } else {
           this.viewState = STATUS_USER_INPUT;
           this.$router.push({

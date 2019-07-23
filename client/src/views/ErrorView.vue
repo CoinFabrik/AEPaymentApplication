@@ -1,8 +1,6 @@
 <template>
   <div class="error">
-    <ae-icon fill="primary" face="round" name="close" />
-    <AeText face="sans-l" weight="400" fill="alternative">{{ errorTitle }}</AeText>
-    <AeText face="mono-s" >{{ errorDescription }}</AeText>
+    <ErrorContent v-bind:errorTitle="errorTitle" v-bind:errorDescription="errorDescription" />
     <div v-if="retryCancel">
     <ae-button-group>
       <AeButton face="round" fill="primary" extend @click="retry()">Retry</AeButton>
@@ -16,20 +14,22 @@
 </template>
 
 <script>
+  import ErrorContent from '../components/ErrorContent.vue'
   import {
     AeText,
     AeButton,
     AeButtonGroup,
-    AeIcon
+    AeIcon,
   } from "@aeternity/aepp-components";
 
   export default {
-    name: "Error",
+    name: "ErrorView",
     components: {
       AeText,
       AeButtonGroup,
       AeButton,
-      AeIcon
+      AeIcon,
+      ErrorContent
     },
     props: {
       errorTitle: String,

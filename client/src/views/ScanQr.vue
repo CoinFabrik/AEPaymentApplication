@@ -63,7 +63,7 @@
         alert(error)
       },
       onQrClick() {
-        if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === 1) {
+        if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === "1") {
           this.navigateOut();
         }
       },
