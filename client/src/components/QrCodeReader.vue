@@ -37,18 +37,25 @@ export default {
   },
   async mounted() {
     if (navigator.permissions) {
-      const status = await navigator.permissions.query({ name: 'camera' });
-      this.cameraAllowed = status.state !== 'denied';
-      status.onchange = () => {
+      try {
+        const status = await navigator.permissions.query({ name: 'camera' });
         this.cameraAllowed = status.state !== 'denied';
-      };
-      return;
+        status.onchange = () => {
+          this.cameraAllowed = status.state !== 'denied';
+        };      
+      }
+      catch(err) {
+        console.log("queryCameraPermissions failed: " + err.toString());
+        console.log("Trying alternative getUserMedia method" );
+      }
     }
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       mediaStream.getTracks().forEach(track => track.stop());
       this.cameraAllowed = true;
     } catch (e) {
+      console.log("getUserMedia method failed: " + e.toString());
       this.cameraAllowed = false;
     }
   },
