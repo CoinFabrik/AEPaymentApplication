@@ -105,24 +105,34 @@ export default {
         await this.$store.dispatch("getCurrentBalance");
 
         const balanceBN = new BigNumber(this.$store.state.balance);
-        const inputBN = new BigNumber(this.depositInput.amount);
+        let inputBN = new BigNumber(this.depositInput.amount);
+        inputBN = inputBN.multipliedBy(10 ** 18);
 
         // TODO!  Consider fees (approximate? )
 
         console.log("balance: " + this.$store.state.balance);
 
-        if (balanceBN.lt(inputBN.multipliedBy(10 ** 18))) {
+        if (balanceBN.lt(inputBN)) {
           this.errorReason = "Not enough funds.";
           this.viewState = STATUS_ERROR;
           console.log("Setting not enough funds error state");
         } else {
+
+          if (this.initialDeposit) {
+
+            // Create and open a channel and subsequently deposit the provided amount
+
+            this.$store.commit('setInitialDeposit', inputBN.toString());
+            this.$router.push('channelopen');
+          }
+          // this.$router.push({
+          //   name: "confirm-tx",
+          //   params: {
+          //     txKind: this.initialDeposit ? "initial-deposit" : "deposit",
+          //   }
+          // });
+
           this.viewState = STATUS_USER_INPUT;
-          this.$router.push({
-            name: "confirm-tx",
-            params: {
-              txKind: this.initialDeposit ? "initial-deposit" : "deposit"
-            }
-          });
         }
       } catch (e) {
         console.log(

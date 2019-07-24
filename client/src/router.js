@@ -9,6 +9,7 @@ import Success from './views/Success.vue'
 import ErrorView from './views/ErrorView.vue'
 import MainMenu from './views/MainMenu.vue'
 import History from './views/History.vue'
+import ChannelOpen from './views/ChannelOpen.vue'
 
 Vue.use(Router)
 
@@ -58,6 +59,12 @@ export default new Router({
       path: '/error',
       name: 'error',
       component: ErrorView,
+      props: true
+    },
+    {
+      path: '/channelopen',
+      name: 'channelopen',
+      component: ChannelOpen,
       props: true
     },
     {

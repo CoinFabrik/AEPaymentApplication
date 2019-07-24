@@ -34,8 +34,8 @@
     props: {
       errorTitle: String,
       errorDescription: String,
-      onRetryNavTo: String,
-      onCancelNavTo: String,
+      onRetryNavTo: Object,
+      onCancelNavTo: Object,
       retryCancel: Boolean
     },
     data() {
@@ -46,14 +46,14 @@
       
     },
     methods: {
-      retry: function () {
-
+      retry() {
+        this.$router.replace(this.onRetryNavTo);
       },
-      cancel: function () {
-
+      cancel() {
+        this.$router.replace(this.onCancelNavTo);
       },
-      goBack: function() {
-        this.$router.go(-1);
+      goBack() {
+        this.$router.back();
       }
     },
     mounted: function () {

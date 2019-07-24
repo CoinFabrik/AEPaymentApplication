@@ -14,5 +14,11 @@ Ecosystem of applications for the AEUniverse Conference.
 
 The Aepp-SDK is a constantly evolving software base and at this time is **not considered ready for production**. For that reason, we choose to lock development on a fixed version, unless a showstopper bug is encountered and it's already fixed in a newer release.
   
+## TODO:
+
+* Check timeout scenarios on every async call
+* Include  fees (estimation ? ) at deposit balance check 
+* Chequear error handling en aeternity.createChannel (try/catch ?) [no hace catch --why????]
+
 
 
