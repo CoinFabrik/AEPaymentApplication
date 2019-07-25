@@ -33,19 +33,14 @@ export default {
       switch (this.channelStatus) {
         case "disconnected":
           return "Channel has been disconnected!";
-          break;
         case "accepted":
           return "Channel connection accepted";
-          break;
         case "half-signed":
           return "Channel opening transaction half-signed";
-          break;
         case "signed":
           return "Channel opening transaction signed by both parties";
-          break;
         case "open":
           return "Channel successfully opened";
-          break;
         default:
           return "Working...";
       }
@@ -63,6 +58,14 @@ export default {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
       if (status === "open") {
+        //
+        // TODO: Disconnect this
+        //
+        
+        // this.$store.state.channel.off(
+        //   "statusChanged",
+        //   this.onChannelStatusChange
+        // );
         this.$router.replace({
           name: "success",
           params: { txKind: "initial-deposit" }

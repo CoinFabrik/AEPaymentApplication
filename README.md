@@ -20,6 +20,7 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 * Include  fees (estimation ? ) at deposit balance check 
 * Chequear error handling en aeternity.createChannel (try/catch ?) [no hace catch --why????]
 * Handling global de mensajes y eventos de disconnect en canal
+* Debemos dar info de TX de open/close ( txid por ejemplo con link para verificar en explorer ? )
 
 
 

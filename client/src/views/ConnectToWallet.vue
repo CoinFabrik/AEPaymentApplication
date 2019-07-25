@@ -1,3 +1,4 @@
+
 <template>
   <div class="connectToWallet">
     <div v-if="isAtInitialState">
@@ -15,11 +16,11 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
 import aeternity from '../controllers/aeternity.js'
 import {
   AeText,
   AeButton,
-  AeCard,
   AeBackdrop,
   AeLoader
 } from "@aeternity/aepp-components";

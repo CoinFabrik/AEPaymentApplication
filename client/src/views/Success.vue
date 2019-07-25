@@ -2,7 +2,7 @@
   <div class="success">
 
     <div v-if="txKind === 'initial-deposit'">
-      <AeText face="sans-xl" fill="primary">Success</AeText>
+      <AeText face="sans-l" fill="primary">Success</AeText>
       <AeText>A state channel with our Point-of-Sale service has been successfully established.</AeText>
 
       <AeDivider />
