@@ -19,6 +19,7 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 * Check timeout scenarios on every async call
 * Include  fees (estimation ? ) at deposit balance check 
 * Chequear error handling en aeternity.createChannel (try/catch ?) [no hace catch --why????]
+* Handling global de mensajes y eventos de disconnect en canal
 
 
 

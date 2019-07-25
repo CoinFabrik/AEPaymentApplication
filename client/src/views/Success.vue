@@ -1,80 +1,71 @@
 <template>
   <div class="success">
-    <AeText>{{ properInfoText }}</AeText>
+
+    <div v-if="txKind === 'initial-deposit'">
+      <AeText face="sans-xl" fill="primary">Success</AeText>
+      <AeText>A state channel with our Point-of-Sale service has been successfully established.</AeText>
+
+      <AeDivider />
+      <AeText face="sans-s">....Enjoy (more text here ... )</AeText>
+    </div>
+
+    <div v-if="txKind === 'deposit'">
+      <AeText face="sans-xl" fill="primary">Success</AeText>
+      <AeText>Your requested AE amount has been deposited in the channel.</AeText>
+
+      <AeDivider />
+      <AeText face="sans-s">Enjoy (more text here ... )</AeText>
+    </div>
+
     <ae-icon fill="secondary" face="round" name="check" />
-    <AeDivider />
-    <AeButton fill="primary" face="round" @click="dismiss()">Dismiss</AeButton>
+    <AeButton fill="primary" face="round" @click="dismiss()">Next</AeButton>
   </div>
 </template>
 
 <script>
-  import {
+import {
+  AeText,
+  AeButton,
+  AeDivider,
+  AeIcon
+} from "@aeternity/aepp-components";
+
+export default {
+  name: "Success",
+  components: {
     AeText,
     AeButton,
     AeDivider,
     AeIcon
-  } from "@aeternity/aepp-components";
+  },
+  props: {
+    txKind: String
+  },
+  data() {
+    return {
+    };
+  },
+  methods: {
+    dismiss: function() {
+      switch (this.txKind) {
+        case "initial-deposit":
+          this.$router.replace("mainmenu");
+          break;
+        case "deposit":
+          this.$router.replace("mainmenu");
+          break;
+        case "close-channel":
+          this.$router.replace("onboarding");
+          break;
 
-  export default {
-    name: "Success",
-    components: {
-      AeText,
-      AeButton,
-      AeDivider,
-      AeIcon
-    },
-    props: {
-      txKind: String
-    },
-    data() {
-      return {
-        elapsedBlocks: 0
-      };
-    },
-    computed: {
-      properInfoText: function () {
-        // Return a proper informational text
-        // according to transaction kind.
-        //
-
-        switch (this.txKind) {
-          case 'initial-deposit':
-            return "Your initial deposit transaction has been confirmed";
-
-          case 'deposit':
-            return "Your deposit into the channel transaction has been confirmed";
-
-          case 'close-channel':
-            return "The channel to PoS service has been successfully closed.";
-
-          default:
-            return "Unknown txKind";
-        }
+        default:
+          this.$router.replace("mainmenu");
       }
-    },
-    methods: {
-      dismiss: function () {
-        switch (this.txKind) {
-          case 'initial-deposit':
-            this.$router.replace('mainmenu');
-            break;
-          case 'deposit':
-            this.$router.replace('mainmenu');
-            break;
-          case 'close-channel':
-            this.$router.replace('onboarding');
-            break;
-
-          default:
-            this.$router.replace('mainmenu');
-        }
-      }
-    },
-    mounted: function () {
     }
-  };
+  },
+  mounted: function() {}
+};
 </script>
 
 <style>
-
 </style>

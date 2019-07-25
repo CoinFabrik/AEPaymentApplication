@@ -1,4 +1,3 @@
-import { rejects } from 'assert';
 
 /* eslint-disable no-console */
 
@@ -110,8 +109,10 @@ aeternity.createChannel = async function (params) {
 }
 
 aeternity.signFunction = async function (tag, tx) {
+  console.log('signFunction with tag: ' + tag);
+
   if (tag === 'initiator_sign') {
-    return aeternity.signTransaction(tx);
+    return aeternity.client.signTransaction(tx);
   }
 }
 

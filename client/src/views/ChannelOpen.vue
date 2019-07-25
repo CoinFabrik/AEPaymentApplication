@@ -31,15 +31,23 @@ export default {
   computed: {
     getChannelStatusDescriptiveText() {
       switch (this.channelStatus) {
-        case 'disconnected':
+        case "disconnected":
           return "Channel has been disconnected!";
           break;
-        case 'open': 
+        case "accepted":
+          return "Channel connection accepted";
+          break;
+        case "half-signed":
+          return "Channel opening transaction half-signed";
+          break;
+        case "signed":
+          return "Channel opening transaction signed by both parties";
+          break;
+        case "open":
           return "Channel successfully opened";
           break;
         default:
           return "Working...";
-
       }
     },
     isWorking() {
@@ -54,7 +62,12 @@ export default {
     onChannelStatusChange(status) {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
-      if (status === "disconnected") {
+      if (status === "open") {
+        this.$router.replace({
+          name: "success",
+          params: { txKind: "initial-deposit" }
+        });
+      } else if (status === "disconnected") {
         this.viewStatus = STATUS_STOPPED;
       }
     }
