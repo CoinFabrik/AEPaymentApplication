@@ -95,7 +95,7 @@ export default {
         initiatorAmount: 0,
 
         // Amount of tokes responder will deposit into state channel
-        responderAmount: 0,
+        responderAmount: process.env.VUE_APP_TEST_CHANNEL_RESPONDER_AMOUNT,
 
         // Minimum amount both peers need to maintain
         channelReserve: process.env.VUE_APP_TEST_CHANNEL_RESERVE,
@@ -113,7 +113,8 @@ export default {
         port: process.env.VUE_APP_TEST_RESPONDER_PORT,
         //
         role: "initiator",
-        url: this.$store.state.aeternity.getStateChannelApiUrl()
+        url: this.$store.state.aeternity.getStateChannelApiUrl(),
+        sign: this.$store.state.aeternity.signFunction,
       };
 
       this.$store.commit("loadChannelParams", params);

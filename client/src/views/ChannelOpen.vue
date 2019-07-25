@@ -1,12 +1,14 @@
 <template>
   <div class="channel-open">
-    <AeText>Please wait, {{ channelStatus }}</AeText>
-    <AeLoader />
+    <AeText>{{ getChannelStatusDescriptiveText }}</AeText>
+    <AeLoader v-show="isWorking" />
   </div>
 </template>
 
 <script>
 const STATUS_INITIAL = 0,
+  STATUS_WORKING = 1,
+  STATUS_STOPPED = 2,
   STATUS_ERROR = 0xffff;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
@@ -20,23 +22,45 @@ export default {
   props: {},
   data() {
     return {
-      channelStatus: "initializing...",
+      channelStatus: null,
       viewStatus: STATUS_INITIAL,
       errorText: null
     };
   },
   watch: {},
-  computed: {},
+  computed: {
+    getChannelStatusDescriptiveText() {
+      switch (this.channelStatus) {
+        case 'disconnected':
+          return "Channel has been disconnected!";
+          break;
+        case 'open': 
+          return "Channel successfully opened";
+          break;
+        default:
+          return "Working...";
+
+      }
+    },
+    isWorking() {
+      return this.viewStatus === STATUS_WORKING;
+    }
+  },
   methods: {
     setErrorStatus(reason) {
       this.viewStatus = STATUS_ERROR;
       this.errorText = reason;
     },
     onChannelStatusChange(status) {
+      console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
+      if (status === "disconnected") {
+        this.viewStatus = STATUS_STOPPED;
+      }
     }
   },
   mounted: async function() {
+    this.viewStatus = STATUS_WORKING;
     try {
       if (this.$store.state.channel == null) {
         await this.$store.dispatch("createChannel");

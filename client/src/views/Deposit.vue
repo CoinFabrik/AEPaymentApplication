@@ -122,7 +122,7 @@ export default {
 
             // Create and open a channel and subsequently deposit the provided amount
 
-            this.$store.commit('setInitialDeposit', inputBN.toString());
+            this.$store.commit('setInitialDeposit', inputBN.toFixed(0));
             this.$router.push('channelopen');
           }
           // this.$router.push({
