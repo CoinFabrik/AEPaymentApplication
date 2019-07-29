@@ -2,11 +2,11 @@
   <div class="main-app">
     <div class="row">
       <div class="column">
-        <AeQRCode value="getAddress()" />
+        <AeQRCode v-bind:value="getAddress" />
       </div>
       <div class="column">
         <AeText fill="secondary">Channel Funds</AeText>
-        <ae-amount value="1.36" unit="Æ" size="med" />
+        <ae-amount v-bind:value="getMyBalance" unit="Æ" size="med" />
       </div>
     </div>
     <div class="row">
@@ -21,9 +21,6 @@
     <div class="row">
       <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
     </div>
-
-    <ChannelNotify />
-
   </div>
 </template>
 
@@ -35,7 +32,7 @@ import {
   AeButton
 } from "@aeternity/aepp-components";
 
-import ChannelNotify from '../components/ChannelNotify'
+import ChannelNotify from "../components/ChannelNotify";
 
 export default {
   name: "MainMenu",
@@ -47,21 +44,35 @@ export default {
     ChannelNotify
   },
   computed: {
-    getAddress: function() { return "xxxxxx";}
+    getAddress: function() {
+      return this.$store.getters.initiatorId;
+    },
+    getMyBalance: function() {
+      return (this.$store.state.initiatorBalance / (10 ** 18))
+    }
   },
   methods: {
     deposit: function() {
-      this.$router.push('deposit');
+      this.$router.push("deposit");
     },
     scanTxQr: function() {
-      this.$router.push( { name: 'scanqr', params: { subview: 'scantxqr'} } )
+      this.$router.push({ name: "scanqr", params: { subview: "scantxqr" } });
     },
     closeChannel: function() {
-      this.$router.push( { name: 'confirm-tx', params: { txKind: 'close-channel'} } )
+      this.$router.push({
+        name: "confirm-tx",
+        params: { txKind: "close-channel" }
+      });
     },
     history: function() {
-      this.$router.push('history')
+      this.$router.push("history");
     }
+  },
+  mounted() {
+    // Report error !
+    this.$store.dispatch("updateChannelBalances").catch(err => {
+      console.log("error getting balances! " + err);
+    });
   }
 };
 </script>

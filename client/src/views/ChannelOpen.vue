@@ -12,6 +12,7 @@ const STATUS_INITIAL = 0,
   STATUS_ERROR = 0xffff;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
+import { EventBus } from '../event/eventbus.js'
 
 export default {
   name: "ChannelOpen",
@@ -58,14 +59,11 @@ export default {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
       if (status === "open") {
-        //
-        // TODO: Disconnect this
-        //
-        
-        // this.$store.state.channel.off(
-        //   "statusChanged",
-        //   this.onChannelStatusChange
-        // );
+        // We can ask the global Channel notification component
+        // to suscribe now.
+
+        EventBus.$emit('suscribe-channel');
+
         this.$router.replace({
           name: "success",
           params: { txKind: "initial-deposit" }

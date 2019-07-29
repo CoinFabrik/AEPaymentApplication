@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <ChannelNotify />
     <AeMain style="padding: 20px; height: 100%;">
       <img id="ae-logo" alt="AE-logo" src="./assets/ae2x.png" />
       <div>
@@ -17,13 +18,15 @@
 
 <script>
 import { AeMain, AeText } from "@aeternity/aepp-components";
+import ChannelNotify from "./components/ChannelNotify"
 
 import "@aeternity/aepp-components/dist/aepp.global.css";
 import "@aeternity/aepp-components/dist/aepp.components.css";
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default {
   name: "App",
-  components: { AeMain, AeText },
+  components: { AeMain, AeText, ChannelNotify },
   computed: {
     getAppState: function() {
       return this.$store.state.appState;

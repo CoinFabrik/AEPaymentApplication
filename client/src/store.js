@@ -9,9 +9,17 @@ export default new Vuex.Store({
     balance: 0,
     aeternity: null,
     channelParams: null,
-    channel: null
+    channel: null,
+    initiatorBalance: null,
+    responderBalance: null
   },
   getters: {
+    initiatorAddress(state) {
+      return state.channelParams.initiatorId;
+    },
+    responderAddress(state) {
+      return state.channelParams.responderId;
+    }
   },
   mutations: {
     setAeObject(state, aeternityObject) {
@@ -29,6 +37,12 @@ export default new Vuex.Store({
     setChannel(state, channel) {
       state.channel = channel;
     },
+    updateInitiatorBalance(state, amount) {
+      state.initiatorBalance = amount;
+    },
+    updateResponderBalance(state, amount) {
+      state.responderBalance = amount;
+    }
   },
   actions: {
     getCurrentBalance({ commit, state }) {
@@ -38,12 +52,38 @@ export default new Vuex.Store({
         }
       )
     },
+    updateChannelBalances({ commit, state, getters }) {
+      const iAddr = getters.initiatorAddress;
+      const rAddr = getters.responderAddress;
+      state.channel.balances([iAddr, rAddr]).then(
+        function (balances) {
+          commit('updateInitiatorBalance', balances[iAddr]);
+          commit('updateResponderBalance', balances[rAddr]);
+        },
+        function (err) {
+          console.error(err);
+          throw err;
+        }
+      )
+    },
     createChannel({ commit, state }) {
       state.aeternity.createChannel(state.channelParams).then(
         function (channel) {
           commit('setChannel', channel);
         }
-      ).catch(err => { console.error("CATCHED");throw err; } )
+      )
+    },
+    transferTokensToResponder({ dispatch, state, getters }, amount) {
+      console.log('1')
+      state.aeternity.updateEx(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
+        function (accepted) {
+          if (accepted) {
+            return dispatch('updateChannelBalances');
+          } else {
+            throw new Error("Your update has been rejected");
+          }
+        }
+      );
     }
   }
 })

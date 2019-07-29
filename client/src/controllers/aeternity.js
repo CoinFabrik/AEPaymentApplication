@@ -8,6 +8,8 @@ const {
   Universal
 } = require('@aeternity/aepp-sdk');
 
+const { TxBuilder: { unpackTx, buildTx } } = require('@aeternity/aepp-sdk')
+
 const aeternity = {
   network: null,
   client: null,
@@ -114,6 +116,33 @@ aeternity.signFunction = async function (tag, tx) {
   if (tag === 'initiator_sign') {
     return aeternity.client.signTransaction(tx);
   }
+}
+
+aeternity.update = async function (channel, fromAddr, toAddr, amountBN) {
+  return channel.update(
+    fromAddr,
+    toAddr,
+    amountBN.toFixed(0),
+    async (tx) => aeternity.client.signTransaction(tx)
+  );
+}
+
+aeternity.updateEx = async function (channel, fromAddr, toAddr, amount) {
+  return channel.update(
+    fromAddr,
+    toAddr,
+    amount,
+    async (tx) => aeternity.signTransactionEx(tx)
+  );
+}
+
+aeternity.signTransactionEx = async function (tx) {
+  let unpackedTx  = await unpackTx(tx);
+  console.log('unpacked: ' );
+  console.log(unpackedTx);
+  unpackedTx.tx.metadata = { kind: "this_is_payment_from_dave" }
+  const tx2 = await buildTx(unpackedTx.tx, 'channelOffChain');
+  return aeternity.client.signTransaction(tx2)
 }
 
 export default aeternity;

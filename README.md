@@ -21,6 +21,7 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 * Chequear error handling en aeternity.createChannel (try/catch ?) [no hace catch --why????]
 * Handling global de mensajes y eventos de disconnect en canal
 * Debemos dar info de TX de open/close ( txid por ejemplo con link para verificar en explorer ? )
-
+* Test de dos o tres mensajes de compra seguidos
+* Test de mensajes de compra en toda la app (deberian ser recibidos solo en los lugares correctos)
 
 
