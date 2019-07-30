@@ -30,13 +30,16 @@ class ChannelServer extends EventEmitter {
 
             this.on("customer-connection", (client) => {
                 let peer = new CustomerChannel(client);
+                console.log("XXXXXX")
                 this.emit("connect", peer);
             });
             this.on("merchant-connection", (client) => {
                 let peer = new MerchantChannel(client);
+                console.log("YYYYYYYY")
                 this.emit("connect", peer);
             });
-            this.on("connection", (peer) => {
+            this.on("connect", (peer) => {
+                console.log("ZZZZZZZZZZZZZ")
                this.loop(peer);
             });
 
@@ -89,7 +92,7 @@ class ServiceBase implements Service {
 
 @Injectable()
 export class ClientService extends ServiceBase {
-    c: CClient;
+    //c: CClient;
     static m: ChannelServer;
 
     onModuleInit() {
@@ -100,11 +103,10 @@ export class ClientService extends ServiceBase {
     }
 
     async asyncModuleInit() {
-        let pub = get_public("service");
-        let priv = get_private("service");
+        let pub = await get_public("service");
+        let priv = await get_private("service");
         await MyChannel.Init(pub, priv);
     }
-
 
     connect(toClient: CClient, clientType: Actor): string {
         ClientService.m.emit(clientType+"-connection", toClient);

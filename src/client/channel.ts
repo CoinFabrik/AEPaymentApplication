@@ -54,8 +54,7 @@ export abstract class MyChannel {
 
         if (MyChannel._nodeuser == undefined) {
             MyChannel._nodeuser = await Universal({
-                networkId: NETWORK_ID,
-                url: API_URL,
+                networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
                 //keypair: {publicKey: this.pubkey, secretKey: this.privkey},
                 keypair: {publicKey: pubkey, secretKey: privkey},
@@ -198,7 +197,6 @@ export class CustomerChannel extends MyChannel {
         super(false, customer.address);
         this.client = customer;
     }
-
     async loop() {
         await this.init_loop();
         while (true) {
@@ -215,13 +213,11 @@ export class CustomerChannel extends MyChannel {
     }
 }
 
-
 export class MerchantChannel extends MyChannel {
     constructor(customer: CClient) {
         super(false, customer.address);
         this.client = customer;
     }
-
     async loop() {
         await this.init_loop();
         while (true) {
