@@ -1,5 +1,5 @@
 import {Service} from "./client.service";
-import {CClient} from "./client.entity";
+import {AE, CClient} from "./client.entity";
 
 const NETWORK_ID = 'ae_devnet';
 const {
@@ -37,8 +37,7 @@ async function wait_for(func) {
     }
 }
 
-export class MyChannel {
-    nodeuser: any;
+export abstract class MyChannel {
     is_initiator: boolean;
     channel: any;
     status: string;
@@ -46,9 +45,14 @@ export class MyChannel {
     public client: CClient;
 
     static _nodeuser: any;
+    static pubkey;
+    static privkey;
 
     static async Init(pubkey, privkey) {
-        if (MyChannel._nodeuser==undefined) {
+        MyChannel.pubkey = pubkey;
+        MyChannel.privkey = privkey;
+
+        if (MyChannel._nodeuser == undefined) {
             MyChannel._nodeuser = await Universal({
                 networkId: NETWORK_ID,
                 url: API_URL,
@@ -60,39 +64,25 @@ export class MyChannel {
         }
     }
 
-    static get nodeuser() {
+    get nodeuser() {
         return MyChannel._nodeuser;
     }
 
-    // static InitiatorFT(from_pub, from_priv, other_address = r_addr) {
-    //     return new MyChannel(from_pub, from_priv, true, other_address);
-    // }
-    //
-    // static ResponderFT(from_pub, from_priv, other_address = i_addr) {
-    //     return new MyChannel(from_pub, from_priv, false, other_address);
-    // }
-    //
-    // static Initiator(other_address = r_addr) {
-    //     return this.InitiatorFT(i_addr, i_secretKey, other_address);
-    // }
-    //
-    // static Responder(other_address = i_addr) {
-    //     return this.ResponderFT(r_addr, r_secretKey, other_address);
-    // }
+    get address() {
+        return MyChannel.pubkey;
+    }
 
-    // constructor(public readonly pubkey, public readonly privkey, init_role, public readonly opposite) {
     constructor(init_role, public readonly opposite) {
-        this.nodeuser = undefined;
         this.is_initiator = init_role;
         this.status = "";
     }
 
     get initiator() {
-        return this.is_initiator ? this.pubkey : this.opposite;
+        return this.is_initiator ? MyChannel.pubkey : this.opposite;
     }
 
     get responder() {
-        return this.is_initiator ? this.opposite : this.pubkey;
+        return this.is_initiator ? this.opposite : MyChannel.pubkey;
     }
 
     get role() {
@@ -114,19 +104,9 @@ export class MyChannel {
             responderId: this.responder,
             role: this.role,
         };
-        console.log(1,this.initiator)
-        console.log(1,this.responder)
+        console.log(1, this.initiator)
+        console.log(1, this.responder)
         return options;
-    }
-
-    async init() {
-        this.nodeuser = await Universal({
-            networkId: NETWORK_ID,
-            url: API_URL,
-            internalUrl: INTERNAL_API_URL,
-            keypair: {publicKey: this.pubkey, secretKey: this.privkey},
-            compilerUrl: compilerURL
-        });
     }
 
     async initChannel() {
@@ -202,12 +182,36 @@ export class MyChannel {
     setService(s: Service) {
         this.service = s;
     }
+
+    async init_loop() {
+        //await this.init();
+        await this.initChannel();
+        await this.wait_state("OPEN");
+    }
+
+    abstract async loop();
 }
+
 
 export class CustomerChannel extends MyChannel {
     constructor(customer: CClient) {
         super(false, customer.address);
         this.client = customer;
+    }
+
+    async loop() {
+        await this.init_loop();
+        while (true) {
+            await sleep(1000);
+            await this.sendMessage( {
+                from: "hub", fromId: this.address,
+                to: "consumer", toId: this.client.address,
+                type: "buy-request",
+                id: "asdfasd-asdfasdfasdf-asdfasdf-asdf",
+                something: [{"quantity": 2, "product":"beer"}],
+                amount: 2*AE,
+            });
+        }
     }
 }
 
@@ -218,4 +222,10 @@ export class MerchantChannel extends MyChannel {
         this.client = customer;
     }
 
+    async loop() {
+        await this.init_loop();
+        while (true) {
+            await sleep(1000);
+        }
+    }
 }

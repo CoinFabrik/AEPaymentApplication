@@ -5,8 +5,8 @@ import {promises} from "fs";
 
 
 export type Actor = "merchant"|"customer"|"hub";
-type MsgKind = "buy-request" | "buy-request-accepted" | "buy-request-rejected" // acceptance is a tx
-
+export type MsgKind = "buy-request" | "buy-request-accepted" | "buy-request-rejected" // acceptance is a tx
+export const AE = 100;
 
 interface Message {
     from: Actor;

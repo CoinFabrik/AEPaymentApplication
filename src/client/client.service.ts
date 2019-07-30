@@ -4,8 +4,6 @@ import {CustomerChannel, MerchantChannel, MyChannel, sleep} from "./channel";
 import {get_private, get_public} from "../tools";
 import {EventEmitter} from 'events';
 
-const AE = 100;
-
 // aweil@pc18:~/repos/ea$ aecli account -u http://10.10.0.79:3001 create user1
 // Address_________________________________ ak_2P4nHG1oC15Ng9aQUuh9xNCF52JUgevnYuJdUR3w4em3YaeaDo
 // Path____________________________________ /home/aweil/repos/ea/user1
@@ -52,25 +50,7 @@ class ChannelServer extends EventEmitter {
 
     loop(peer: MyChannel) {
         peer.setService(this.service);
-        this._loop(client).then(console.log).catch(console.error);
-    }
-
-    async _loop(peer: MyChannel) {
-        await peer.init();
-        await peer.initChannel();
-        await peer.wait_state("OPEN");
-        //let peer = await this.async_connect(client);
-        while (true) {
-            await sleep(1000);
-            await peer.sendMessage( {
-                from: "hub", fromId:this.c.address,
-                to: "consumer", toId: client.address,
-                type: "h2c-buy-request",
-                id: "asdfasd-asdfasdfasdf-asdfasdf-asdf",
-                something: [{"quantity": 2, "product":"beer"}],
-                amount: 2*AE,
-            });
-        }
+        peer.loop().then(console.log).catch(console.error);
     }
 }
 
@@ -113,7 +93,7 @@ export class ClientService extends ServiceBase {
     static m: ChannelServer;
 
     onModuleInit() {
-        asyncModuleInit().then(() => {
+        this.asyncModuleInit().then(() => {
             ClientService.m = new ChannelServer("service", this);
             console.log(`The module has been initialized.`);
         }).catch(console.error);
@@ -121,7 +101,7 @@ export class ClientService extends ServiceBase {
 
     async asyncModuleInit() {
         let pub = get_public("service");
-        let priv = get_public("private");
+        let priv = get_private("service");
         await MyChannel.Init(pub, priv);
     }
 
