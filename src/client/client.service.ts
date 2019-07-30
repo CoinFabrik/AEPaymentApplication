@@ -30,16 +30,13 @@ class ChannelServer extends EventEmitter {
 
             this.on("customer-connection", (client) => {
                 let peer = new CustomerChannel(client);
-                console.log("XXXXXX")
                 this.emit("connect", peer);
             });
             this.on("merchant-connection", (client) => {
                 let peer = new MerchantChannel(client);
-                console.log("YYYYYYYY")
                 this.emit("connect", peer);
             });
             this.on("connect", (peer) => {
-                console.log("ZZZZZZZZZZZZZ")
                this.loop(peer);
             });
 

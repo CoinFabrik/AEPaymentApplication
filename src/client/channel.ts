@@ -1,5 +1,7 @@
 import {Service} from "./client.service";
 import {AE, CClient} from "./client.entity";
+import {EventEmitter} from 'events';
+
 
 const NETWORK_ID = 'ae_devnet';
 const {
@@ -37,7 +39,7 @@ async function wait_for(func) {
     }
 }
 
-export abstract class MyChannel {
+export abstract class MyChannel extends EventEmitter {
     is_initiator: boolean;
     channel: any;
     status: string;
@@ -71,7 +73,8 @@ export abstract class MyChannel {
         return MyChannel.pubkey;
     }
 
-    constructor(init_role, public readonly opposite) {
+    protected constructor(init_role, public readonly opposite) {
+        super();
         this.is_initiator = init_role;
         this.status = "";
     }
@@ -140,7 +143,7 @@ export abstract class MyChannel {
             }
         });
         this.channel.on('message', (msg) => {
-            console.log("RECV:>", msg)
+            this.emit("message", msg);
         });
         return this.channel;
     }
@@ -196,7 +199,11 @@ export class CustomerChannel extends MyChannel {
     constructor(customer: CClient) {
         super(false, customer.address);
         this.client = customer;
+        this.on("message", (msg) => {
+           // console.log("RECV:>", msg)
+        })
     }
+
     async loop() {
         await this.init_loop();
         while (true) {
@@ -214,9 +221,13 @@ export class CustomerChannel extends MyChannel {
 }
 
 export class MerchantChannel extends MyChannel {
-    constructor(customer: CClient) {
-        super(false, customer.address);
-        this.client = customer;
+    constructor(merchant: CClient) {
+        super(false, merchant.address);
+        this.client = merchant;
+
+        this.on("message", (msg) => {
+            console.log("RECV:>", msg)
+        })
     }
     async loop() {
         await this.init_loop();
