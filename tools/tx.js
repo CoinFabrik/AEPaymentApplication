@@ -1,6 +1,9 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
+
+
+//const myjschannel = require('./myjschannel');
 const jstools = require('./jstools');
 const readline = require('readline');
 const {
@@ -44,15 +47,6 @@ async function sleep(ms, debug) {
     });
 }
 
-async function wait_state(expected) {
-    return await wait_for(() => STATUS === expected);
-}
-
-async function wait_for(func) {
-    while (!func()) {
-        await sleep(100);
-    }
-}
 
 async function hb(peer) {
     while (1) {
