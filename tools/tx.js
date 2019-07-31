@@ -1,9 +1,6 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
-
-
-//const myjschannel = require('./myjschannel');
 const jstools = require('./jstools');
 const readline = require('readline');
 const {
@@ -11,12 +8,6 @@ const {
 } = require('@aeternity/aepp-sdk');
 
 const fs = require('fs');
-// const bs58 = require('bs58');
-
-// const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
-// const r_addr = 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk';
-// const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
-// const r_secretKey = '7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d';
 
 const port = 3001;
 
@@ -31,12 +22,6 @@ const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
 
 
-const HUBADDR = "localhost"
-const HUBPORT = 3000;
-
-var util = require('util')
-
-
 async function sleep(ms, debug) {
     return new Promise((resolve, reject) => {
         try {
@@ -45,14 +30,6 @@ async function sleep(ms, debug) {
             reject(err)
         }
     });
-}
-
-
-async function hb(peer) {
-    while (1) {
-        await peer.sendMessage("beep beep");
-        await sleep(46 * 1000, true);
-    }
 }
 
 
@@ -77,9 +54,6 @@ function show_balance(address, balance, height) {
 
 
 async function transfer(from_ac, to_ac, amount) {
-    const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
-    const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
-
     let nodeuser = await Universal({
         networkId: NETWORK_ID,
         url: API_URL,

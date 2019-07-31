@@ -24,7 +24,7 @@ const ACCOUNT=getEnv("ACCOUNT", "hub");
 
 
 export abstract class ServerChannel extends EventEmitter {
-    private static readonly logger = new Logger("AppController.name");
+    private static readonly xlogger = new Logger("Channel");
     is_initiator: boolean;
     channel: any;
     status: string;
@@ -35,9 +35,16 @@ export abstract class ServerChannel extends EventEmitter {
     static pubkey;
     static privkey;
 
+    abstract Name: string;
+    logger: Logger;
+
+    log(msg: string) {
+        this.logger.log(this.client.address+"|"+msg);
+    }
+
     static async Init() {
         let account = await Account.FromFile(ACCOUNT);
-        this.logger.log("Account: "+account.toString());
+        this.xlogger.log("Account: "+account.toString());
         this.pubkey = account.publicKey;
         this.privkey = account.secretKey;
 
@@ -96,8 +103,8 @@ export abstract class ServerChannel extends EventEmitter {
             responderId: this.responder,
             role: this.role,
         };
-        console.log(1, this.initiator)
-        console.log(1, this.responder)
+        this.log(this.initiator)
+        this.log(this.responder)
         return options;
     }
 
@@ -106,7 +113,7 @@ export abstract class ServerChannel extends EventEmitter {
         let options = this.get_options();
 
         options["sign"] = async (tag, tx) => {
-            console.log("tag:", tag, tx);
+            this.log("tag: " + tag + (tx.toString()));
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), {prettyTags: true})
                 console.log(JSON.stringify(txData));
@@ -114,18 +121,15 @@ export abstract class ServerChannel extends EventEmitter {
                 //console.log(err);
             }
             if (tag === "shutdown_sign_ack") {
-                console.log("TX:", tx)
+                this.log("TX (shutdown): " +  (tx.toString()))
             }
-            let signed = await self.nodeuser.signTransaction(tx)
-            console.log("signed:", signed)
-            return signed;
+            return await self.nodeuser.signTransaction(tx)
         };
 
         this.channel = await Channel(options);
         this.channel.on('statusChanged', (status) => {
             self.status = status.toUpperCase();
-            console.log(Date.now(), `[${self.status}]`);
-            console.log();
+            this.log(Date.now().toString() +  ` [${self.status}]`);
             if (self.status == "OPEN") {
                 self.hb().then(console.log).catch(console.error);
                 self.service.addClient(this.client);
@@ -141,7 +145,6 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async sendMessage(message) {
-        //console.log("sending:"+message)
         return await this.channel.sendMessage(message, this.opposite);
     }
 
@@ -160,25 +163,18 @@ export abstract class ServerChannel extends EventEmitter {
 
     async hb() {
         while (this.status == "OPEN") {
-            console.log("sending hb..")
+            this.log("sending hb..")
             await this.sendMessage({"type": "heartbeat"});
             await sleep(45 * 1000)
         }
     }
 
-    // async height() {
-    //     return await this.nodeuser.height();
-    // }
-    // async balance(opts={}) {
-    //     return await this.nodeuser.balance(this.pubkey, opts);
-    // }
     ///////////////////////////////////////////////////////////
     setService(s: Service) {
         this.service = s;
     }
 
     async init_loop() {
-        //await this.init();
         await this.initChannel();
         await this.wait_state("OPEN");
     }
@@ -188,11 +184,13 @@ export abstract class ServerChannel extends EventEmitter {
 
 
 export class CustomerChannel extends ServerChannel {
+    Name = "Customers"
     constructor(customer: CClient) {
         super(false, customer.address);
+        this.logger = new Logger(this.Name);
         this.client = customer;
         this.on("message", (msg) => {
-           // console.log("RECV:>", msg)
+            this.log("recv: "+(msg.toString()));
         })
     }
 
@@ -213,14 +211,17 @@ export class CustomerChannel extends ServerChannel {
 }
 
 export class MerchantChannel extends ServerChannel {
+    Name = "Merchants"
     constructor(merchant: CClient) {
         super(false, merchant.address);
+        this.logger = new Logger(this.Name);
         this.client = merchant;
 
         this.on("message", (msg) => {
-            console.log("RECV:>", msg)
+            this.log("recv: "+(msg.toString()));
         })
     }
+
     async loop() {
         await this.init_loop();
         while (true) {

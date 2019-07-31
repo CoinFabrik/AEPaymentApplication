@@ -7,31 +7,17 @@ const http = require('http');
 const BigNumber = require('bignumber.js');
 const jstools = require("./jstools");
 
-
-const HUBADDR = "localhost"
-const HUBPORT = 3000;
-
-//var util = require('util')
 const port=3001;
-
 let URL = jstools.getEnv("NODE", 'localhost:'+port);
 console.log("Node> ", URL);
 
-
+const HUBADDR = "localhost";
+const HUBPORT = 3000;
 const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
-
-
-// const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
-// const r_addr = 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk';
-// const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
-// const r_secretKey = '7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d';
-//
-
-// var STATUS = "";
 
 
 async function get(url) {
@@ -222,13 +208,6 @@ class MyChannel {
     }
 }
 
-const null_func = () => {
-};
-
-function call_async(f, ...args) {
-    f(...args).then(null_func).catch(console.error);
-}
-
 async function sleep(ms, debug) {
     return new Promise((resolve, reject) => {
         try {
@@ -239,26 +218,14 @@ async function sleep(ms, debug) {
     });
 }
 
-// async function wait_state(expected) {
-//     return await wait_for(() => STATUS === expected);
-// }
-
 async function wait_for(func) {
     while (!func()) {
         await sleep(100);
     }
 }
 
-async function hb(peer) {
-    while (1) {
-        await peer.sendMessage("beep beep");
-        await sleep(46 * 1000, true);
-    }
-}
-
 module.exports = {
     MyChannel,
     get,
-    // r_addr,
     sleep
 }
