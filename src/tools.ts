@@ -16,6 +16,13 @@ export async function get_public(name) {
     return pdata["public_key"];
 }
 
+export async function get_account(filename, pwd="1234") {
+    let data = fs.readFileSync(filename).toString();
+    let pdata = JSON.parse(data);
+    let r = await recover("1234", pdata);
+    return {pub: pdata["public_key"], priv: r};
+}
+
 
 export function isBase64 (str) {
   let index

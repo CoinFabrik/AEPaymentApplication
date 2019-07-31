@@ -76,11 +76,10 @@ async function get2(url) {
 
 
 class MyChannel {
-    static async Initiator(other = r_addr) {
-        await MyChannel.register("merchant", i_addr);
-        return new MyChannel(i_addr, i_secretKey, true, other);
-    }
-
+    // static async Initiator(other = r_addr) {
+    //     await MyChannel.register("merchant", i_addr);
+    //     return new MyChannel(i_addr, i_secretKey, true, other);
+    // }
     static async register(what, addr) {
         try {
             await get("/" + what + "/" + addr);
@@ -135,6 +134,7 @@ class MyChannel {
     }
 
     async init() {
+        console.log(JSON.stringify({publicKey: this.pubkey, secretKey: this.privkey}))
         this.nodeuser = await Universal({
             networkId: NETWORK_ID,
             url: API_URL,
@@ -283,10 +283,10 @@ async function temp() {
 
 
 class Merchant extends MyChannel {
-    async Init(other = r_addr) {
+    static async Init(other = r_addr) {
         let credentials = await jstools.get_account(process.argv[2], "1234");
-        await MyChannel.register("merchant", credentials.pubkey).then(console.log).catch(console.error);
-        return Merchant(credentials.pubkey, credentials.privateKey, true, other);
+        await MyChannel.register("merchant", credentials.publicKey).then(console.log).catch(console.error);
+        return new Merchant(credentials.publicKey, credentials.secretKey, true, other);
     }
 
     async buyRequest(customer, items, price) {
@@ -312,9 +312,10 @@ class Merchant extends MyChannel {
     } else {
         //await temp();
         //let peer = await Merchant.Initiator("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
-        let peer = Merchant.Init("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
+        let peer = await Merchant.Init("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
         if (peer == null)
             return;
+
         await peer.init();
         await peer.initChannel();
 
