@@ -118,7 +118,7 @@ async function transfer(from_ac, to_ac, amount) {
 
 
 (async function () {
-    let _from = process.argv[1];
+    let _from = process.argv[2];
     let from_ac;
 
     if (_from==="init") {
@@ -127,10 +127,14 @@ async function transfer(from_ac, to_ac, amount) {
             secretKey: "bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca"
         }
     } else {
-        from_ac = jstools.get_account();
+        console.log("opening:", _from);
+        from_ac = await jstools.get_account(_from, "1234");
     }
 
-    let to_ac = jstools.get_account(process.argv[2]);
-    let amount = jstools.get_account(process.argv[3]);
+    console.log(" - opening:", process.argv[3]);
+    let to_ac =  await jstools.get_account(process.argv[3], "1234");
+    console.log(" - amount:", process.argv[4]);
+    let amount =  process.argv[4]
+    console.log(" - transfer:");
     await transfer(from_ac, to_ac, amount);
 })();

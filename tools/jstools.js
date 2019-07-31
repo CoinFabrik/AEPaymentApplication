@@ -14,10 +14,10 @@ async function get_public(name) {
     return pdata["public_key"];
 }
 
-async function get_account(filename, pwd="1234") {
+async function get_account(filename, pwd) {
     let data = fs.readFileSync(filename).toString();
     let pdata = JSON.parse(data);
-    let r = await recover("1234", pdata);
+    let r = await recover(pwd, pdata);
     return {publicKey: pdata["public_key"], secretKey: r}
 }
 
