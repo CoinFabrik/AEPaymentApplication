@@ -14,7 +14,7 @@ export class AppController {
   }
 
   @Get("/client/:id")
-  async connectClient(@Param() params): Promise<string> {
+  async connectClient(@Param() params): Promise<object> {
     const client: CClient = new CClient();
     client.address = params.id.toString();
     console.log(client);
@@ -22,7 +22,7 @@ export class AppController {
   }
 
   @Get("/merchant/:id")
-  async connectMerchant(@Param() params): Promise<string> {
+  async connectMerchant(@Param() params): Promise<object> {
     const client: CClient = new CClient();
     client.address = params.id.toString();
     console.log(client);

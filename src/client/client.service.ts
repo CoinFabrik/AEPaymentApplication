@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Actor, CClient} from "./client.entity";
-import {CustomerChannel, MerchantChannel, MyChannel} from "./channel";
+import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {get_private } from "../tools";
 import {EventEmitter} from 'events';
 
@@ -48,7 +48,7 @@ class ChannelServer extends EventEmitter {
         return "ChannelServer ready!"
     }
 
-    loop(peer: MyChannel) {
+    loop(peer: ServerChannel) {
         peer.setService(this.service);
         peer.loop().then(console.log).catch(console.error);
     }
@@ -100,12 +100,12 @@ export class ClientService extends ServiceBase {
     }
 
     async asyncModuleInit() {
-        await MyChannel.Init();
+        await ServerChannel.Init();
     }
 
-    connect(toClient: CClient, clientType: Actor): string {
+    connect(toClient: CClient, clientType: Actor): object {
         ClientService.m.emit(clientType+"-connection", toClient);
-        return "ok"
+        return ServerChannel.GetInfo();
     }
 
     static async test() {

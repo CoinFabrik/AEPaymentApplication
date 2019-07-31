@@ -18,7 +18,7 @@ export class Account {
     }
 }
 
-export function getEnv(name, defvalue) {
+export function getEnv(name: string, defvalue) {
     let value = defvalue;
     try{
         value = process.env[name];
@@ -28,6 +28,18 @@ export function getEnv(name, defvalue) {
     } catch(err) { }
     return value;
 }
+
+export function getArgv(idx: number, defvalue) {
+    let value = defvalue;
+    try{
+        value = process.argv[idx];
+        if (value==undefined) {
+            value = defvalue;
+        }
+    } catch(err) { }
+    return value;
+}
+
 
 export async function sleep(ms) {
     return new Promise((resolve, reject) => {

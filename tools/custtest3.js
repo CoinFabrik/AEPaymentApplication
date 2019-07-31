@@ -1,25 +1,34 @@
 /*-----------------------------------------------------------------------------------
-    SIMPLE REVERSI
+    SIMPLE REVERSI  :-)
 ---------------------------------------------------------------------------------- */
 const jstools = require("./jstools");
 const myjschannel = require("./myjschannel");
 const MyChannel = myjschannel.MyChannel;
-/*-----------------------------------------------------------------------------------
-    UTIL FUNCTIONS
----------------------------------------------------------------------------------- */
+
+
+class Customer extends MyChannel {
+    static async Init(account) {
+        let serverdata = await MyChannel.register("client", account.publicKey)
+        let address = serverdata["address"];
+        console.log("server at:", address)
+        return new MyChannel(account.publicKey, account.secretKey, true, address);
+    }
+}
+
 
 (async function () {
-    let pub = await jstools.get_public("hub"); //"ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK"
-    let peer = await MyChannel.Initiator(pub);
+    let account = await jstools.get_account(
+        jstools.getArgv(2,
+            jstools.getEnv("CUSTOMER",
+                jstools.getEnv("ACCOUNT"))
+            ), "1234");
+
+    let peer = await Customer.Init(account);
     if (peer==null)
         return;
     await peer.init();
     await peer.initChannel();
-
     await peer.wait_state("OPEN");
-
-    hb(peer).then(console.log).catch(console.error);
-
     await peer.update(10);
     //await peer.shutdown();
     //await wait_state("DISCONNECTED");

@@ -5,16 +5,19 @@ const {
 } = require('@aeternity/aepp-sdk');
 const http = require('http');
 const BigNumber = require('bignumber.js');
+const jstools = require("./jstools");
 
 
 const HUBADDR = "localhost"
 const HUBPORT = 3000;
 
-var util = require('util')
+//var util = require('util')
 const port=3001;
-let URL = 'localhost:'+port;
-URL = process.env["NODE"]?process.env["NODE"] : URL;
+
+let URL = jstools.getEnv("NODE", 'localhost:'+port);
 console.log("Node> ", URL);
+
+
 const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
@@ -22,13 +25,13 @@ const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
 
 
-const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
-const r_addr = 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk';
-const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
-const r_secretKey = '7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d';
+// const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
+// const r_addr = 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk';
+// const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
+// const r_secretKey = '7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d';
+//
 
-
-var STATUS = "";
+// var STATUS = "";
 
 
 async function get(url) {
@@ -56,29 +59,16 @@ async function get(url) {
 var INITIATOR_MIN_BALANCE = 1000000000000000;
 
 class MyChannel {
-
     static async register(what, addr) {
+        let data;
         try {
-            await get("/" + what + "/" + addr);
+            data = await get("/" + what + "/" + addr);
+            return JSON.parse(data);
         } catch (err) {
             console.error(err);
+            throw err;
         }
     }
-
-    static async Initiator(other=r_addr) {
-        try {
-            await get("/client/"+i_addr);
-        } catch (err) {
-            console.error(err);
-            return;
-        }
-        return new MyChannel(i_addr, i_secretKey, true, other);
-    }
-
-    static async Responder() {
-        return new MyChannel(r_addr, r_secretKey, false, i_addr);
-    }
-
 
     constructor(pubkey, privkey, init_role, oposite_pub) {
         this.nodeuser = undefined;
@@ -164,20 +154,34 @@ class MyChannel {
 
         this.channel = await Channel(options);
         this.channel.on('statusChanged', (status) => {
-            STATUS = status.toUpperCase();
-            this.STATUS = STATUS;
-            console.log(`[${STATUS}]`);
+            this.STATUS = status.toUpperCase();
+            console.log(`[${this.STATUS}]`);
             console.log();
-            if (STATUS === "DISCONNECTED") {
+            if (this.STATUS === "OPEN") {
+                this.launch_hb();
+            }
+            if (this.STATUS === "DISCONNECTED") {
                 //process.exit(0);
             }
         });
+
         this.channel.on('message', (msg) => {
             //console.log("RECV:>", typeof(msg["info"]))
             let info = JSON.parse(msg["info"]);
             console.log("RECV:>", info["type"])
         });
         return this.channel;
+    }
+
+    launch_hb() {
+        this.hb().then(console.log).catch(console.error);
+    }
+
+    async hb() {
+        while (1) {
+            await this.sendMessage("beep beep");
+            await sleep(46 * 1000, true);
+        }
     }
 
     async sendMessage(message) {
@@ -252,11 +256,9 @@ async function hb(peer) {
     }
 }
 
-
-
 module.exports = {
     MyChannel,
     get,
-    r_addr,
+    // r_addr,
     sleep
 }

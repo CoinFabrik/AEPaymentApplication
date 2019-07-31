@@ -1,6 +1,29 @@
 const nacl = require('tweetnacl');
 const fs = require('fs');
 
+
+function getEnv(name, defvalue) {
+    let value = defvalue;
+    try{
+        value = process.env[name];
+        if (value==null) {
+            value = defvalue;
+        }
+    } catch(err) { }
+    return value;
+}
+
+function getArgv(idx, defvalue) {
+    let value = defvalue;
+    try{
+        value = process.argv[idx];
+        if (value==null) {
+            value = defvalue;
+        }
+    } catch(err) { }
+    return value;
+}
+
 async function get_private(name) {
     let data;
     try {
@@ -160,5 +183,7 @@ function validateKeyObj (obj) {
 
 module.exports = {
   get_account,
-  get_public
+  get_public,
+  getEnv,
+  getArgv
 }

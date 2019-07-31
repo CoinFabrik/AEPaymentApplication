@@ -23,7 +23,7 @@ const compilerURL = 'https://compiler.aepps.com';
 const ACCOUNT=getEnv("ACCOUNT", "hub");
 
 
-export abstract class MyChannel extends EventEmitter {
+export abstract class ServerChannel extends EventEmitter {
     private static readonly logger = new Logger("AppController.name");
     is_initiator: boolean;
     channel: any;
@@ -41,8 +41,8 @@ export abstract class MyChannel extends EventEmitter {
         this.pubkey = account.publicKey;
         this.privkey = account.secretKey;
 
-        if (MyChannel._nodeuser == undefined) {
-            MyChannel._nodeuser = await Universal({
+        if (ServerChannel._nodeuser == undefined) {
+            ServerChannel._nodeuser = await Universal({
                 networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
@@ -52,11 +52,15 @@ export abstract class MyChannel extends EventEmitter {
     }
 
     get nodeuser() {
-        return MyChannel._nodeuser;
+        return ServerChannel._nodeuser;
     }
 
     get address() {
-        return MyChannel.pubkey;
+        return ServerChannel.pubkey;
+    }
+
+    static GetInfo() {
+        return {address:ServerChannel.pubkey}
     }
 
     protected constructor(init_role, public readonly opposite) {
@@ -66,11 +70,11 @@ export abstract class MyChannel extends EventEmitter {
     }
 
     get initiator() {
-        return this.is_initiator ? MyChannel.pubkey : this.opposite;
+        return this.is_initiator ? ServerChannel.pubkey : this.opposite;
     }
 
     get responder() {
-        return this.is_initiator ? this.opposite : MyChannel.pubkey;
+        return this.is_initiator ? this.opposite : ServerChannel.pubkey;
     }
 
     get role() {
@@ -183,7 +187,7 @@ export abstract class MyChannel extends EventEmitter {
 }
 
 
-export class CustomerChannel extends MyChannel {
+export class CustomerChannel extends ServerChannel {
     constructor(customer: CClient) {
         super(false, customer.address);
         this.client = customer;
@@ -208,7 +212,7 @@ export class CustomerChannel extends MyChannel {
     }
 }
 
-export class MerchantChannel extends MyChannel {
+export class MerchantChannel extends ServerChannel {
     constructor(merchant: CClient) {
         super(false, merchant.address);
         this.client = merchant;
