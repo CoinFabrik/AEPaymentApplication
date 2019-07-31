@@ -103,8 +103,8 @@ export abstract class ServerChannel extends EventEmitter {
             responderId: this.responder,
             role: this.role,
         };
-        this.log(this.initiator)
-        this.log(this.responder)
+        this.log("init:"+this.initiator)
+        this.log("resp:"+this.responder)
         return options;
     }
 

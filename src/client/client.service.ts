@@ -4,18 +4,6 @@ import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {get_private } from "../tools";
 import {EventEmitter} from 'events';
 
-// aweil@pc18:~/repos/ea$ aecli account -u http://10.10.0.79:3001 create user1
-// Address_________________________________ ak_2P4nHG1oC15Ng9aQUuh9xNCF52JUgevnYuJdUR3w4em3YaeaDo
-// Path____________________________________ /home/aweil/repos/ea/user1
-//
-// aweil@pc18:~/repos/ea$ aecli account -u http://10.10.0.79:3001 create user2
-// Address_________________________________ ak_71ZZP4ZKBhupJhWZKxFMTFWq6qE8Y9zddjQYR3tBqvBFvvpy8
-// Path____________________________________ /home/aweil/repos/ea/user2
-//
-// aweil@pc18:~/repos/ea$ aecli account -u http://10.10.0.79:3001 create service
-// Address_________________________________ ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK
-// Path____________________________________ /home/aweil/repos/ea/service
-
 
 class ChannelServer extends EventEmitter {
     private c: CClient;
@@ -77,7 +65,6 @@ class ServiceBase implements Service {
     }
 
     addClient(c: CClient): void {
-        console.log("Adding:", c)
         ServiceBase.clients = ServiceBase.clients.concat([c]);
     }
 
@@ -89,7 +76,6 @@ class ServiceBase implements Service {
 
 @Injectable()
 export class ClientService extends ServiceBase {
-    //c: CClient;
     static m: ChannelServer;
 
     onModuleInit() {
