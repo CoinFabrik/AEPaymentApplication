@@ -3,6 +3,49 @@ import uuid from 'uuid'
 import * as fs from "fs";
 
 
+export class Account {
+    constructor(readonly publicKey, readonly secretKey, readonly name="<undefined>") {}
+    get address() { return this.publicKey; }
+    get privateKey() { return this.secretKey; }
+
+    static async FromFile(filename: string, pwd="1234"): Promise<Account> {
+        let data = await get_account(filename, pwd);
+        return new Account(data.publicKey, data.secretKey, filename);
+    }
+
+    toString(): string {
+        return this.name+ " [" + this.publicKey + "]";
+    }
+}
+
+export function getEnv(name, defvalue) {
+    let value = defvalue;
+    try{
+        value = process.env[name];
+        if (value==undefined) {
+            value = defvalue;
+        }
+    } catch(err) { }
+    return value;
+}
+
+export async function sleep(ms) {
+    return new Promise((resolve, reject) => {
+        try {
+            setTimeout(resolve, ms)
+        } catch (err) {
+            reject(err)
+        }
+    });
+}
+
+export async function wait_for(func) {
+    while (!func()) {
+        await sleep(100);
+    }
+}
+
+
 export async function get_private(name) {
     let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
     let pdata = JSON.parse(data);
@@ -16,11 +59,13 @@ export async function get_public(name) {
     return pdata["public_key"];
 }
 
-export async function get_account(filename, pwd="1234") {
+interface IAccount {publicKey: string, secretKey: string};
+
+export async function get_account(filename, pwd="1234"): Promise<IAccount> {
     let data = fs.readFileSync(filename).toString();
     let pdata = JSON.parse(data);
-    let r = await recover("1234", pdata);
-    return {pub: pdata["public_key"], priv: r};
+    let r = await recover(pwd, pdata);
+    return {publicKey: pdata["public_key"], secretKey: r};
 }
 
 

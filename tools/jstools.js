@@ -2,15 +2,24 @@ const nacl = require('tweetnacl');
 const fs = require('fs');
 
 async function get_private(name) {
-    let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
-    let pdata = JSON.parse(data);
-    let r = await recover("1234", pdata);
-    return r;
+    let data;
+    try {
+        data = fs.readFileSync("/home/aweil/repos/ea/"+name);
+    } catch (err) {
+        data = fs.readFileSync(name);
+    }
+    let pdata = JSON.parse(data).toString();
+    return await recover("1234", pdata);
 }
 
 async function get_public(name) {
-    let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
-    let pdata = JSON.parse(data);
+    let data;
+    try {
+        data = fs.readFileSync("/home/aweil/repos/ea/"+name);
+    } catch(err) {
+        data = fs.readFileSync(name);
+    }
+    let pdata = JSON.parse(data.toString());
     return pdata["public_key"];
 }
 
@@ -150,5 +159,6 @@ function validateKeyObj (obj) {
 
 
 module.exports = {
-  get_account
+  get_account,
+  get_public
 }

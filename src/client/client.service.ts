@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Actor, CClient} from "./client.entity";
-import {CustomerChannel, MerchantChannel, MyChannel, sleep} from "./channel";
-import {get_private, get_public} from "../tools";
+import {CustomerChannel, MerchantChannel, MyChannel} from "./channel";
+import {get_private } from "../tools";
 import {EventEmitter} from 'events';
 
 // aweil@pc18:~/repos/ea$ aecli account -u http://10.10.0.79:3001 create user1
@@ -100,9 +100,7 @@ export class ClientService extends ServiceBase {
     }
 
     async asyncModuleInit() {
-        let pub = await get_public("service");
-        let priv = await get_private("service");
-        await MyChannel.Init(pub, priv);
+        await MyChannel.Init();
     }
 
     connect(toClient: CClient, clientType: Actor): string {

@@ -1,6 +1,9 @@
 import {Service} from "./client.service";
 import {AE, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
+import {Account, get_account, getEnv, sleep, wait_for} from "../tools";
+import {Logger} from "@nestjs/common";
+import {AppController} from "../app.controller";
 
 
 const NETWORK_ID = 'ae_devnet';
@@ -12,29 +15,16 @@ const {
 
 const port=3001;
 let URL = '10.10.0.79:'+port;
+//let URL = 'localhost:'+port;
 const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
+const ACCOUNT=getEnv("ACCOUNT", "hub");
 
-
-export async function sleep(ms) {
-    return new Promise((resolve, reject) => {
-        try {
-            setTimeout(resolve, ms)
-        } catch (err) {
-            reject(err)
-        }
-    });
-}
-
-async function wait_for(func) {
-    while (!func()) {
-        await sleep(100);
-    }
-}
 
 export abstract class MyChannel extends EventEmitter {
+    private static readonly logger = new Logger("AppController.name");
     is_initiator: boolean;
     channel: any;
     status: string;
@@ -45,16 +35,17 @@ export abstract class MyChannel extends EventEmitter {
     static pubkey;
     static privkey;
 
-    static async Init(pubkey, privkey) {
-        MyChannel.pubkey = pubkey;
-        MyChannel.privkey = privkey;
+    static async Init() {
+        let account = await Account.FromFile(ACCOUNT);
+        this.logger.log("Account: "+account.toString());
+        this.pubkey = account.publicKey;
+        this.privkey = account.secretKey;
 
         if (MyChannel._nodeuser == undefined) {
             MyChannel._nodeuser = await Universal({
                 networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
-                //keypair: {publicKey: this.pubkey, secretKey: this.privkey},
-                keypair: {publicKey: pubkey, secretKey: privkey},
+                keypair: {publicKey: this.pubkey, secretKey: this.privkey},
                 compilerUrl: compilerURL
             });
         }
@@ -91,8 +82,8 @@ export abstract class MyChannel extends EventEmitter {
             url: WS_URL + '/channel',
             pushAmount: 3,
             initiatorAmount: 1000000000000000,
-            responderAmount: 1000000000000000,
-            channelReserve: 20000000000,
+            responderAmount: 1,
+            channelReserve: 1,
             ttl: 10000,
             host: "localhost",
             port: 3001,
@@ -121,7 +112,9 @@ export abstract class MyChannel extends EventEmitter {
             if (tag === "shutdown_sign_ack") {
                 console.log("TX:", tx)
             }
-            return self.nodeuser.signTransaction(tx)
+            let signed = await self.nodeuser.signTransaction(tx)
+            console.log("signed:", signed)
+            return signed;
         };
 
         this.channel = await Channel(options);
