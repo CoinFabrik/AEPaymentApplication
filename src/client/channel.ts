@@ -191,7 +191,7 @@ export class CustomerChannel extends ServerChannel {
         this.logger = new Logger(this.Name);
         this.client = customer;
         this.on("message", (msg) => {
-            this.log("recv: " + (msg.toString()));
+            this.log("recv: " + (JSON.stringify(msg)));
         })
     }
 
@@ -220,7 +220,7 @@ export class MerchantChannel extends ServerChannel {
         this.client = merchant;
 
         this.on("message", (msg) => {
-            this.log("recv: " + (msg.toString()));
+            this.log("recv: " + (JSON.stringify(msg)));
         })
     }
 
