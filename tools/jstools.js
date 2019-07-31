@@ -1,30 +1,27 @@
-import * as nacl from 'tweetnacl'
-import uuid from 'uuid'
-import * as fs from "fs";
+const nacl = require('tweetnacl');
+const fs = require('fs');
 
-
-export async function get_private(name) {
+async function get_private(name) {
     let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
     let pdata = JSON.parse(data);
     let r = await recover("1234", pdata);
     return r;
 }
 
-export async function get_public(name) {
+async function get_public(name) {
     let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
     let pdata = JSON.parse(data);
     return pdata["public_key"];
 }
 
-export async function get_account(filename, pwd="1234") {
+async function get_account(filename, pwd="1234") {
     let data = fs.readFileSync(filename).toString();
     let pdata = JSON.parse(data);
     let r = await recover("1234", pdata);
     return {publicKey: pdata["public_key"], secretKey: r}
 }
 
-
-export function isBase64 (str) {
+function isBase64 (str) {
   let index
   // eslint-disable-next-line no-useless-escape
   if (str.length % 4 > 0 || str.match(/[^0-9a-z+\/=]/i)) return false
@@ -57,7 +54,7 @@ const DERIVED_KEY_FUNCTIONS = {
   'argon2id': deriveKeyUsingArgon2id
 }
 
-export async function deriveKeyUsingArgon2id (password, salt, options) {
+async function deriveKeyUsingArgon2id (password, salt, options) {
   const { memlimit_kib: memoryCost, parallelism, opslimit: timeCost } = options.kdf_params
   const isBrowser = !(typeof module !== 'undefined' && module.exports)
 
@@ -121,7 +118,7 @@ async function deriveKey (password, nonce, options = {
 }
 
 
-export async function recover (password, keyObject) {
+async function recover (password, keyObject) {
   validateKeyObj(keyObject)
   const nonce = Uint8Array.from(str2buf(keyObject.crypto.cipher_params.nonce))
   const salt = Uint8Array.from(str2buf(keyObject.crypto.kdf_params.salt))
@@ -138,7 +135,7 @@ export async function recover (password, keyObject) {
   return Buffer.from(key).toString('hex')
 }
 
-export function validateKeyObj (obj) {
+function validateKeyObj (obj) {
   const root = ['crypto', 'id', 'version', 'public_key']
   const cryptoKeys = ['cipher_params', 'ciphertext', 'symmetric_alg', 'kdf', 'kdf_params']
 
@@ -149,4 +146,9 @@ export function validateKeyObj (obj) {
   if (missingCryptoKeys.length) throw new Error(`Invalid key file format. Require properties: ${missingCryptoKeys}`)
 
   return true
+}
+
+
+module.exports = {
+  get_account
 }

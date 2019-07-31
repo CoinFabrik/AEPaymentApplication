@@ -1,8 +1,7 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
-//import get_account from "./jstools";
-const jstools = import "jstools";
+const jstools = require('./jstools');
 const readline = require('readline');
 const {
     Universal
