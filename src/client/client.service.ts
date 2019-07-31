@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Actor, CClient} from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
-import {get_private } from "../tools";
+import {get_private} from "../tools";
 import {EventEmitter} from 'events';
 
 
@@ -12,9 +12,9 @@ class ChannelServer extends EventEmitter {
         return this.c.address;
     }
 
-    constructor (private name: string, private service: Service) {
+    constructor(private name: string, private service: Service) {
         super();
-        this.init().then(()=> {
+        this.init().then(() => {
 
             this.on("customer-connection", (client) => {
                 let peer = new CustomerChannel(client);
@@ -25,7 +25,7 @@ class ChannelServer extends EventEmitter {
                 this.emit("connect", peer);
             });
             this.on("connect", (peer) => {
-               this.loop(peer);
+                this.loop(peer);
             });
 
         }).catch(console.error);
@@ -45,12 +45,13 @@ class ChannelServer extends EventEmitter {
 
 export interface Service {
     addClient(c: CClient): void;
+
     rmClient(c: CClient): void;
 }
 
-function array_rm(lst:any[], x:any): void {
+function array_rm(lst: any[], x: any): void {
     let idx = lst.indexOf(x);
-    while (idx>=0) {
+    while (idx >= 0) {
         lst.splice(idx, 1);
         idx = lst.indexOf(x);
     }
@@ -90,7 +91,7 @@ export class ClientService extends ServiceBase {
     }
 
     connect(toClient: CClient, clientType: Actor): object {
-        ClientService.m.emit(clientType+"-connection", toClient);
+        ClientService.m.emit(clientType + "-connection", toClient);
         return ServerChannel.GetInfo();
     }
 
