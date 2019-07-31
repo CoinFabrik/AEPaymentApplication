@@ -77,10 +77,12 @@ async function my_readline(msg) {
 }
 
 
+function show_balance(address, balance, height) {
+    console.log(address, " balance at ", height, " is: ", balance);
+}
 
 
 async function transfer(from_ac, to_ac, amount) {
-    const d_addr = "ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK";
     const i_addr = 'ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU';
     const i_secretKey = 'bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca';
 
@@ -94,25 +96,23 @@ async function transfer(from_ac, to_ac, amount) {
 
     let height = await nodeuser.height();
     let balance = await nodeuser.balance(from_ac.publicKey);
-    console.log(from_ac.publicKey," balance at ", height, " is: ", balance);
+    show_balance(from_ac.publicKey, balance, height);
 
     try {
         balance = await nodeuser.balance(to_ac.publicKey);
-        console.log(to_ac.publicKey, " balance at ", height, " is: ", balance);
+        show_balance(to_ac.publicKey, balance, height);
     } catch (err) {
-        console.log(to_ac.publicKey, " balance at ", height, " seems to be: 0");
+        show_balance(to_ac.publicKey, 0, height);
     }
 
-    await my_readline("continue?");
+    await my_readline("last chance to cancel. shall we continue?");
 
-    //if (balance === 0) {
-        await nodeuser.spend("50000000000000000", d_addr);
-        await sleep(5000);
+    await nodeuser.spend(amount, to_ac.publicKey);
+    await sleep(5000);
 
-        height = await nodeuser.height();
-        balance = await nodeuser.balance(d_addr);
-        console.log(" d_addr: ", d_addr, height, " balance: ", balance);
-    //}
+    height = await nodeuser.height();
+    balance = await nodeuser.balance(to_ac.publicKey);
+    show_balance(to_ac.publicKey, balance, height);
 }
 
 
