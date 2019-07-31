@@ -18,6 +18,8 @@
 <script>
 import QrCodeReader from "../components/QrCodeReader.vue";
 import { AeText } from "@aeternity/aepp-components";
+import HubConnection from "../controllers/hub";
+
 export default {
   name: "ScanQR",
   components: {
@@ -67,14 +69,45 @@ export default {
         this.navigateOut();
       }
     },
-    navigateOut() {
+    async navigateOut() {
       if (this.subview === "onboarding") {
-        this.$router.push({
-          name: "deposit",
-          params: { initialDeposit: true }
-        });
-      }
-      if (this.subview === "scantxqr") {
+        if (this.$isClientAppRole) {
+          this.$router.push({
+            name: "deposit",
+            params: { initialDeposit: true }
+          });
+        } else if (this.$isMerchantAppRole) {
+          let hubConnection = new HubConnection(
+            this.$store.state.hubUrl,
+            this.$store.getters.initiatorId
+          );
+          try {
+            let ret = await hubConnection.getMerchantName();
+            if (ret.success === false) {
+              if (ret.code === 404) {
+                // No registered merchant name.
+                this.$router.push("register-merchant");
+              } else {
+                // unexpected error.
+                this.alert(
+                  "Error. must design a proper error screen here ! ",
+                  e
+                );
+              }
+            } else {
+              // Welcome back.
+              this.$router.push({
+                name: "deposit",
+                params: { initialDeposit: true, welcomeBack: true }
+              });
+            }
+          } catch (e) {
+            // PROPER ERROR PLEASE.
+
+            this.alert("Error. must design a proper error screen here ! ", e);
+          }
+        }
+      } else if (this.subview === "scantxqr") {
         this.$router.push({
           name: "confirmtx",
           params: { txKind: "transact-from-qr" }
@@ -114,10 +147,11 @@ export default {
         //
         role: "initiator",
         url: this.$store.state.aeternity.getStateChannelApiUrl(),
-        sign: this.$store.state.aeternity.signFunction,
+        sign: this.$store.state.aeternity.signFunction
       };
 
       this.$store.commit("loadChannelParams", params);
+      this.$store.commit("loadHubUri", process.env.VUE_APP_TEST_HUB_URL);
     }
   }
 };

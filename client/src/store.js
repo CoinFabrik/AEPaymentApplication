@@ -11,7 +11,8 @@ export default new Vuex.Store({
     channelParams: null,
     channel: null,
     initiatorBalance: null,
-    responderBalance: null
+    responderBalance: null,
+    hubUrl: null
   },
   getters: {
     initiatorAddress(state) {
@@ -31,6 +32,9 @@ export default new Vuex.Store({
     loadChannelParams(state, params) {
       state.channelParams = params;
     },
+    loadHubUrl(state, url) {
+      state.hubUrl = url;
+    },
     setInitialDeposit(state, amount) {
       state.channelParams.initiatorAmount = amount;
     },
@@ -45,7 +49,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    getCurrentBalance({ commit, state }) {
+    updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(
         function (balance) {
           commit('updateBalance', balance);
@@ -74,7 +78,7 @@ export default new Vuex.Store({
       )
     },
     transferTokensToResponder({ dispatch, state, getters }, amount) {
-      console.log('1')
+      console.log('ACTION: transferTokensToResponder');
       state.aeternity.updateEx(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
         function (accepted) {
           if (accepted) {
@@ -84,6 +88,9 @@ export default new Vuex.Store({
           }
         }
       );
+    },
+    async depositChannel({ state }, amount) {
+
     }
   }
 })

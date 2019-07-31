@@ -1,40 +1,59 @@
 <template>
   <div class="deposit">
     <div v-if="initialDeposit">
-      <AeText>
-        To open a channel with our Point of Sale services an acquire
-        venue amenities, goods and services,
-        please enter an amount of AE to deposit. This amount can be
-        used immediately. Unspent tokens will be returned to your wallet when the channel closes.
-      </AeText>
-      <AeText face="sans-s">You can add more tokens later</AeText>
+      <!-- 
+        Initial deposit at channel open stage 
+      -->
+      <div v-if="$isClientAppRole">
+        <AeText>
+          To open a channel with our Point of Sale services an acquire
+          venue amenities, goods and services,
+          please enter an amount of AE to deposit. This amount can be
+          used immediately. Unspent tokens will be returned to your wallet when the channel closes.
+        </AeText>
+        <AeText face="sans-s">You can add more tokens later</AeText>
+      </div>
+
+      <div v-if="$isMerchantAppRole">
+        <AeText>
+          To open a channel with our Point of Sale services you need
+          to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
+        </AeText>
+        <AeText face="sans-s">This deposit will be returned to your wallet at channel close</AeText>
+      </div>
     </div>
     <div v-else>
-      <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
-    </div>
-    <ae-amount-input
-      placeholder="0.00"
-      v-model="depositInput"
-      :units="[
+      <!-- 
+        Deposit after-channel open case 
+      -->
+      <div v-if="$isClientAppRole">
+        <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
+
+        <ae-amount-input
+          placeholder="0.00"
+          v-model="depositInput"
+          :units="[
             { symbol: 'AE', name: 'æternity' }
           ]"
-      @input="onAmountInput"
-      v-bind:disabled="isInError || isQueryingBalance"
-    />
-    <div v-if="isQueryingBalance">
-      <AeText>Please wait while Checking your account balance</AeText>
-      <AeLoader />
+          @input="onAmountInput"
+          v-bind:disabled="isInError || isQueryingBalance"
+        />
+        <div v-if="isQueryingBalance">
+          <AeText>Please wait while Checking your account balance</AeText>
+          <AeLoader />
+        </div>
+        <div v-else>
+          <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
+        </div>
+      </div>
     </div>
-    <div v-else>
-      <AeButton
-        face="round"
-        fill="primary"
-        extend
-        @click="deposit()"
-        :disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
-      >Deposit</AeButton>
-    </div>
-
+    <AeButton
+      face="round"
+      fill="primary"
+      extend
+      @click="deposit()"
+      :disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
+    >Deposit</AeButton>
     <ae-modal v-if="isInError" @close="setWaitingInputState" title>
       <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
     </ae-modal>
@@ -81,6 +100,9 @@ export default {
     };
   },
   computed: {
+    merchantInitialDepositAE() {
+      return parseInt(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT) / 10 ** 18;
+    },
     balance() {
       return this.$store.state.balance;
     },
@@ -92,6 +114,12 @@ export default {
     },
     isInError() {
       return this.viewState == STATUS_ERROR;
+    },
+    estimatedFee() {
+      return this.$store.state.aeternity.estimateDepositFee(500000);
+    },
+    estimatedFeeAE() {
+      return this.estimatedFee / 10 ** 18;
     }
   },
   methods: {
@@ -102,35 +130,38 @@ export default {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
       try {
-        await this.$store.dispatch("getCurrentBalance");
-
-        const balanceBN = new BigNumber(this.$store.state.balance);
-        let inputBN = new BigNumber(this.depositInput.amount);
-        inputBN = inputBN.multipliedBy(10 ** 18);
-
-        // TODO!  Consider fees (approximate? )
-
+        await this.$store.dispatch("updateOnchainBalance");
         console.log("balance: " + this.$store.state.balance);
 
-        if (balanceBN.lt(inputBN)) {
-          this.errorReason = "Not enough funds.";
+        const balanceBN = new BigNumber(this.$store.state.balance);
+        let inputBN;
+        if (this.$isClientAppRole) {
+          inputBN = new BigNumber(this.depositInput.amount);
+          inputBN = inputBN.multipliedBy(10 ** 18);
+        } else if (this.$isMerchantAppRole) {
+          inputBN = new BigNumber(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT);
+        }
+
+        const estimatedFeeBN = new BigNumber(this.estimatedFee);
+
+        if (balanceBN.lt(inputBN.plus(estimatedFeeBN))) {
+          this.errorReason = "Not enough funds to cover deposit plus fees.";
           this.viewState = STATUS_ERROR;
           console.log("Setting not enough funds error state");
         } else {
-
           if (this.initialDeposit) {
-
-            // Create and open a channel and subsequently deposit the provided amount
-
-            this.$store.commit('setInitialDeposit', inputBN.toFixed(0));
-            this.$router.push('channelopen');
+            this.$store.commit("setInitialDeposit", inputBN.toFixed(0));
+            this.$router.push("channelopen");
+          } else {
+            this.$router.push({
+              name: "confirm-tx",
+              params: {
+                txKind: "deposit",
+                amountAettos: inputBN.toFixed(0),
+                fee: estimatedFeeBN.toFixed(0)
+              }
+            });
           }
-          // this.$router.push({
-          //   name: "confirm-tx",
-          //   params: {
-          //     txKind: this.initialDeposit ? "initial-deposit" : "deposit",
-          //   }
-          // });
 
           this.viewState = STATUS_USER_INPUT;
         }

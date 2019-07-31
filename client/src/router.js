@@ -4,12 +4,14 @@ import ConnectToWallet from './views/ConnectToWallet.vue'
 import ScanQR from './views/ScanQr.vue'
 import Deposit from './views/Deposit.vue'
 import ConfirmTx from './views/ConfirmTx.vue'
-import WaitTx from './views/WaitTx.vue'
+import CommitAndWaitTx from './views/CommitAndWaitTx.vue'
 import Success from './views/Success.vue'
 import ErrorView from './views/ErrorView.vue'
 import MainMenu from './views/MainMenu.vue'
 import History from './views/History.vue'
 import ChannelOpen from './views/ChannelOpen.vue'
+import ChannelClose from './views/ChannelClose.vue'
+import RegisterMerchant from './views/RegisterMerchant.vue'
 
 Vue.use(Router)
 
@@ -27,6 +29,11 @@ export default new Router({
       props: true
     },
     {
+      path: '/register-merchant',
+      name: 'register-merchant',
+      component: RegisterMerchant
+    },
+    {
       path: '/deposit',
       name: 'deposit',
       component: Deposit,
@@ -39,9 +46,9 @@ export default new Router({
       props: true
     },
     {
-      path: '/waittx',
-      name: 'wait-tx',
-      component: WaitTx,
+      path: '/commitwaittx',
+      name: 'commit-and-wait-tx',
+      component: CommitAndWaitTx,
       props: true
     },
     {
@@ -71,6 +78,11 @@ export default new Router({
       path: '/history',
       name: 'history',
       component: History
+    },
+    {
+      path: '/channelclose',
+      name: 'channelclose',
+      component: ChannelClose
     }
   ]
 })

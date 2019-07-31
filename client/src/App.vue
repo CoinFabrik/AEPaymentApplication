@@ -18,20 +18,15 @@
 
 <script>
 import { AeMain, AeText } from "@aeternity/aepp-components";
-import ChannelNotify from "./components/ChannelNotify"
+import ChannelNotify from "./components/ChannelNotify";
 
 import "@aeternity/aepp-components/dist/aepp.global.css";
 import "@aeternity/aepp-components/dist/aepp.components.css";
-import 'sweetalert2/dist/sweetalert2.min.css';
+import "sweetalert2/dist/sweetalert2.min.css";
 
 export default {
   name: "App",
-  components: { AeMain, AeText, ChannelNotify },
-  computed: {
-    getAppState: function() {
-      return this.$store.state.appState;
-    }
-  }
+  components: { AeMain, AeText, ChannelNotify }
 };
 </script>
 

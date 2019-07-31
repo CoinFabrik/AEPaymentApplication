@@ -8,7 +8,7 @@ const {
   Universal
 } = require('@aeternity/aepp-sdk');
 
-const { TxBuilder: { unpackTx, buildTx } } = require('@aeternity/aepp-sdk')
+const { TxBuilder: { unpackTx, buildTx, calculateFee } } = require('@aeternity/aepp-sdk')
 
 const aeternity = {
   network: null,
@@ -41,7 +41,7 @@ aeternity.connectToBaseApp = async function () {
     aeternity.state_channel_api_proto = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
     aeternity.state_channel_api_host = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
     aeternity.state_channel_api_port = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
-    
+
 
     const params = {
       networkId: 'ae_devnet',
@@ -93,7 +93,7 @@ aeternity.getPk = function () {
 aeternity.getApiServerUrl = function () {
   return aeternity.api_server_proto + '://' + aeternity.api_server_address + ':' + aeternity.api_server_port
 }
-aeternity.getStateChannelApiUrl = function()  {
+aeternity.getStateChannelApiUrl = function () {
   return aeternity.state_channel_api_proto + '://' + aeternity.state_channel_api_host + ':' + aeternity.state_channel_api_port + '/channel';
 }
 aeternity.getAccountBalance = async function () {
@@ -105,9 +105,9 @@ aeternity.createChannel = async function (params) {
   console.log(params);
 
   return Channel({
-      ...params,
-      sign: aeternity.signFunction
-    });
+    ...params,
+    sign: aeternity.signFunction
+  });
 }
 
 aeternity.signFunction = async function (tag, tx) {
@@ -137,12 +137,34 @@ aeternity.updateEx = async function (channel, fromAddr, toAddr, amount) {
 }
 
 aeternity.signTransactionEx = async function (tx) {
-  let unpackedTx  = await unpackTx(tx);
-  console.log('unpacked: ' );
+  let unpackedTx = await unpackTx(tx);
+  console.log('unpacked: ');
   console.log(unpackedTx);
   unpackedTx.tx.metadata = { kind: "this_is_payment_from_dave" }
   const tx2 = await buildTx(unpackedTx.tx, 'channelOffChain');
   return aeternity.client.signTransaction(tx2)
 }
+
+aeternity.estimateDepositFee = function (gasAmount) {
+  return calculateFee(null, 'channel_deposit', { gas: gasAmount })
+}
+
+aeternity.deposit = async function (channel, amount, onChainTxCallback) {
+  console.log("Deposit: ", amount);
+  return channel.deposit(amount, async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+}
+
+aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
+  return channel.withdraw(amount, async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+}
+
+aeternity.closeChannel = async function (channel, onChainTxCallback) {
+  return channel.shutdown(async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+}
+
+aeternity.getTxInfo = async function (tx) {
+  return aeternity.client.getTxInfo(tx);
+}
+
 
 export default aeternity;

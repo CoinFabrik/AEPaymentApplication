@@ -10,10 +10,10 @@
       </div>
     </div>
     <div class="row">
-      <AeButton face="round" fill="primary" extend @click="deposit()">Deposit</AeButton>
+      <AeButton face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
     </div>
     <div class="row">
-      <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Qr</AeButton>
+      <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Purchase Qr</AeButton>
     </div>
     <div class="row">
       <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
@@ -48,7 +48,7 @@ export default {
       return this.$store.getters.initiatorId;
     },
     getMyBalance: function() {
-      return (this.$store.state.initiatorBalance / (10 ** 18))
+      return this.$store.state.initiatorBalance / 10 ** 18;
     }
   },
   methods: {
@@ -59,10 +59,7 @@ export default {
       this.$router.push({ name: "scanqr", params: { subview: "scantxqr" } });
     },
     closeChannel: function() {
-      this.$router.push({
-        name: "confirm-tx",
-        params: { txKind: "close-channel" }
-      });
+      this.$router.push("channelClose");
     },
     history: function() {
       this.$router.push("history");

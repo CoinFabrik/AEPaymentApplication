@@ -23,5 +23,7 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 * Debemos dar info de TX de open/close ( txid por ejemplo con link para verificar en explorer ? )
 * Test de dos o tres mensajes de compra seguidos
 * Test de mensajes de compra en toda la app (deberian ser recibidos solo en los lugares correctos)
+* Check de gas , cual se deberia usar como "promedio" (ahora 1000000)
+* Chequear **todos ** los lugares de conversion de unidades (de AEttos a AE) dado que hacemos inputs de Numbers por limitaciones del SDK. Alternativa; manejar BigNumber y pasar Strings de integers de hasta 18 digitos de precision, COMO DEBERIA SER.
 
 
