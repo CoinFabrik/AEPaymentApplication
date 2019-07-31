@@ -1,6 +1,8 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
+const jstools = require('./jstools');
+
 const http = require('http');
 const {
     Channel,
@@ -75,7 +77,7 @@ async function get2(url) {
 
 class MyChannel {
     static async Initiator(other = r_addr) {
-        MyChannel.register("merchant", i_addr);
+        await MyChannel.register("merchant", i_addr);
         return new MyChannel(i_addr, i_secretKey, true, other);
     }
 
@@ -281,10 +283,10 @@ async function temp() {
 
 
 class Merchant extends MyChannel {
-    constructor(other = r_addr) {
-        super(i_addr, i_secretKey, true, other);
-        MyChannel.register("merchant", i_addr).then(console.log).catch(console.error);
-        ///return new MyChannel(i_addr, i_secretKey, true, other);
+    async Init(other = r_addr) {
+        let credentials = await jstools.get_account(process.argv[2], "1234");
+        await MyChannel.register("merchant", credentials.pubkey).then(console.log).catch(console.error);
+        return Merchant(credentials.pubkey, credentials.privateKey, true, other);
     }
 
     async buyRequest(customer, items, price) {
@@ -310,7 +312,7 @@ class Merchant extends MyChannel {
     } else {
         //await temp();
         //let peer = await Merchant.Initiator("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
-        let peer = new Merchant("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
+        let peer = Merchant.Init("ak_dfLvALARoMJs4kvKDkvjdf6Crvs9pAqJYEv3WsxMHM9hNw4DK");
         if (peer == null)
             return;
         await peer.init();
