@@ -10,16 +10,16 @@ let Entities = [CClient];
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'test',
-      entities: [join(__dirname, '**/**.entity{.ts,.js}')],
-      synchronize: true,
-    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'mysql',
+    //   host: 'localhost',
+    //   port: 3306,
+    //   username: 'root',
+    //   password: 'root',
+    //   database: 'test',
+    //   entities: [join(__dirname, '**/**.entity{.ts,.js}')],
+    //   synchronize: true,
+    // }),
   ],
   controllers: [AppController],
   providers: [AppService, ClientService],

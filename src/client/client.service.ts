@@ -61,7 +61,7 @@ class InvalidMerchant extends InvalidRequest{
 class InvalidCustomer extends InvalidRequest{
 }
 
-voidf = () => {}
+const voidf = () => {}
 
 class MerchantCustomer {
     readonly id: string;
