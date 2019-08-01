@@ -89,6 +89,13 @@ class MerchantCustomer {
         return base;
     }
 
+    errorMsg(err: Error): object {
+        let base = this.base();
+        base["type"] = "error";
+        base["msg"] = err.toString;
+        return base;
+    }
+
     sendCustomer(msg: object) {
         this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
     }
@@ -167,11 +174,23 @@ export class Hub extends EventEmitter {
             //      "to":"hub"},
             //  "to":"ak_2TccoDkdWZ28yBYZ7QsdqBMAH5DjsVnMnZHBRyUnxPD5z1whYb"
             // }
+            let mc;
+            let response;
             console.log("buy-request: " + (JSON.stringify(msg)));
-            //validadte buy-request
-            let mc = MerchantCustomer.FromMerchantRequest(msg)
-            // forward
-            mc.sendCustomer( mc.forwardBuyRequestToCustomer(msg) )
+            try {
+                mc = MerchantCustomer.FromMerchantRequest(msg);
+                response = mc.forwardBuyRequestToCustomer(msg);
+                mc.sendCustomer( response );
+                mc.cclient.channel.sendTxRequest(10).
+                    then(voidf).
+                    catch(console.error);
+                this.log("buy-request forwarded!");
+            } catch (err) {
+                this.log("buy-request ignored: "+ err.toString());
+                if(mc!=null) {
+                    mc.sendMerchant( mc.errorMsg(err) );
+                }
+            }
         });
     }
 }

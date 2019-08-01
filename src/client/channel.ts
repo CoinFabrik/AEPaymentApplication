@@ -202,11 +202,32 @@ export abstract class ServerChannel extends EventEmitter {
     setService(s: ServiceBase) {
         this.service = s;
     }
+
+    async update(_from, _to, amount) {
+        const self = this;
+        try {
+            let result = await this.channel.update(_from, _to, amount, async (tx) => {
+                return await self.nodeuser.signTransaction(tx);
+            });
+            return result;
+        } catch(err) {
+            console.log("---------------------------------------------------")
+            console.log("Error on update:", err);
+            return null
+        }
+    }
 }
 
 
 export class CustomerChannel extends ServerChannel {
     readonly Name: Actor = "customer";
+
+    async sendTxRequest(amount) {
+        console.log("from:", this.initiator)
+        console.log("top:", this.address)
+        await this.update(this.initiator, this.address, amount);
+        return "sent!"
+    }
 }
 
 const PING = "beep beep";
