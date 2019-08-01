@@ -88,9 +88,6 @@ export default new Vuex.Store({
           }
         }
       );
-    },
-    async depositChannel({ state }, amount) {
-
     }
   }
 })

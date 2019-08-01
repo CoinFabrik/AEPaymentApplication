@@ -1,6 +1,5 @@
 <template>
   <div class="success">
-
     <div v-if="txKind === 'initial-deposit'">
       <AeText face="sans-l" fill="primary">Success</AeText>
       <AeText>A state channel with our Point-of-Sale service has been successfully established.</AeText>
@@ -19,6 +18,11 @@
 
     <ae-icon fill="secondary" face="round" name="check" />
     <AeButton fill="primary" face="round" @click="dismiss()">Next</AeButton>
+
+    <div v-if="txKind === 'register-merchant'">
+      <AeText face="sans-xl" fill="primary">Thanks!</AeText>
+      <AeText>You have been successfully registered to the Point of Sale system.</AeText>
+    </div>
   </div>
 </template>
 
@@ -42,8 +46,7 @@ export default {
     txKind: String
   },
   data() {
-    return {
-    };
+    return {};
   },
   methods: {
     dismiss: function() {
@@ -57,7 +60,9 @@ export default {
         case "close-channel":
           this.$router.replace("onboarding");
           break;
-
+        case "register-merchant":
+          this.$router.replace( { name: "deposit", params: { initialDeposit: true }})
+          break;
         default:
           this.$router.replace("mainmenu");
       }

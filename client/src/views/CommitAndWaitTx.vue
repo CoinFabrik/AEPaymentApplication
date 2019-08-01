@@ -21,7 +21,7 @@ import { AeText, AeLoader } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
 import { setInterval, setTimeout } from "timers";
-import Crypto from "@aeternity/aepp-sdk";
+import { Crypto, TxBuilderHelper } from "@aeternity/aepp-sdk";
 
 export default {
   name: "CommitAndWaitTx",
@@ -50,11 +50,19 @@ export default {
   methods: {
     async trackTxProgress() {
       if (this.transaction != null) {
-        const th = Crypto.hash(this.transaction);
-        const txinfo = await this.$store.state.aeternity.getTxInfo(th);
-        console.log(txinfo);
-        this.elapsedBlocks = txInfo.block_number;
-        setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
+        const txHash = TxBuilderHelper.encode(
+          Crypto.hash(this.transaction),
+          "th"
+        );
+        console.log(txHash);
+        try {
+          const txinfo = await this.$store.state.aeternity.getTxInfo(txHash);
+          console.log(txinfo);
+          this.elapsedBlocks = txInfo.block_number;
+          setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
+        } catch (e) {
+          console.error(e);
+        }
       }
     },
     setStatusTrackProgress(tx) {
@@ -89,6 +97,30 @@ export default {
           }
           break;
 
+        case "withdraw":
+          {
+            console.log("Committing WITHDRAW transaction ... ");
+            try {
+              let tx;
+              let accepted = await this.$store.state.aeternity.withdraw(
+                this.$store.state.channel,
+                parseInt(this.txParams.amountAettos), // HORRIBLE CONVERSION
+                async function(tx) {
+                  console.log("posted withdraw Onchain TX: ", tx);
+                  this.setStatusTrackProgress(tx);
+                }
+              );
+              if (accepted) {
+                console.log("Accepted withdraw");
+              } else {
+                throw new Error("Withdraw transaction has been rejected");
+              }
+            } catch (error) {
+              this.setError(error);
+            }
+          }
+          break;
+
         case "close":
           {
             console.log("Committing CLOSE transaction ... ");
@@ -101,11 +133,6 @@ export default {
             } catch (error) {
               console.error(error);
             }
-          }
-          break;
-
-        case "withdraw":
-          {
           }
           break;
 

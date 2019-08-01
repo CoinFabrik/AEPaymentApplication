@@ -4,6 +4,11 @@
       align="center"
       v-if="txKind === 'deposit'"
     >Please review and confirm your CHANNEL DEPOSIT transaction</AeText>
+
+    <AeText
+      align="center"
+      v-if="txKind === 'withdraw'"
+    >Please review and confirm your CHANNEL WITHDRAW transaction</AeText>
     <AePanel id="tx_confirm_panel" fill="secondary">
       <!--
       <AeText align="left" weight="bold" fill="alternative">TX Description</AeText>
@@ -16,8 +21,8 @@
       <AeText align="left" weight="bold" fill="alternative">Amount</AeText>
       <AeText align="left" face="sans-s">{{ amountAE }} AE</AeText>
       <AeDivider />
-      <AeText align="left" weight="bold" fill="alternative">Fee</AeText>
-      <AeText align="left" face="sans-s">{{ feeAE }} AE</AeText>
+      <AeText v-show="fee != '' " align="left" weight="bold" fill="alternative">Fee</AeText>
+      <AeText v-show="fee != '' " align="left" face="sans-s">{{ feeAE }} AE</AeText>
       <!--
         <AeDivider />
       <AeText align="left" weight="bold" fill="alternative">Transaction Priority</AeText>
@@ -52,7 +57,7 @@ import {
   AeSwitch
 } from "@aeternity/aepp-components";
 
-import BigNumber from 'bignumber.js'
+import BigNumber from "bignumber.js";
 
 export default {
   name: "ConfirmTx",
@@ -72,21 +77,14 @@ export default {
     amountAettos: String,
     fee: String
   },
-  data() {
-    return {
-      depositAmount: {
-        amount: "0",
-        fee: "0"
-      }
-    };
-  },
+  data() { return {} },
   computed: {
-    amountAE() { 
-      const BN =  new BigNumber(this.amountAettos).dividedBy(10**18);
+    amountAE() {
+      const BN = new BigNumber(this.amountAettos).dividedBy(10 ** 18);
       return BN.toString();
     },
     feeAE() {
-      const BN = new  BigNumber(this.fee).dividedBy(10**18);
+      const BN = new BigNumber(this.fee).dividedBy(10 ** 18);
       return BN.toString();
     }
   },
@@ -97,7 +95,10 @@ export default {
     confirm() {
       this.$router.replace({
         name: "commit-and-wait-tx",
-        params: { txKind: this.txKind, txParams: { amountAettos: this.amountAettos } }
+        params: {
+          txKind: this.txKind,
+          txParams: { amountAettos: this.amountAettos }
+        }
       });
     }
   }

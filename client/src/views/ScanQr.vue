@@ -79,7 +79,7 @@ export default {
         } else if (this.$isMerchantAppRole) {
           let hubConnection = new HubConnection(
             this.$store.state.hubUrl,
-            this.$store.getters.initiatorId
+            this.$store.getters.initiatorAddress
           );
           try {
             let ret = await hubConnection.getMerchantName();
@@ -89,10 +89,8 @@ export default {
                 this.$router.push("register-merchant");
               } else {
                 // unexpected error.
-                this.alert(
-                  "Error. must design a proper error screen here ! ",
-                  e
-                );
+                alert(JSON.stringify(ret));
+              
               }
             } else {
               // Welcome back.
@@ -104,7 +102,7 @@ export default {
           } catch (e) {
             // PROPER ERROR PLEASE.
 
-            this.alert("Error. must design a proper error screen here ! ", e);
+            alert("Error " + e.toString());
           }
         }
       } else if (this.subview === "scantxqr") {
@@ -151,7 +149,7 @@ export default {
       };
 
       this.$store.commit("loadChannelParams", params);
-      this.$store.commit("loadHubUri", process.env.VUE_APP_TEST_HUB_URL);
+      this.$store.commit("loadHubUrl", process.env.VUE_APP_TEST_HUB_URL);
     }
   }
 };

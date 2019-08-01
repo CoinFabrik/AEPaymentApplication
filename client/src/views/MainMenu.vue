@@ -9,17 +9,39 @@
         <ae-amount v-bind:value="getMyBalance" unit="Æ" size="med" />
       </div>
     </div>
-    <div class="row">
-      <AeButton face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
+
+    <!-- Client Menu -->
+
+    <div v-if="$isClientAppRole">
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Purchase Qr</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
+      </div>
     </div>
-    <div class="row">
-      <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Purchase Qr</AeButton>
-    </div>
-    <div class="row">
-      <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
-    </div>
-    <div class="row">
-      <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
+
+    <!-- Merchant Menu -->
+
+    <div v-if="$isMerchantAppRole">
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="withdraw()">Withdraw Funds</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Customer Qr</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
+      </div>
+      <div class="row">
+        <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
+      </div>
     </div>
   </div>
 </template>
@@ -52,6 +74,9 @@ export default {
     }
   },
   methods: {
+    withdraw: function() {
+      this.$router.push("withdraw");
+    },
     deposit: function() {
       this.$router.push("deposit");
     },
@@ -65,11 +90,13 @@ export default {
       this.$router.push("history");
     }
   },
-  mounted() {
+  async mounted() {
     // Report error !
-    this.$store.dispatch("updateChannelBalances").catch(err => {
+    try {
+      this.$store.dispatch("updateChannelBalances");
+    } catch (err) {
       console.log("error getting balances! " + err);
-    });
+    }
   }
 };
 </script>

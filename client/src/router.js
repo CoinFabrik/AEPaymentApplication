@@ -12,6 +12,7 @@ import History from './views/History.vue'
 import ChannelOpen from './views/ChannelOpen.vue'
 import ChannelClose from './views/ChannelClose.vue'
 import RegisterMerchant from './views/RegisterMerchant.vue'
+import Withdraw from './views/Withdraw.vue'
 
 Vue.use(Router)
 
@@ -38,6 +39,11 @@ export default new Router({
       name: 'deposit',
       component: Deposit,
       props: true
+    },
+    {
+      path: '/withdraw',
+      name: 'withdraw',
+      component: Withdraw
     },
     {
       path: '/confirmtx',
