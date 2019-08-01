@@ -31,12 +31,13 @@ export class AppController {
 
   @Get("/clients")
   async customers(@Param() params): Promise<string[]> {
-    let X = this.clientService.getClients();
+    let X = this.clientService.getClients("customer");
     return X.map((x):string => x.address);
   }
 
   @Get("/merchants")
   async merchants(@Param() params): Promise<any> {
-    return []
+    let X = this.clientService.getClients("merchant");
+    return X.map((x):string => x.address);
   }
 }

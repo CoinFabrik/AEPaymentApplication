@@ -2,6 +2,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import {get_private, get_public} from "../tools";
 import {promises} from "fs";
+import {ServerChannel} from "./channel";
 
 
 export type Actor = "merchant"|"customer"|"hub";
@@ -39,6 +40,7 @@ export class CClient {
 
   name: string;
   private?: string;
+  public channel: ServerChannel;
 
   static async FromFile(name: string): Promise<CClient> {
     let client = new CClient();
@@ -46,5 +48,9 @@ export class CClient {
     client.name = name;
     client.private = await get_private(name);
     return client;
+  }
+
+  setChannel(c: ServerChannel) {
+      this.channel = c;
   }
 }

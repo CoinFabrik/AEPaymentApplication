@@ -1,5 +1,5 @@
-import {Service} from "./client.service";
-import {AE, CClient} from "./client.entity";
+import {Hub, Service} from "./client.service";
+import {Actor, AE, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
 import {Account, get_account, getEnv, sleep, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
@@ -35,11 +35,15 @@ export abstract class ServerChannel extends EventEmitter {
     static pubkey;
     static privkey;
 
-    abstract Name: string;
+    abstract Name: Actor;
     logger: Logger;
+    private opposite: string;
 
     log(msg: string) {
-        this.logger.log(this.client.address + "|" + msg);
+        if (this.logger==undefined) {
+            this.logger = new Logger(this.Name);
+        }
+        this.logger.log(this.opposite.slice(0,15) + "|" + msg);
     }
 
     static async Init() {
@@ -70,10 +74,24 @@ export abstract class ServerChannel extends EventEmitter {
         return {address: ServerChannel.pubkey}
     }
 
-    protected constructor(init_role, public readonly opposite) {
+    //protected constructor(init_role, public readonly opposite) {
+    constructor(customer: CClient) {
         super();
-        this.is_initiator = init_role;
+        this.client = customer;
+        this.opposite = customer.address;
+        this.is_initiator = false;
         this.status = "";
+        this.on("message", (msg) => {
+            if (msg[info]==PING) {
+            } else {
+                msg[info] = JSON.parse(msg[info])
+                this.hub.emit(msg[info]["type"], msg);
+            }
+        });
+    }
+
+    get hub(): Hub {
+        return Hub.Get();
     }
 
     get initiator() {
@@ -108,7 +126,11 @@ export abstract class ServerChannel extends EventEmitter {
         return options;
     }
 
-    async initChannel() {
+    initChannel(s: Service) {
+        this.setService(s);
+        this._initChannel().then(console.log).catch(console.error);
+    }
+    async _initChannel() {
         const self = this;
         let options = this.get_options();
 
@@ -123,25 +145,32 @@ export abstract class ServerChannel extends EventEmitter {
             if (tag === "shutdown_sign_ack") {
                 this.log("TX (shutdown): " + (tx.toString()))
             }
+            //console.log("Sign...")
             return await self.nodeuser.signTransaction(tx)
         };
 
         this.channel = await Channel(options);
         this.channel.on('statusChanged', (status) => {
-            self.status = status.toUpperCase();
-            this.log(Date.now().toString() + ` [${self.status}]`);
-            if (self.status == "OPEN") {
-                self.hb().then(console.log).catch(console.error);
-                self.service.addClient(this.client);
-            }
-            if (self.status.startsWith("DISCONNECT")) {
-                self.service.rmClient(this.client);
-            }
+            self.onStatusChange(status.toUpperCase());
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
         });
+        await this.wait_state("OPEN");
         return this.channel;
+    }
+
+    onStatusChange(status) {
+        this.status = status;
+        this.log(`[${this.status}]`);
+        if (this.status == "OPEN") {
+            this.hb().then(console.log).catch(console.error);
+            this.client.setChannel(this);
+            this.service.addClient(this.client, this.Name);
+        }
+        if (this.status.startsWith("DISCONNECT")) {
+            this.service.rmClient(this.client, this.Name);
+        }
     }
 
     async sendMessage(message) {
@@ -163,7 +192,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     async hb() {
         while (this.status == "OPEN") {
-            this.log("sending hb..")
+            //this.log("sending hb..")
             await this.sendMessage({"type": "heartbeat"});
             await sleep(45 * 1000)
         }
@@ -173,61 +202,17 @@ export abstract class ServerChannel extends EventEmitter {
     setService(s: Service) {
         this.service = s;
     }
-
-    async init_loop() {
-        await this.initChannel();
-        await this.wait_state("OPEN");
-    }
-
-    abstract async loop();
 }
 
 
 export class CustomerChannel extends ServerChannel {
-    Name = "Customers";
-
-    constructor(customer: CClient) {
-        super(false, customer.address);
-        this.logger = new Logger(this.Name);
-        this.client = customer;
-        this.on("message", (msg) => {
-            this.log("recv: " + (JSON.stringify(msg)));
-        })
-    }
-
-    async loop() {
-        await this.init_loop();
-        while (true) {
-            await sleep(1000);
-            await this.sendMessage({
-                from: "hub", fromId: this.address,
-                to: "consumer", toId: this.client.address,
-                type: "buy-request",
-                id: "asdfasd-asdfasdfasdf-asdfasdf-asdf",
-                something: [{"quantity": 2, "product": "beer"}],
-                amount: 2 * AE,
-            });
-        }
-    }
+    readonly Name: Actor = "customer";
 }
 
+const PING = "beep beep";
+const info = "info";
+
 export class MerchantChannel extends ServerChannel {
-    Name = "Merchants";
+    readonly Name: Actor = "merchant";
 
-    constructor(merchant: CClient) {
-        super(false, merchant.address);
-        this.logger = new Logger(this.Name);
-        this.client = merchant;
-
-        this.on("message", (msg) => {
-            this.log("recv: " + (JSON.stringify(msg)));
-        })
-    }
-
-    async loop() {
-        await this.init_loop();
-        while (true) {
-            await sleep(1000);
-        }
-    }
 }
