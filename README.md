@@ -17,8 +17,9 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 ## TODO:
 
 * Check timeout scenarios on every async call
-* Include  fees (estimation ? ) at deposit balance check 
+* Include  fees (estimation ? ) at deposit balance check
 * Chequear error handling en aeternity.createChannel (try/catch ?) [no hace catch --why????]
+* ScanQR.vue: Error handling y alerts. 
 * Handling global de mensajes y eventos de disconnect en canal
 * Debemos dar info de TX de open/close ( txid por ejemplo con link para verificar en explorer ? )
 * Test de dos o tres mensajes de compra seguidos
