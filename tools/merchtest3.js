@@ -17,14 +17,14 @@ class Merchant extends MyChannel {
         return await this.sendXMessage({
             "amount": price,
             "something": items,
-            "toId": customer
+            "toId": customer,
+            "type": "buy-request",
         })
     }
 
     async sendXMessage(message) {
         message["from"] = "merchant";
         message["to"] = "hub";
-        message["type"] = "buy-request";
         return this.sendMessage(message);
     }
 }
