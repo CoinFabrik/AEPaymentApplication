@@ -1,6 +1,8 @@
+# AEhub
+
 ## Description
 
-AEHub:
+AEHub
 
 ## Installation
 
@@ -9,13 +11,21 @@ $ npm install
 ```
 
 ## Running the app
+## merchant example: merchtest3.js
+
+This will take wallet filename from: 
+ env:**ACCOUNT**, if fails, file: hub. 
 
 ```bash
 # development
 
 # server
 $ npm run start
+```
 
+### Clients
+
+```bash
 # customer
 $ cd tools/
 $ NODE=10.10.0.79:3001 node custtest3.js
