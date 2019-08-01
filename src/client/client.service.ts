@@ -5,6 +5,18 @@ import {get_private} from "../tools";
 import {EventEmitter} from 'events';
 
 
+class Guid {
+  static generate() {
+    return 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+}
+
+
+
 class ChannelServer extends EventEmitter {
     private c: CClient;
 
@@ -12,7 +24,7 @@ class ChannelServer extends EventEmitter {
         return this.c.address;
     }
 
-    constructor(private name: string, private service: Service) {
+    constructor(private name: string, private service: ServiceBase) {
         super();
         this.init().then(() => {
             this.on("customer-connection", (client) => {
@@ -40,8 +52,82 @@ class ChannelServer extends EventEmitter {
 }
 
 
+class InvalidRequest extends Error {
+}
+
+class InvalidMerchant extends InvalidRequest{
+}
+
+class InvalidCustomer extends InvalidRequest{
+}
+
+voidf = () => {}
+
 class MerchantCustomer {
-    constructor(readonly from: string, readonly to: string, public msg: any) {}
+    readonly id: string;
+    static all:{[key: string]: MerchantCustomer} = {};
+
+    constructor(readonly merchant: string, readonly customer: string, public msg: object,
+                private _mclient?: CClient, private _cclient?: CClient) {
+        this.id = Guid.generate();
+        MerchantCustomer.save(this);
+    }
+
+    static save(mc: MerchantCustomer){
+        this.all[mc.id] = mc;
+    }
+
+    base() {
+        return {
+            "merchant": this.merchant,
+            "customer": this.customer,
+        }
+    }
+
+    forwardBuyRequestToCustomer(msg: object) {
+        let base = this.base();
+        base["id"]= this.id;
+        base["type"]= "buy-request";
+        base["amount"]= msg["info"]["amount"];
+        base["something"]= msg["info"]["something"];
+        return base;
+    }
+
+    sendCustomer(msg: object) {
+        this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+    }
+
+    sendMerchant(msg: object) {
+        this.mclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+    }
+
+    get mclient():CClient {
+        if(this._mclient==null) {
+            this._mclient = ClientService.getClientByAddress(this.merchant, "merchant");
+        }
+        return this._mclient;
+    }
+
+    get cclient():CClient {
+        if(this._cclient==null) {
+            this._cclient = ClientService.getClientByAddress(this.customer, "customer");
+        }
+        return this._cclient;
+    }
+
+    static FromMerchantRequest(msg: object) {
+        let merchant = msg["from"];
+        let mclient = ClientService.getClientByAddress(merchant, "merchant");
+        if(mclient==null) {
+            throw new InvalidMerchant(merchant)
+        }
+        let customer = msg["info"]["toId"];
+        let cclient = ClientService.getClientByAddress(customer, "customer");
+        if(cclient==null) {
+            throw new InvalidCustomer(customer);
+        }
+        return new MerchantCustomer(merchant, customer, msg);
+    }
 }
 
 
@@ -78,9 +164,7 @@ export class Hub extends EventEmitter {
             //  "from":"ak_2c98cs9skoK5W5ugwabipd2XCNxfnPsQx8BBPWhBAafHpvwf4r",
             //  "info":{
             //      "amount":500000,
-            //      "something": [
-            //          {"what":"beer","quantity":2}
-            //      ],
+            //      "something": [ {"what":"beer","quantity":2} ],
             //      "toId":"ak_9k9FzYxNbwrXYLVB8EDjhjspZbKzG9zWDTydqHVkDRR8To5Hs",
             //      "type":"buy-request",
             //      "from":"merchant",
@@ -89,41 +173,13 @@ export class Hub extends EventEmitter {
             // }
             console.log("buy-request: " + (JSON.stringify(msg)));
             //validadte buy-request
-            //validate parties:
-            let merchant = msg["from"];
-            let mclient = this.service.getClientByAddress(merchant, "merchant");
-            if(mclient==null) {
-                this.log("invalid merchant: "+merchant);
-                return;
-            }
-
-            let customer = msg["info"]["toId"];
-            let cclient = this.service.getClientByAddress(customer, "customer");
-
-            if(customer==null) {
-                let resp = "invalid customer: "+msg["from"];
-                this.log(resp);
-                mclient.channel.sendMessage({
-                    "error": resp
-                }).then(this.log).catch(this.log);
-                return
-            }
-
+            let mc = MerchantCustomer.FromMerchantRequest(msg)
             // forward
-            cclient.channel.sendMessage({
-                "amount": msg["info"]["amount"],
-                "type": "buy-request"
-            }).then(() => {this.log("request forwarded!")}).catch((err)=>{this.log("something wrong:"+err)});
+            mc.sendCustomer( mc.forwardBuyRequestToCustomer(msg) )
         });
     }
 }
 
-
-export interface Service {
-    addClient(c: CClient, kind: Actor): void;
-
-    rmClient(c: CClient, kind: Actor): void;
-}
 
 function array_rm(lst: any[], x: any): void {
     let idx = lst.indexOf(x);
@@ -134,7 +190,7 @@ function array_rm(lst: any[], x: any): void {
 }
 
 
-class ServiceBase implements Service {
+export class ServiceBase {
     static clients: { "customer": CClient[], "merchant": CClient[] } = {
         "customer":[],
         "merchant":[],
@@ -144,15 +200,7 @@ class ServiceBase implements Service {
         return ServiceBase.clients[kind];
     }
 
-    checkMerchant(address: string): boolean {
-        return this.getClientByAddress(address, "merchant")!=null;
-    }
-
-    checkCustomer(address: string): boolean {
-        return this.getClientByAddress(address, "customer")!=null;
-    }
-
-    getClientByAddress(address:string, kind: Actor): CClient {
+    static getClientByAddress(address:string, kind: Actor): CClient {
         for(let cc of ServiceBase.clients[kind]) {
             if(cc.address==address)
                 return cc;
@@ -160,11 +208,11 @@ class ServiceBase implements Service {
         return null;
     }
 
-    addClient(c: CClient, kind: Actor): void {
+    static addClient(c: CClient, kind: Actor): void {
         ServiceBase.clients[kind] = ServiceBase.clients[kind].concat([c]);
     }
 
-    rmClient(c: CClient, kind: Actor): void {
+    static rmClient(c: CClient, kind: Actor): void {
         array_rm(ServiceBase.clients[kind], c);
     }
 }

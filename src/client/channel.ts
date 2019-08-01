@@ -1,4 +1,4 @@
-import {Hub, Service} from "./client.service";
+import {Hub, ServiceBase} from "./client.service";
 import {Actor, AE, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
 import {Account, get_account, getEnv, sleep, wait_for} from "../tools";
@@ -28,7 +28,7 @@ export abstract class ServerChannel extends EventEmitter {
     is_initiator: boolean;
     channel: any;
     status: string;
-    private service: Service;
+    private service: ServiceBase;
     public client: CClient;
 
     static _nodeuser: any;
@@ -126,7 +126,7 @@ export abstract class ServerChannel extends EventEmitter {
         return options;
     }
 
-    initChannel(s: Service) {
+    initChannel(s: ServiceBase) {
         this.setService(s);
         this._initChannel().then(console.log).catch(console.error);
     }
@@ -166,10 +166,10 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.status == "OPEN") {
             this.hb().then(console.log).catch(console.error);
             this.client.setChannel(this);
-            this.service.addClient(this.client, this.Name);
+            ServiceBase.addClient(this.client, this.Name);
         }
         if (this.status.startsWith("DISCONNECT")) {
-            this.service.rmClient(this.client, this.Name);
+            ServiceBase.rmClient(this.client, this.Name);
         }
     }
 
@@ -199,7 +199,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     ///////////////////////////////////////////////////////////
-    setService(s: Service) {
+    setService(s: ServiceBase) {
         this.service = s;
     }
 }
