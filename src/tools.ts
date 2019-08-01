@@ -59,14 +59,14 @@ export async function wait_for(func) {
 
 
 export async function get_private(name) {
-    let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
+    let data = fs.readFileSync(name).toString();
     let pdata = JSON.parse(data);
     let r = await recover("1234", pdata);
     return r;
 }
 
 export async function get_public(name) {
-    let data = fs.readFileSync("/home/aweil/repos/ea/"+name).toString();
+    let data = fs.readFileSync(name).toString();
     let pdata = JSON.parse(data);
     return pdata["public_key"];
 }

@@ -20,7 +20,7 @@ const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
-const ACCOUNT = getEnv("ACCOUNT", "hub");
+export const ACCOUNT = getEnv("ACCOUNT", "hub");
 
 
 export abstract class ServerChannel extends EventEmitter {

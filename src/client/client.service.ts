@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {Actor, CClient} from "./client.entity";
-import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
-import {get_private} from "../tools";
+import {ACCOUNT, CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
 
 
@@ -45,9 +44,6 @@ class ChannelServer extends EventEmitter {
     async init() {
         this.c = await CClient.FromFile(this.name);
         return "ChannelServer ready!"
-    }
-
-    loop(peer: ServerChannel) {
     }
 }
 
@@ -225,7 +221,7 @@ export class ClientService extends ServiceBase {
     onModuleInit() {
         Hub.Create(this);
         this.asyncModuleInit().then(() => {
-            ClientService.m = new ChannelServer("service", this);
+            ClientService.m = new ChannelServer(ACCOUNT, this);
             console.log(`The module has been initialized.`);
         }).catch(console.error);
     }
@@ -240,7 +236,6 @@ export class ClientService extends ServiceBase {
     }
 
     static async test() {
-        console.log(await get_private("service"));
     }
 }
 
