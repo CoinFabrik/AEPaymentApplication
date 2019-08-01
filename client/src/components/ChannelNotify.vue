@@ -46,6 +46,12 @@ export default {
               return;
             }
           );
+        } else if (infoObj.kind === "keep-alive") {
+          console.warn("Keep-alive message received in channel");
+          this.$store.state.channel.sendMessage(
+            "keep-alive-ack",
+            this.$store.getters.responderAddress
+          );
         } else {
           console.warn("An unknown message was present in queue");
         }
