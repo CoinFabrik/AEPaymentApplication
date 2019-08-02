@@ -8,7 +8,7 @@ const MyChannel = myjschannel.MyChannel;
 
 class Customer extends MyChannel {
     static async Init(account) {
-        let serverdata = await MyChannel.register("client", account.publicKey)
+        let serverdata = await MyChannel.register("client", account.publicKey, 1000000000000000)
         let address = serverdata["address"];
         console.log("server at:", address)
         return new MyChannel(account.publicKey, account.secretKey, true, address);

@@ -13,18 +13,24 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get("/client/:id")
+  @Get("/client/:id/:amount")
   async connectClient(@Param() params): Promise<object> {
     const client: CClient = new CClient();
     client.address = params.id.toString();
+    client.amount = params.amount;
+    console.log("------------------------------------------")
+    console.log("DATA:", JSON.stringify(params))
+    console.log("typeof amount:", typeof params.amount)
     console.log(client);
     return this.clientService.connect(client, "customer");
   }
 
-  @Get("/merchant/:id")
+  @Get("/merchant/:id/:amount/:name")
   async connectMerchant(@Param() params): Promise<object> {
     const client: CClient = new CClient();
     client.address = params.id.toString();
+    client.amount = params.amount;
+    client.name = params.name;
     console.log(client);
     return this.clientService.connect(client, "merchant");
   }

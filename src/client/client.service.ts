@@ -160,7 +160,20 @@ export class Hub extends EventEmitter {
         this.logger.log("|" + msg);
     }
 
+    async wait_payment(mc:MerchantCustomer, update_result) {
+
+    }
+
     private setup() {
+        this.on("signed", (msg)=> {
+            this.log("signed:"+  JSON.stringify(msg));
+        });
+
+        this.on("wait-payment", (mc, update_result)=> {
+            this.wait_payment(mc, update_result)
+                .then(()=> {this.emit("payment-done",mc)}).catch(console.error)
+        });
+
         this.on("buy-request", (msg)=> {
             // {
             //  "channel_id":"ch_msNnmj5zz8qUq7Se9ijy2ziyta5GUgY6fh9mMcz6cd9qAHVdQ",
@@ -181,10 +194,11 @@ export class Hub extends EventEmitter {
                 mc = MerchantCustomer.FromMerchantRequest(msg);
                 response = mc.forwardBuyRequestToCustomer(msg);
                 mc.sendCustomer( response );
-                mc.cclient.channel.sendTxRequest(10).
-                    then(voidf).
-                    catch(console.error);
-                this.log("buy-request forwarded!");
+                mc.cclient.channel.sendTxRequest(msg["info"]["amount"]).
+                    then((update_result) => {
+                        this.log("buy-request forwarded!");
+                        this.emit("wait-payment", mc, update_result);
+                }).catch(console.error);
             } catch (err) {
                 this.log("buy-request ignored: "+ err.toString());
                 if(mc!=null) {

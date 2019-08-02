@@ -45,10 +45,14 @@ async function get(url) {
 var INITIATOR_MIN_BALANCE = 1000000000000000;
 
 class MyChannel {
-    static async register(what, addr) {
+    static async register(what, addr, amount, name) {
         let data;
         try {
-            data = await get("/" + what + "/" + addr);
+            let url = "/" + what + "/" + addr + "/" + amount;
+            if (name!=null) {
+                url = url + "/" + encodeURIComponent(name);
+            }
+            data = await get(url);
             return JSON.parse(data);
         } catch (err) {
             console.error(err);
@@ -126,6 +130,14 @@ class MyChannel {
 
         options["sign"] = async (tag, tx) => {
             console.log(tag, tx);
+
+            if (tag==="update_ack") {
+                let x = await self.nodeuser.signTransaction(tx);
+                await this.sendMessage({"type":"signed", "signed":x});
+                console.log("exit without signed...")
+                return;
+            }
+
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
                 console.log(JSON.stringify(txData));
@@ -152,9 +164,26 @@ class MyChannel {
         });
 
         this.channel.on('message', (msg) => {
-            //console.log("RECV:>", typeof(msg["info"]))
+            console.log("RECV:>", msg)
             let info = JSON.parse(msg["info"]);
-            console.log("RECV:>", info["type"])
+            // if (info["type"]!=="heartbeat"){
+                //console.log("RECV:>", info["type"])
+                // if (info["type"]!=="signnsend"){
+                //     console.log("RECV:>", info["type"])
+                // }
+                if (info["type"]==="signnsend") {
+                    console.log("Received!! sending..")+JSON.stringify(tx)
+                    self.nodeuser.signTransaction(info["tx"]).then(
+                        (txx) => {
+                            this.sendMessage({
+                                "type": "signnsend",
+                                "txx": txx,
+                                "tx": info["tx"]
+                            });
+                        }
+                    ).catch(console.error);
+                }
+            //}
         });
         return this.channel;
     }

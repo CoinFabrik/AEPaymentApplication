@@ -41,6 +41,7 @@ export class CClient {
   name: string;
   private?: string;
   public channel: ServerChannel;
+  public amount: string;
 
   static async FromFile(name: string): Promise<CClient> {
     let client = new CClient();

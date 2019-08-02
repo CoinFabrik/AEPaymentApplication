@@ -39,6 +39,9 @@ export abstract class ServerChannel extends EventEmitter {
     logger: Logger;
     private opposite: string;
 
+    protected my_pending = null;
+
+
     log(msg: string) {
         if (this.logger==undefined) {
             this.logger = new Logger(this.Name);
@@ -84,8 +87,12 @@ export abstract class ServerChannel extends EventEmitter {
         this.on("message", (msg) => {
             if (msg[info]==PING) {
             } else {
-                msg[info] = JSON.parse(msg[info])
-                this.hub.emit(msg[info]["type"], msg);
+                try {
+                    msg[info] = JSON.parse(msg[info])
+                    this.hub.emit(msg[info]["type"], msg);
+                } catch(err) {
+
+                }
             }
         });
     }
@@ -117,10 +124,11 @@ export abstract class ServerChannel extends EventEmitter {
             host: "localhost",
             port: 3001,
             lockPeriod: 1,
-            initiatorId: this.initiator,
-            responderId: this.responder,
             role: this.role,
         };
+        this.log("opts:" + JSON.stringify(options));
+        options["initiatorId"] = this.initiator;
+        options["responderId"] = this.responder;
         this.log("init:" + this.initiator)
         this.log("resp:" + this.responder)
         return options;
@@ -155,6 +163,17 @@ export abstract class ServerChannel extends EventEmitter {
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
+            try {
+                let info = JSON.parse(msg["info"]);
+                if(info["type"]=="signnsend") {
+                    this.emit("signnsend", info)
+                }
+            } catch (err) {}
+        });
+        this.channel.on('signnsend', (info) => {
+            if(this.my_pending==null) {
+                this.my_pending = info;
+            }
         });
         await this.wait_state("OPEN");
         return this.channel;
@@ -207,6 +226,7 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         try {
             let result = await this.channel.update(_from, _to, amount, async (tx) => {
+                console.log("signing: ", tx.toString())
                 return await self.nodeuser.signTransaction(tx);
             });
             return result;
@@ -222,11 +242,47 @@ export abstract class ServerChannel extends EventEmitter {
 export class CustomerChannel extends ServerChannel {
     readonly Name: Actor = "customer";
 
+    async show_balance() {
+        const self = this;
+        let balances = await this.channel.balances([this.address]);
+        console.log("X: ", JSON.stringify(balances))
+        setTimeout( ()=> {
+            self.show_balance();
+        }, 3000)
+    }
+
     async sendTxRequest(amount) {
         console.log("from:", this.initiator)
         console.log("top:", this.address)
-        await this.update(this.initiator, this.address, amount);
-        return "sent!"
+        await this.show_balance();
+        return await this.custom_update(this.initiator, this.address, amount);
+    }
+
+    async sign_n_send(tx) {
+        console.log("1signing: ", tx.toString())
+        let ttx = await this.nodeuser.signTransaction(tx);
+        let sent = await this.sendMessage({"type":"signnsend", "tx":ttx})
+        await wait_for(() => {return this.my_pending!==null});
+        let x = this.my_pending;
+        this.my_pending = null;
+        return x;
+    }
+
+
+    async custom_update(_from, _to, amount) {
+        const self = this;
+        try {
+            let result = await this.channel.update(_from, _to, amount, async (tx) => {
+                console.log("signing: ", tx.toString())
+                //return await self.nodeuser.signTransaction(tx);
+                return await this.sign_n_send(tx)
+            });
+            return result;
+        } catch(err) {
+            console.log("---------------------------------------------------")
+            console.log("Error on update:", err);
+            return null
+        }
     }
 }
 
