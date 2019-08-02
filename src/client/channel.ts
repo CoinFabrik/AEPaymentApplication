@@ -255,35 +255,35 @@ export class CustomerChannel extends ServerChannel {
         console.log("from:", this.initiator)
         console.log("top:", this.address)
         await this.show_balance();
-        return await this.custom_update(this.initiator, this.address, amount);
+        return await this.update(this.initiator, this.address, amount);
     }
 
-    async sign_n_send(tx) {
-        console.log("1signing: ", tx.toString())
-        let ttx = await this.nodeuser.signTransaction(tx);
-        let sent = await this.sendMessage({"type":"signnsend", "tx":ttx})
-        await wait_for(() => {return this.my_pending!==null});
-        let x = this.my_pending;
-        this.my_pending = null;
-        return x;
-    }
-
-
-    async custom_update(_from, _to, amount) {
-        const self = this;
-        try {
-            let result = await this.channel.update(_from, _to, amount, async (tx) => {
-                console.log("signing: ", tx.toString())
-                //return await self.nodeuser.signTransaction(tx);
-                return await this.sign_n_send(tx)
-            });
-            return result;
-        } catch(err) {
-            console.log("---------------------------------------------------")
-            console.log("Error on update:", err);
-            return null
-        }
-    }
+    // async sign_n_send(tx) {
+    //     console.log("1signing: ", tx.toString())
+    //     let ttx = await this.nodeuser.signTransaction(tx);
+    //     let sent = await this.sendMessage({"type":"signnsend", "tx":ttx})
+    //     await wait_for(() => {return this.my_pending!==null});
+    //     let x = this.my_pending;
+    //     this.my_pending = null;
+    //     return x;
+    // }
+    //
+    //
+    // async custom_update(_from, _to, amount) {
+    //     const self = this;
+    //     try {
+    //         let result = await this.channel.update(_from, _to, amount, async (tx) => {
+    //             console.log("signing: ", tx.toString())
+    //             //return await self.nodeuser.signTransaction(tx);
+    //             return await this.sign_n_send(tx)
+    //         });
+    //         return result;
+    //     } catch(err) {
+    //         console.log("---------------------------------------------------")
+    //         console.log("Error on update:", err);
+    //         return null
+    //     }
+    // }
 }
 
 const PING = "beep beep";

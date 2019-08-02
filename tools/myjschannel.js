@@ -130,14 +130,6 @@ class MyChannel {
 
         options["sign"] = async (tag, tx) => {
             console.log(tag, tx);
-
-            if (tag==="update_ack") {
-                let x = await self.nodeuser.signTransaction(tx);
-                await this.sendMessage({"type":"signed", "signed":x});
-                console.log("exit without signed...")
-                return;
-            }
-
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
                 console.log(JSON.stringify(txData));
@@ -171,18 +163,18 @@ class MyChannel {
                 // if (info["type"]!=="signnsend"){
                 //     console.log("RECV:>", info["type"])
                 // }
-                if (info["type"]==="signnsend") {
-                    console.log("Received!! sending..")+JSON.stringify(tx)
-                    self.nodeuser.signTransaction(info["tx"]).then(
-                        (txx) => {
-                            this.sendMessage({
-                                "type": "signnsend",
-                                "txx": txx,
-                                "tx": info["tx"]
-                            });
-                        }
-                    ).catch(console.error);
-                }
+                // if (info["type"]==="signnsend") {
+                //     console.log("Received!! sending..")+JSON.stringify(tx)
+                //     self.nodeuser.signTransaction(info["tx"]).then(
+                //         (txx) => {
+                //             this.sendMessage({
+                //                 "type": "signnsend",
+                //                 "txx": txx,
+                //                 "tx": info["tx"]
+                //             });
+                //         }
+                //     ).catch(console.error);
+                // }
             //}
         });
         return this.channel;
