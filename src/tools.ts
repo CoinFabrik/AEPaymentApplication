@@ -198,12 +198,19 @@ export async function recover (password, keyObject:any) {
 export function validateKeyObj (obj) {
   const root = ['crypto', 'id', 'version', 'public_key']
   const cryptoKeys = ['cipher_params', 'ciphertext', 'symmetric_alg', 'kdf', 'kdf_params']
-
   const missingRootKeys = root.filter(key => !obj.hasOwnProperty(key))
   if (missingRootKeys.length) throw new Error(`Invalid key file format. Require properties: ${missingRootKeys}`)
-
   const missingCryptoKeys = cryptoKeys.filter(key => !obj['crypto'].hasOwnProperty(key))
   if (missingCryptoKeys.length) throw new Error(`Invalid key file format. Require properties: ${missingCryptoKeys}`)
+  return true;
+}
 
-  return true
+
+export function clone(obj: object): object {
+    if (null == obj || "object" != typeof obj) return obj;
+    let copy = obj.constructor();
+    for (let attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
 }

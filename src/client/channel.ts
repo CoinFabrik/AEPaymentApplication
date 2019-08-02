@@ -77,7 +77,10 @@ export abstract class ServerChannel extends EventEmitter {
         return {address: ServerChannel.pubkey}
     }
 
-    //protected constructor(init_role, public readonly opposite) {
+    async hub_balance() {
+        return (await this.channel.balances([this.address]))[this.address];
+    }
+
     constructor(customer: CClient) {
         super();
         this.client = customer;
@@ -117,7 +120,7 @@ export abstract class ServerChannel extends EventEmitter {
         let options = {
             url: WS_URL + '/channel',
             pushAmount: 3,
-            initiatorAmount: 1000000000000000,
+            initiatorAmount: this.client.amount,
             responderAmount: 1,
             channelReserve: 1,
             ttl: 10000,
@@ -236,6 +239,18 @@ export abstract class ServerChannel extends EventEmitter {
             return null
         }
     }
+
+    async withdraw(amount) {
+        return await this.channel.withdraw(amount, (tx) => {
+            return this.nodeuser.signTransaction(tx);
+        });
+    }
+
+    async deposit(amount) {
+        return await this.channel.deposit(amount, (tx) => {
+            return this.nodeuser.signTransaction(tx);
+        });
+    }
 }
 
 
@@ -244,19 +259,17 @@ export class CustomerChannel extends ServerChannel {
 
     async show_balance() {
         const self = this;
-        let balances = await this.channel.balances([this.address]);
-        console.log("X: ", JSON.stringify(balances))
+        console.log("X: ", JSON.stringify(await this.hub_balance()))
         setTimeout( ()=> {
             self.show_balance();
         }, 3000)
     }
 
     async sendTxRequest(amount) {
-        console.log("from:", this.initiator)
-        console.log("top:", this.address)
         await this.show_balance();
         return await this.update(this.initiator, this.address, amount);
     }
+
 
     // async sign_n_send(tx) {
     //     console.log("1signing: ", tx.toString())
