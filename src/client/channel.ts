@@ -129,8 +129,8 @@ export abstract class ServerChannel extends EventEmitter {
         this.log("opts:" + JSON.stringify(options));
         options["initiatorId"] = this.initiator;
         options["responderId"] = this.responder;
-        this.log("init:" + this.initiator)
-        this.log("resp:" + this.responder)
+        this.log("init:" + this.initiator);
+        this.log("resp:" + this.responder);
         return options;
     }
 
