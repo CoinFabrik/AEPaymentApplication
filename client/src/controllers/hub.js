@@ -4,8 +4,12 @@ import axios from 'axios'
 
 class HubConnection {
   constructor(hubUrl, userAddress) {
+    if (hubUrl === undefined || userAddress === undefined) {
+      throw new Error("Hub constructor cannot have undefined parameters");
+    }
     this.hubUrl = hubUrl;
     this.address = userAddress;
+
   }
 
   handleError(error) {
@@ -20,6 +24,24 @@ class HubConnection {
       return { success: false, request: error.request };
     } else {
       return { success: false, error: error };
+    }
+  }
+
+  async notifyClientOnboarding(amount) {
+    try {
+      await axios.get(this.hubUrl + '/client/' + this.address + '/' + amount);
+      return { success: true };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async notifyMerchantOnboarding(amount, name) {
+    try {
+      await axios.get(this.hubUrl + '/merchant/' + this.address + '/' + amount + '/' + name);
+      return { success: true };
+    } catch (error) {
+      return this.handleError(error);
     }
   }
 

@@ -28,25 +28,25 @@
       -->
       <div v-if="$isClientAppRole">
         <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
-
-        <ae-amount-input
-          placeholder="0.00"
-          v-model="depositInput"
-          :units="[
-            { symbol: 'AE', name: 'æternity' }
-          ]"
-          @input="onAmountInput"
-          v-bind:disabled="isInError || isQueryingBalance"
-        />
-        <div v-if="isQueryingBalance">
-          <AeText>Please wait while Checking your account balance</AeText>
-          <AeLoader />
-        </div>
-        <div v-else>
-          <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
-        </div>
       </div>
     </div>
+    <ae-amount-input
+      placeholder="0.00"
+      v-model="depositInput"
+      :units="[
+            { symbol: 'AE', name: 'æternity' }
+          ]"
+      @input="onAmountInput"
+      v-bind:disabled="isInError || isQueryingBalance"
+    />
+    <div v-if="isQueryingBalance">
+      <AeText>Please wait while Checking your account balance</AeText>
+      <AeLoader />
+    </div>
+    <div v-else>
+      <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
+    </div>
+
     <AeButton
       face="round"
       fill="primary"

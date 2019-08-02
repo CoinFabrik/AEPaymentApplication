@@ -20,6 +20,9 @@ export default new Vuex.Store({
     },
     responderAddress(state) {
       return state.channelParams.responderId;
+    },
+    initiatorAmount(state) {
+      return state.channelParams.initiatorAmount;
     }
   },
   mutations: {
