@@ -9,7 +9,7 @@ const jstools = require('./jstools');
 class Merchant extends MyChannel {
     static async Init(account) {
         let sdata = await MyChannel.register("merchant",
-                        account.publicKey, 1000000000000000, "davejas beer");
+                        account.publicKey, 1000000000000000, "dave's beer");
         console.log("Server at:", sdata["address"])
         return new Merchant(account.publicKey, account.secretKey, true, sdata["address"]);
     }
@@ -51,10 +51,27 @@ class Merchant extends MyChannel {
         console.log("XXX:", customers)
         let customer = customers[0];
         console.log("requesting buy from:", customer)
-        await peer.buyRequest(customer, [{"what":"beer", "quantity": 2}],  5*(10**5));
-        await myjschannel.sleep(15000);
+        await myjschannel.sleep(2000);
+        //await peer.buyRequest(customer, [{"what":"beer", "quantity": 2}],  5*(10**5));
+        //await myjschannel.sleep(10000);
+
+        await peer.update(10);
+        //await peer.update(10);
     } catch (err) {
         console.log(err)
     }
-    //await peer.update(10);
+
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
+    // await peer.update(10);
 })();

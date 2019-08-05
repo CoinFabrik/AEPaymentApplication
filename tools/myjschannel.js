@@ -8,9 +8,10 @@ const BigNumber = require('bignumber.js');
 const jstools = require("./jstools");
 
 const port=3001;
-let URL = jstools.getEnv("NODE", 'localhost:'+port);
+let URL = jstools.getEnv("NODE", '10.10.0.79:'+port);
 console.log("Node> ", URL);
 
+//const HUBADDR = "localhost";
 const HUBADDR = "localhost";
 const HUBPORT = 3000;
 const API_URL = "http://" + URL;
@@ -129,6 +130,7 @@ class MyChannel {
         let options = this.get_options();
 
         options["sign"] = async (tag, tx) => {
+            console.log("XXXXXXXXXXXXXXXXXXXXXXXX")
             console.log(tag, tx);
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
@@ -217,7 +219,9 @@ class MyChannel {
     async update(amount) {
         const self = this;
         try {
+            console.log("sending update..", amount)
             let result = await this.channel.update(this.pubkey, this.oposite, amount, async (tx) => {
+                console.log(" signing update..")
                 return await self.nodeuser.signTransaction(tx);
             });
             return result;
@@ -249,4 +253,4 @@ module.exports = {
     MyChannel,
     get,
     sleep
-}
+};

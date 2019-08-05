@@ -13,7 +13,7 @@ NODE=10.10.0.79:3001 node tx.js from-wallet to-wallet  ammount
 ```
 where:
  - from-wallet: source wallet filename
- - to-wallet: destination wallet filename
+ - to-wallet: destination wallet filename / or simple an ak_... address
  - amount: amount to transfer
 
 a shortcut only valid in `from-wallet` is: `init` which will take data from first standard account.

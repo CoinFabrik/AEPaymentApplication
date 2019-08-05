@@ -47,7 +47,8 @@ async function get_public(name) {
 }
 
 async function get_account(filename, pwd) {
-    let data = fs.readFileSync(filename).toString();
+    let data = fs.
+    readFileSync(filename).toString();
     let pdata = JSON.parse(data);
     let r = await recover(pwd, pdata);
     return {publicKey: pdata["public_key"], secretKey: r}

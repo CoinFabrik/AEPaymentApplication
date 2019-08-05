@@ -53,7 +53,7 @@ function show_balance(address, balance, height) {
 }
 
 
-async function transfer(from_ac, to_ac, amount) {
+async function transfer(from_ac, to_ac_publicKey, amount) {
     let nodeuser = await Universal({
         networkId: NETWORK_ID,
         url: API_URL,
@@ -67,20 +67,20 @@ async function transfer(from_ac, to_ac, amount) {
     show_balance(from_ac.publicKey, balance, height);
 
     try {
-        balance = await nodeuser.balance(to_ac.publicKey);
-        show_balance(to_ac.publicKey, balance, height);
+        balance = await nodeuser.balance(to_ac_publicKey);
+        show_balance(to_ac_publicKey, balance, height);
     } catch (err) {
-        show_balance(to_ac.publicKey, 0, height);
+        show_balance(to_ac_publicKey, 0, height);
     }
 
     await my_readline("last chance to cancel. shall we continue?");
 
-    await nodeuser.spend(amount, to_ac.publicKey);
+    await nodeuser.spend(amount, to_ac_publicKey);
     await sleep(5000);
 
     height = await nodeuser.height();
-    balance = await nodeuser.balance(to_ac.publicKey);
-    show_balance(to_ac.publicKey, balance, height);
+    balance = await nodeuser.balance(to_ac_publicKey);
+    show_balance(to_ac_publicKey, balance, height);
 }
 
 
@@ -88,6 +88,7 @@ async function transfer(from_ac, to_ac, amount) {
 (async function () {
     let _from = process.argv[2];
     let from_ac;
+    let to_ac;
 
     if (_from==="init") {
         from_ac = {
@@ -100,7 +101,13 @@ async function transfer(from_ac, to_ac, amount) {
     }
 
     console.log(" - opening:", process.argv[3]);
-    let to_ac =  await jstools.get_account(process.argv[3], "1234");
+    if (process.argv[3].startsWith("ak_")) {
+        to_ac =  process.argv[3];
+    } else {
+        to_ac =  await jstools.get_account(process.argv[3], "1234");
+        to_ac = to_ac.publicKey;
+    }
+
     console.log(" - amount:", process.argv[4]);
     let amount =  process.argv[4]
     console.log(" - transfer:");
