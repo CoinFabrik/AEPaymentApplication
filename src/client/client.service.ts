@@ -82,8 +82,11 @@ class MerchantCustomer {
         }
     }
 
-    get amount(): string {
-        return this.original_msg["amount"].toString();
+    get amount(): number {
+        return this.original_msg["info"]["amount"];
+    }
+    get amount_str(): string {
+        return this.amount.toString();
     }
 
     base(): object {
@@ -186,23 +189,29 @@ export class Hub extends EventEmitter {
     async wait_payment(mc:MerchantCustomer, update_result, pre_balance) {
         const start = Date.now();
         const timeout = 60*1000;
+        console.log("pre_balance", typeof pre_balance)
+        console.log("mc.original_msg[\"amount\"]", typeof mc.amount)
         while(Date.now() - start < timeout) {
             let last_balance = await mc.cclient.channel.hub_balance();
-            console.log("LAST BALANCE:", pre_balance, last_balance, "to", pre_balance+mc.original_msg["amount"]);
-            if (last_balance>=pre_balance+mc.original_msg["amount"]){
+            console.log("LAST BALANCE:", pre_balance, last_balance, "to",
+                                            pre_balance+mc.amount);
+            if (last_balance>=pre_balance+mc.amount){
                 return
             }
             await sleep(1000);
         }
+        console.log("Wait for balance timedout...");
         throw new PaymentTimeout();
     }
 
     async withdraw_payment(mc:MerchantCustomer) {
-        let { accepted, signedTx } = await mc.cclient.channel.withdraw(mc.amount);
+        let { accepted, signedTx } = await mc.cclient.channel.withdraw(
+                                                Number.parseInt(mc.amount_str));
         if (!accepted) {
             throw new Error("cannot remove "+(mc.amount)+ " for merchant: "+mc.merchant);
         }
-        let { d_accepted, state } = await mc.mclient.channel.deposit(mc.amount);
+        let { d_accepted, state } = await mc.mclient.channel.deposit(
+                                                Number.parseInt(mc.amount_str));
         if (!d_accepted) {
             throw new Error("cannot deposit into merchant: "+mc.merchant);
         }

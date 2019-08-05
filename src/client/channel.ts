@@ -119,11 +119,11 @@ export abstract class ServerChannel extends EventEmitter {
     get_options() {
         let options = {
             url: WS_URL + '/channel',
-            pushAmount: 3,
+            pushAmount: 0,
             initiatorAmount: this.client.amount,
             responderAmount: 1,
             channelReserve: 1,
-            ttl: 10000,
+            ttl: 1000,
             host: "localhost",
             port: 3001,
             lockPeriod: 1,
@@ -138,6 +138,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     initChannel(s: ServiceBase) {
+        console.log(111)
         this.setService(s);
         this._initChannel().then(console.log).catch(console.error);
     }
@@ -145,8 +146,11 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         let options = this.get_options();
 
+        let balance = await this.nodeuser.balance(this.responder);
+        console.log(" iaddr: ", this.responder, " balance: ", balance);
+
         options["sign"] = async (tag, tx) => {
-            this.log("tag: " + tag + (tx.toString()));
+            this.log("tag: " + tag + " " +(tx.toString()));
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), {prettyTags: true})
                 console.log(JSON.stringify(txData));
@@ -164,21 +168,15 @@ export abstract class ServerChannel extends EventEmitter {
         this.channel.on('statusChanged', (status) => {
             self.onStatusChange(status.toUpperCase());
         });
+        this.channel.on('error', (errir) => {
+            console.log("ERRRORRRRR::::")
+            console.log(errir)
+        });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
-            try {
-                let info = JSON.parse(msg["info"]);
-                if(info["type"]=="signnsend") {
-                    this.emit("signnsend", info)
-                }
-            } catch (err) {}
-        });
-        this.channel.on('signnsend', (info) => {
-            if(this.my_pending==null) {
-                this.my_pending = info;
-            }
         });
         await this.wait_state("OPEN");
+        console.log("AFTER OPEN!!!")
         return this.channel;
     }
 
@@ -228,6 +226,7 @@ export abstract class ServerChannel extends EventEmitter {
     async update(_from, _to, amount) {
         const self = this;
         try {
+            console.log("update:", amount, typeof amount)
             let result = await this.channel.update(_from, _to, amount, async (tx) => {
                 console.log("signing: ", tx.toString())
                 return await self.nodeuser.signTransaction(tx);
@@ -242,12 +241,14 @@ export abstract class ServerChannel extends EventEmitter {
 
     async withdraw(amount) {
         return await this.channel.withdraw(amount, (tx) => {
+            console.log("withdraw sign:", tx)
             return this.nodeuser.signTransaction(tx);
         });
     }
 
     async deposit(amount) {
         return await this.channel.deposit(amount, (tx) => {
+            console.log("deposit sign:", tx)
             return this.nodeuser.signTransaction(tx);
         });
     }
@@ -257,16 +258,7 @@ export abstract class ServerChannel extends EventEmitter {
 export class CustomerChannel extends ServerChannel {
     readonly Name: Actor = "customer";
 
-    async show_balance() {
-        const self = this;
-        console.log("X: ", JSON.stringify(await this.hub_balance()))
-        setTimeout( ()=> {
-            self.show_balance();
-        }, 3000)
-    }
-
     async sendTxRequest(amount) {
-        await this.show_balance();
         return await this.update(this.initiator, this.address, amount);
     }
 

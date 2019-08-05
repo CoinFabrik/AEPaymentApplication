@@ -52,7 +52,7 @@ class Merchant extends MyChannel {
         let customer = customers[0];
         console.log("requesting buy from:", customer)
         await myjschannel.sleep(2000);
-        //await peer.buyRequest(customer, [{"what":"beer", "quantity": 2}],  5*(10**5));
+        await peer.buyRequest(customer, [{"what":"beer", "quantity": 2}],  5*(10**5));
         //await myjschannel.sleep(10000);
 
         await peer.update(10);

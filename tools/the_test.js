@@ -39,7 +39,7 @@ async function createAccounts() {
 }
 
 async function initiatorSign(tag, tx) {
-    console.log("sign:", tag, tx)
+    console.log("isign:", tag, tx)
     if (tag === 'initiator_sign') {
         return initiatorAccount.signTransaction(tx)
     }
@@ -62,7 +62,7 @@ async function initiatorSign(tag, tx) {
 }
 
 async function responderSign(tag, tx, {updates} = {}) {
-    console.log("sign:", tag, tx)
+    console.log("rsign:", tag, tx)
     if (tag === 'responder_sign') {
         return responderAccount.signTransaction(tx)
     }

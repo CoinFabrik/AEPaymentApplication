@@ -83,11 +83,11 @@ class MyChannel {
     get_options() {
         let options = {
             url:  WS_URL+'/channel',
-            pushAmount: 3,
+            pushAmount: 0,
             initiatorAmount: INITIATOR_MIN_BALANCE,
             responderAmount: 1,
             channelReserve: 1,
-            ttl: 10000,
+            ttl: 1000,
             // host: "localhost",
             host: "localhost", //"10.10.0.79",
             port: 3001,
