@@ -4,7 +4,6 @@
 const {
   Aepp,
   Channel,
-  Crypto,
   Universal
 } = require('@aeternity/aepp-sdk');
 
@@ -158,12 +157,22 @@ aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
   return channel.withdraw(amount, async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
 }
 
-aeternity.closeChannel = async function (channel, onChainTxCallback) {
-  return channel.shutdown(async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+aeternity.closeChannel = async function (channel, onChainTxCallback, onDepositCallback) {
+  return channel.shutdown(async (tx) => aeternity.client.signTransaction(tx), {
+    onOnChainTx: onChainTxCallback,
+    onDepositCallbackLocked: onDepositCallback
+  });
 }
 
-aeternity.getTxInfo = async function (tx) {
-  return aeternity.client.getTxInfo(tx);
+aeternity.getTxConfirmations = async function (tx) {
+  const txData = await aeternity.client.tx(tx);
+  const txHeight = txData.blockHeight;
+  if (txHeight > 0) {
+    const chainHeight = await aeternity.client.height();
+    return chainHeight - txHeight;
+  }
+
+  return 0;
 }
 
 
