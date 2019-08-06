@@ -4,7 +4,7 @@
     <AeText
       face="sans-s"
     >This name will appear in your customers display when they buy your products</AeText>
-    <AeInput @input="onNameInput" placeholder="Your personal or business identity name"></AeInput>
+    <AeInput ref="inputName" @input="onNameInput" placeholder="Your personal or business identity name"></AeInput>
 
     <AeButton face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
   </div>
@@ -35,6 +35,7 @@ export default {
   },
   methods: {
     confirm() {
+      this.$store.commit("setMerchantName", this.nameInput);
       this.$router.replace({
         name: "deposit",
         params: {
@@ -45,6 +46,9 @@ export default {
     onNameInput(v) {
       this.nameInput = v;
     }
+  },
+  mounted () {
+  //  this.$nextTick(() => this.$refs.inputName.focus())
   }
 };
 </script>

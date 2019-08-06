@@ -96,11 +96,9 @@ export default {
       if (this.$isClientAppRole) {
         return hub.notifyClientOnboarding(this.$store.getters.initiatorAmount);
       } else if (this.$isMerchantAppRole) {
-        // check this.
-
-        return hub.notifyClientOnboarding(
+        return hub.notifyMerchantOnboarding(
           this.$store.getters.initiatorAmount,
-          this.$store.state.registeredName
+          this.$store.state.merchantName
         );
       } else {
         throw new Error("Unknown application role!");

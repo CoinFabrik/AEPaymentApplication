@@ -39,20 +39,22 @@ export default {
         // Decode message
 
         const infoObj = JSON.parse(msg.info);
-        if (infoObj.kind === "request_payment") {
-          this.showRequestPaymentModal(infoObj.amount, infoObj.seller).then(
-            () => {
-              setTimeout(this.checkMessageQueue, POLL_INTERVAL_MS);
-              return;
-            }
-          );
-        } else if (infoObj.kind === "keep-alive") {
+        if (infoObj.type === "heartbeat") {
           console.warn("Keep-alive message received in channel");
           this.$store.state.channel.sendMessage(
-            "keep-alive-ack",
+            "heartbeat-ack",
             this.$store.getters.responderAddress
           );
-        } else {
+        }
+        // if (infoObj.kind === "request_payment") {
+        //   this.showRequestPaymentModal(infoObj.amount, infoObj.seller).then(
+        //     () => {
+        //       setTimeout(this.checkMessageQueue, POLL_INTERVAL_MS);
+        //       return;
+        //     }
+        //   );
+        // } else if (infoObj.kind === "keep-alive") {
+        else {
           console.warn("An unknown message was present in queue");
         }
       }

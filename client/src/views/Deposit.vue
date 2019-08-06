@@ -30,7 +30,9 @@
         <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
       </div>
     </div>
+
     <ae-amount-input
+      v-show="$isClientAppRole"
       placeholder="0.00"
       v-model="depositInput"
       :units="[
@@ -44,7 +46,10 @@
       <AeLoader />
     </div>
     <div v-else>
-      <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
+      <AeText
+        face="sans-xs"
+        v-show="$isClientAppRole"
+      >Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
     </div>
 
     <AeButton

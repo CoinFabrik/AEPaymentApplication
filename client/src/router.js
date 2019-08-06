@@ -13,6 +13,7 @@ import ChannelOpen from './views/ChannelOpen.vue'
 import ChannelClose from './views/ChannelClose.vue'
 import RegisterMerchant from './views/RegisterMerchant.vue'
 import Withdraw from './views/Withdraw.vue'
+import ShutdownDone from './views/ShutdownDone.vue'
 
 Vue.use(Router)
 
@@ -67,6 +68,11 @@ export default new Router({
       name: 'success',
       component: Success,
       props: true
+    },
+    {
+      path: '/shutdowndone',
+      name: 'shutdowndone',
+      component: ShutdownDone
     },
     {
       path: '/error',

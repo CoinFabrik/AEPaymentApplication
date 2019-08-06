@@ -8,8 +8,9 @@
 </template>
 
 <script>
-const WAIT_BLOCKS = process.env.VUE_APP_MINIMUM_DEPTH;
-const POLL_TIME_MSEC = 500;
+/* eslint-disable no-console */
+const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
+const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
   STATUS_PREPARING_TX = 1,
   STATUS_WAITING = 2,
@@ -21,7 +22,7 @@ import { AeText, AeLoader } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
 import { setInterval, setTimeout } from "timers";
-import { Crypto, TxBuilderHelper } from "@aeternity/aepp-sdk";
+import { Crypto, TxBuilder } from "@aeternity/aepp-sdk";
 
 export default {
   name: "CommitAndWaitTx",
@@ -38,33 +39,51 @@ export default {
       elapsedBlocks: 0,
       viewStatus: STATUS_INITIALIZED,
       errorText: null,
-      transaction: null
+      transaction: null,
+      transactionHash: null
     };
   },
   watch: {},
   computed: {
     confirmPercent: function() {
-      return 100.0 * (this.elapsedBlocks / WAIT_BLOCKS);
+      return Math.round(Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100));
     }
   },
   methods: {
     async trackTxProgress() {
-      if (this.transaction != null) {
-        const txHash = TxBuilderHelper.encode(
-          Crypto.hash(this.transaction),
-          "th"
+      if (this.transaction != null && this.transactionHash == null) {
+        this.transactionHash = TxBuilder.buildTxHash(this.transaction);
+        console.log("Obtained TX Hash: ", this.transactionHash);
+      }
+
+      try {
+        this.elapsedBlocks = await this.$store.state.aeternity.getTxConfirmations(
+          this.transactionHash
         );
-        console.log(txHash);
-        try {
-          const txinfo = await this.$store.state.aeternity.getTxInfo(txHash);
-          console.log(txinfo);
-          this.elapsedBlocks = txInfo.block_number;
+        console.log("Elapsed TX blocks: " + this.elapsedBlocks);
+        if (this.elapsedBlocks == WAIT_BLOCKS + 1) {
+          // Wait +1 block  to show 100% for a moment on screen ... ;)
+          await this.$store.dispatch("resetState");
+          this.$router.replace("ShutdownDone");
+        } else {
           setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
-        } catch (e) {
-          console.error(e);
         }
+      } catch (e) {
+        this.setError(e);
       }
     },
+    setError(e) {
+      this.$router.replace({
+        name: "error",
+        params: {
+          errorTitle: "Sorry. We could not submit your transaction",
+          errorDescription: "Reason is: " + e.toString(),
+          onDismissNavTo: { name: "MainMenu" }
+        },
+        retryCancel: false
+      });
+    },
+
     setStatusTrackProgress(tx) {
       this.transaction = tx;
       this.viewStatus = STATUS_TRACK_TX_PROGRESS;
@@ -78,15 +97,19 @@ export default {
             console.log("Committing DEPOSIT transaction ... ");
             try {
               let tx;
-              let accepted = await this.$store.state.aeternity.deposit(
+              let r = await this.$store.state.aeternity.deposit(
                 this.$store.state.channel,
                 parseInt(this.txParams.amountAettos), // HORRIBLE CONVERSION
                 async function(tx) {
                   console.log("posted deposit Onchain TX: ", tx);
-                  this.setStatusTrackProgress(tx);
+                  //this.setStatusTrackProgress(tx);
+                },
+                async function() {
+                  console.log("Deposit locked");
+                  //this.setStatusTrackProgress(tx);
                 }
               );
-              if (accepted) {
+              if (r.accepted) {
                 console.log("Accepted deposit");
               } else {
                 throw new Error("Deposit transaction has been rejected");
@@ -131,13 +154,17 @@ export default {
               console.log("posted deposit Onchain TX: ", tx);
               this.setStatusTrackProgress(tx);
             } catch (error) {
-              console.error(error);
+              this.setError(error);
             }
           }
           break;
 
         default: {
-          alert("unknown tx kind");
+          this.setError(
+            new Error(
+              "Unknown Transaction Kind provided. This is a fatal error."
+            )
+          );
         }
       }
     }
@@ -147,17 +174,8 @@ export default {
       await this.commitTransaction();
       //setInterval(trackTxProgress, POLL_TIME_MSEC);
     } catch (e) {
-      setError(e);
+      this.setError(e);
     }
-
-    // Prepare transaction
-
-    // setInterval(() => {
-    //   this.elapsedBlocks++;
-    //   if (this.elapsedBlocks == WAIT_BLOCKS) {
-    //     this.$router.push({ name: "success", params: { txKind: this.txKind } });
-    //   }
-    // }, POLL_TIME_MSEC);
   }
 };
 </script>

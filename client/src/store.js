@@ -12,7 +12,8 @@ export default new Vuex.Store({
     channel: null,
     initiatorBalance: null,
     responderBalance: null,
-    hubUrl: null
+    hubUrl: null,
+    merchantName: null
   },
   getters: {
     initiatorAddress(state) {
@@ -41,6 +42,9 @@ export default new Vuex.Store({
     setInitialDeposit(state, amount) {
       state.channelParams.initiatorAmount = amount;
     },
+    setMerchantName(state, name) {
+      state.merchantName = name;
+    },
     setChannel(state, channel) {
       state.channel = channel;
     },
@@ -52,6 +56,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    resetState({ commit }) {
+      commit('setInitialDeposit', null);
+      commit('setMerchantName', null);
+      commit('setChannel', null);
+      commit('updateBalance', 0);
+      commit('updateInitiatorBalance', null);
+      commit('updateResponderBalance', null);
+    },
     updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(
         function (balance) {
