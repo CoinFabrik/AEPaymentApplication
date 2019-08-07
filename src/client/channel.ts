@@ -9,7 +9,8 @@ const NETWORK_ID = 'ae_devnet';
 const {
     Channel,
     Crypto,
-    Universal
+    Universal,
+    TxBuilder: {unpackTx}
 } = require('@aeternity/aepp-sdk');
 
 const port = 3001;
@@ -167,12 +168,15 @@ export abstract class ServerChannel extends EventEmitter {
         options["sign"] = async (tag, tx) => {
             this.log("tag: " + tag + " " +(tx.toString()));
             try {
-                const txData = Crypto.deserialize(Crypto.decodeTx(tx), {prettyTags: true})
+                const {txType, tx: txData} = unpackTx(tx)
+                //const txData = Crypto.deserialize(Crypto.decodeTx(tx), {prettyTags: true})
                 console.log(JSON.stringify(txData));
             } catch (err) {
                 //console.log(err);
             }
             if (tag === "shutdown_sign_ack") {
+                const {txType, tx: txData} = unpackTx(tx)
+                //BigNumber(txData.responderAmountFinal).plus(fee).eq(BigNumber(DEPOSIT).plus(10))
                 this.log("TX (shutdown): " + (tx.toString()))
             }
             return await self.nodeuser.signTransaction(tx)

@@ -69,7 +69,7 @@ class MyChannel {
         this.pubkey = pubkey;
         this.privkey = privkey;
         this.is_initiator = init_role;
-        this.oposite = oposite_pub;
+        this.opposite = oposite_pub;
     }
 
     get initiator() {
@@ -115,7 +115,7 @@ class MyChannel {
         const self = this;
         let options = this.get_options();
         if (this.is_initiator) {
-            //let spent = await this.nodeuser.spend('6000000000000000', this.oposite);
+            //let spent = await this.nodeuser.spend('6000000000000000', this.opposite);
             //console.log("SPENT:", spent.tx.amount);
         }
 

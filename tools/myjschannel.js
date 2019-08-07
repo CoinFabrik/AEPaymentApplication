@@ -61,20 +61,20 @@ class MyChannel {
         }
     }
 
-    constructor(pubkey, privkey, init_role, oposite_pub) {
+    constructor(pubkey, privkey, init_role, opposite_addr) {
         this.nodeuser = undefined;
         this.pubkey = pubkey;
         this.privkey = privkey;
         this.is_initiator = init_role;
-        this.oposite = oposite_pub;
+        this.opposite = opposite_addr;
         this.STATUS = "";
     }
 
     get initiator() {
-        return this.is_initiator? this.pubkey:this.oposite;
+        return this.is_initiator? this.pubkey:this.opposite;
     }
     get responder() {
-        return this.is_initiator? this.oposite:this.pubkey;
+        return this.is_initiator? this.opposite:this.pubkey;
     }
     get role() {
         return this.is_initiator? "initiator" : "responder";
@@ -112,7 +112,7 @@ class MyChannel {
         });
 
         let balance = await this.nodeuser.balance(this.pubkey);
-        console.log(" iaddr: ", this.pubkey, " balance: ", balance);
+        console.log(" we: ", this.pubkey, " balance: ", balance);
         let bal = new BigNumber(balance);
         if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
             console.log("less balance than expected!");
@@ -130,7 +130,6 @@ class MyChannel {
         let options = this.get_options();
 
         options["sign"] = async (tag, tx) => {
-            console.log("XXXXXXXXXXXXXXXXXXXXXXXX")
             console.log(tag, tx);
             try {
                 const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
@@ -158,13 +157,10 @@ class MyChannel {
         });
 
         this.channel.on('message', (msg) => {
-            console.log("RECV:>", msg)
-            let info = JSON.parse(msg["info"]);
-            // if (info["type"]!=="heartbeat"){
-                //console.log("RECV:>", info["type"])
-                // if (info["type"]!=="signnsend"){
-                //     console.log("RECV:>", info["type"])
-                // }
+            try {
+                let info = JSON.parse(msg["info"]);
+                if (info["type"]==="heartbeat") return;
+                console.log("RECV:>", msg)
                 // if (info["type"]==="signnsend") {
                 //     console.log("Received!! sending..")+JSON.stringify(tx)
                 //     self.nodeuser.signTransaction(info["tx"]).then(
@@ -177,7 +173,9 @@ class MyChannel {
                 //         }
                 //     ).catch(console.error);
                 // }
-            //}
+            } catch(err) {
+                console.log("cant parse info")
+            }
         });
         return this.channel;
     }
@@ -194,7 +192,7 @@ class MyChannel {
     }
 
     async sendMessage(message) {
-        return await this.channel.sendMessage(message, this.oposite);
+        return await this.channel.sendMessage(message, this.opposite);
     }
 
     async shutdown() {
@@ -220,7 +218,7 @@ class MyChannel {
         const self = this;
         try {
             console.log("sending update..", amount)
-            let result = await this.channel.update(this.pubkey, this.oposite, amount, async (tx) => {
+            let result = await this.channel.update(this.pubkey, this.opposite, amount, async (tx) => {
                 console.log(" signing update..")
                 return await self.nodeuser.signTransaction(tx);
             });
