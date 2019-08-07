@@ -11,7 +11,6 @@ const port=3001;
 let URL = jstools.getEnv("NODE", '10.10.0.79:'+port);
 console.log("Node> ", URL);
 
-//const HUBADDR = "localhost";
 const HUBADDR = "localhost";
 const HUBPORT = 3000;
 const API_URL = "http://" + URL;
