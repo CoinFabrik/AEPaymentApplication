@@ -1,4 +1,5 @@
 import { validateAddress } from '../util/validators.js'
+import BigNumber from 'bignumber.js';
 
 export function makeBuyMessage(price, items, customer) {
     if (price <= 0 || !price) {
@@ -17,8 +18,12 @@ export function makeBuyMessage(price, items, customer) {
         throw Error("Customer address is not valid");
     }
 
+    // Convert price to aettos
+
+    // TODO: new BigNumber(price).multipliedBy(10**18);
+
     return {
-        "amount": price,
+        "amount": price * (10**18),
         "something": items,
         "toId": customer,
         "type": "buy-request",
