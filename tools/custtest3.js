@@ -18,9 +18,10 @@ class Customer extends MyChannel {
 
     async showBalances(msg) {
         console.log(`*** ${msg} ***`)
-        await this.showBalance(" we ", this.pubkey);
-        await this.showBalance("them", this.opposite);
+        let cus = await this.showBalance("cus", this.pubkey);
+        let opp = await this.showBalance("hub", this.opposite);
         console.log("------------------")
+        return {customer: cus, hub: opp}
     }
 
     async showBalance(msg, addr) {
@@ -39,9 +40,16 @@ class Customer extends MyChannel {
         console.log(`${msg}  on chain  ${chain}`);
         console.log(`${msg}  on sc     ${channel}`);
         console.log(`${msg}  total:    ${total}`);
+        return {chain: new BigNumber(chain), channel: new BigNumber(channel), total: new BigNumber(total)};
     }
 }
 
+function showDiff(init, final) {
+    console.log( "customer: \t \t \t hub:");
+    let cusdif = final.customer.total.minus(init.customer.total);
+    let hubdif = final.hub.total.minus(init.hub.total);
+    console.log( `${cusdif.toString(10)} \t \t \t ${hubdif.toString(10)}`);
+}
 
 (async function () {
     let account = await jstools.get_account(
@@ -54,7 +62,7 @@ class Customer extends MyChannel {
     if (peer==null)
         return;
     await peer.init();
-    await peer.showBalances("init");
+    let initial = await peer.showBalances("init");
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
@@ -65,8 +73,10 @@ class Customer extends MyChannel {
     await myjschannel.sleep(5*1000);
     await peer.shutdown();
     await peer.wait_state("DISCONNECTED");
-    await myjschannel.sleep(5*1000);
-    await peer.showBalances("final");
+    await myjschannel.sleep(15*1000);
+    let final = await peer.showBalances("final");
+
+    showDiff(initial, final);
     process.exit(0);
     //h = await peer.height();
     //console.log("height:", h, "Balance:", await peer.balance({height: h}));
