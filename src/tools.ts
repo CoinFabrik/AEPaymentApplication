@@ -214,3 +214,13 @@ export function clone(obj: object): object {
     }
     return copy;
 }
+
+export function array_rm(lst: any[], x: any): void {
+    let idx = lst.indexOf(x);
+    while (idx >= 0) {
+        lst.splice(idx, 1);
+        idx = lst.indexOf(x);
+    }
+}
+
+export const voidf = () => {}

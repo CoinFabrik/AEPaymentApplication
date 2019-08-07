@@ -1,9 +1,8 @@
 import {Hub, ServiceBase} from "./client.service";
 import {Actor, AE, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
-import {Account, get_account, getEnv, sleep, wait_for} from "../tools";
+import {Account, get_account, getEnv, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
-import {AppController} from "../app.controller";
 
 
 const NETWORK_ID = 'ae_devnet';
@@ -63,22 +62,53 @@ export abstract class ServerChannel extends EventEmitter {
                 compilerUrl: compilerURL
             });
         }
+
+        let balance = await this.nodeuser.balance(ServerChannel.pubkey);
+        this.xlogger.log(`Server: ${this.responder} balance: ${balance}`);
     }
 
-    get nodeuser() {
+    static get nodeuser() {
         return ServerChannel._nodeuser;
     }
 
-    get address() {
+    static get address() {
         return ServerChannel.pubkey;
     }
 
     static GetInfo() {
-        return {address: ServerChannel.pubkey}
+        return {address: this.address}
+    }
+
+    static get responder() {
+        return this.address;
+    }
+
+    static get role(): "responder"|"initiator" {
+        return "responder";
+    }
+
+    get responder() {
+        return ServerChannel.responder;
+    }
+
+    get role() {
+        return ServerChannel.role;
+    }
+
+    get nodeuser() {
+        return ServerChannel.nodeuser;
+    }
+
+    get address() {
+        return ServerChannel.address;
     }
 
     async hub_balance() {
         return (await this.channel.balances([this.address]))[this.address];
+    }
+
+    get hub(): Hub {
+        return Hub.Get();
     }
 
     constructor(customer: CClient) {
@@ -100,20 +130,8 @@ export abstract class ServerChannel extends EventEmitter {
         });
     }
 
-    get hub(): Hub {
-        return Hub.Get();
-    }
-
     get initiator() {
-        return this.is_initiator ? ServerChannel.pubkey : this.opposite;
-    }
-
-    get responder() {
-        return this.is_initiator ? this.opposite : ServerChannel.pubkey;
-    }
-
-    get role() {
-        return this.is_initiator ? "initiator" : "responder";
+        return this.opposite;
     }
 
     get_options() {
@@ -130,24 +148,21 @@ export abstract class ServerChannel extends EventEmitter {
             role: this.role,
         };
         this.log("opts:" + JSON.stringify(options));
-        options["initiatorId"] = this.initiator;
-        options["responderId"] = this.responder;
         this.log("init:" + this.initiator);
         this.log("resp:" + this.responder);
+        options["initiatorId"] = this.initiator;
+        options["responderId"] = this.responder;
         return options;
     }
 
     initChannel(s: ServiceBase) {
-        console.log(111)
         this.setService(s);
-        this._initChannel().then(console.log).catch(console.error);
+        this._initChannel().then(voidf).catch(console.error);
     }
+
     async _initChannel() {
         const self = this;
         let options = this.get_options();
-
-        let balance = await this.nodeuser.balance(this.responder);
-        console.log(" iaddr: ", this.responder, " balance: ", balance);
 
         options["sign"] = async (tag, tx) => {
             this.log("tag: " + tag + " " +(tx.toString()));
@@ -160,7 +175,6 @@ export abstract class ServerChannel extends EventEmitter {
             if (tag === "shutdown_sign_ack") {
                 this.log("TX (shutdown): " + (tx.toString()))
             }
-            //console.log("Sign...")
             return await self.nodeuser.signTransaction(tx)
         };
 
@@ -176,7 +190,6 @@ export abstract class ServerChannel extends EventEmitter {
             this.emit("message", msg);
         });
         await this.wait_state("OPEN");
-        console.log("AFTER OPEN!!!")
         return this.channel;
     }
 
@@ -226,7 +239,6 @@ export abstract class ServerChannel extends EventEmitter {
     async update(_from, _to, amount) {
         const self = this;
         try {
-            console.log("update:", amount, typeof amount)
             let result = await this.channel.update(_from, _to, amount, async (tx) => {
                 console.log("signing: ", tx.toString())
                 return await self.nodeuser.signTransaction(tx);
@@ -241,14 +253,14 @@ export abstract class ServerChannel extends EventEmitter {
 
     async withdraw(amount) {
         return await this.channel.withdraw(amount, (tx) => {
-            console.log("withdraw sign:", tx)
+            this.log(`withdraw sign: ${tx}`);
             return this.nodeuser.signTransaction(tx);
         });
     }
 
     async deposit(amount) {
         return await this.channel.deposit(amount, (tx) => {
-            console.log("deposit sign:", tx)
+            this.log(`deposit sign: ${tx}`);
             return this.nodeuser.signTransaction(tx);
         });
     }
@@ -261,7 +273,6 @@ export class CustomerChannel extends ServerChannel {
     async sendTxRequest(amount) {
         return await this.update(this.initiator, this.address, amount);
     }
-
 
     // async sign_n_send(tx) {
     //     console.log("1signing: ", tx.toString())
@@ -296,5 +307,4 @@ const info = "info";
 
 export class MerchantChannel extends ServerChannel {
     readonly Name: Actor = "merchant";
-
 }

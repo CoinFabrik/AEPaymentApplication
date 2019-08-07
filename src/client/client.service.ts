@@ -1,8 +1,18 @@
 import {Injectable, Logger} from '@nestjs/common';
-import {Actor, CClient} from "./client.entity";
-import {ACCOUNT, CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
+import {
+    Actor,
+    CClient,
+    InvalidCustomer,
+    InvalidMerchant,
+    MerchantCustomerAccepted,
+    PaymentTimeout
+} from "./client.entity";
+import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
-import {clone, sleep} from "../tools";
+import {array_rm, clone, sleep, voidf} from "../tools";
+import {getRepository, Repository} from "typeorm";
+import {InjectRepository} from "@nestjs/typeorm";
+import BigNumber from "bignumber.js";
 
 
 class Guid {
@@ -16,51 +26,62 @@ class Guid {
 }
 
 
+// @Injectable()
+// export class MerchantCustomerService {
+//   constructor(
+//     @InjectRepository(MerchantCustomerAccepted)
+//     private readonly repo: Repository<MerchantCustomerAccepted>,
+//   ) {}
+//
+//   async save(m: MerchantCustomerAccepted): Promise<boolean> {
+//       let idx = 0;
+//       while(idx<100) {
+//           try {
+//               await this.repo.save(m);
+//               return true;
+//           } catch (err) {
+//               idx += 1;
+//           }
+//       }
+//       return false;
+//   }
+// }
 
-class ChannelServer extends EventEmitter {
-    private c: CClient;
+export class RepoService {
+  static async save(m: MerchantCustomerAccepted): Promise<boolean> {
+      let repo = getRepository(MerchantCustomerAccepted);
+      let idx = 0;
+      while(idx<100) {
+          try {
+              await repo.save(m);
+              return true;
+          } catch (err) {
+              idx += 1;
+          }
+      }
+      return false;
+  }
 
-    get pub(): string {
-        return this.c.address;
-    }
+  static async MerchantBalance(merchant: string): Promise<BigNumber> {
+      let repo = getRepository(MerchantCustomerAccepted);
+      let all = await repo.find({merchant:merchant});
+      let sum = new BigNumber("0");
+      for (let mca of all) {
+          sum = sum.plus(new BigNumber(mca.amount));
+      }
+      return sum;
+  }
 
-    constructor(private name: string, private service: ServiceBase) {
-        super();
-        this.init().then(() => {
-            this.on("customer-connection", (client) => {
-                let peer = new CustomerChannel(client);
-                this.emit("connect", peer);
-            });
-            this.on("merchant-connection", (client) => {
-                let peer = new MerchantChannel(client);
-                this.emit("connect", peer);
-            });
-            this.on("connect", (peer) => {
-                peer.initChannel(this.service)
-            });
+  static async AllMerchants(): Promise<string[]> {
+      let repo = getRepository(MerchantCustomerAccepted);
+      return repo.createQueryBuilder("merchants").select("DISTINCT(merchant)").getRawMany();
+  }
 
-        }).catch(console.error);
-    }
-
-    async init() {
-        this.c = await CClient.FromFile(this.name);
-        return "ChannelServer ready!"
-    }
+  static async AllCustomers(): Promise<string[]> {
+      let repo = getRepository(MerchantCustomerAccepted);
+      return repo.createQueryBuilder("customers").select("DISTINCT(customer)").getRawMany();
+  }
 }
-
-
-class InvalidRequest extends Error {
-}
-
-class InvalidMerchant extends InvalidRequest{
-}
-
-class InvalidCustomer extends InvalidRequest{
-}
-
-class PaymentTimeout extends Error {}
-
-const voidf = () => {}
 
 class MerchantCustomer {
     readonly id: string;
@@ -80,6 +101,12 @@ class MerchantCustomer {
             "amount": this.original_msg["info"]["amount"],
             "something": this.original_msg["info"]["something"],
         }
+    }
+
+    getEntity(): MerchantCustomerAccepted {
+        return MerchantCustomerAccepted.Create(this.merchant, this.customer,
+            this.id, this.amount.toString(),  // XXX
+            this.original_msg["info"]["something"]);
     }
 
     get amount(): number {
@@ -189,18 +216,17 @@ export class Hub extends EventEmitter {
     async wait_payment(mc:MerchantCustomer, update_result, pre_balance) {
         const start = Date.now();
         const timeout = 60*1000;
-        console.log("pre_balance", typeof pre_balance)
-        console.log("mc.original_msg[\"amount\"]", typeof mc.amount)
         while(Date.now() - start < timeout) {
             let last_balance = await mc.cclient.channel.hub_balance();
-            console.log("LAST BALANCE:", pre_balance, last_balance, "to",
-                                            pre_balance+mc.amount);
+            this.log(`check balance..: ${pre_balance} ${last_balance} to  ${pre_balance+mc.amount}..`);
             if (last_balance>=pre_balance+mc.amount){
+                const mca = mc.getEntity();
+                await RepoService.save(mca);
                 return
             }
             await sleep(1000);
         }
-        console.log("Wait for balance timedout...");
+        this.log("Wait for balance timed out...");
         throw new PaymentTimeout();
     }
 
@@ -218,10 +244,6 @@ export class Hub extends EventEmitter {
     }
 
     private setup() {
-        this.on("signed", (msg)=> {
-            this.log("signed:"+  JSON.stringify(msg));
-        });
-
         this.on("buy-request", (msg)=> {
             this.buy_request(msg).then(voidf).catch(console.error);
         });
@@ -234,7 +256,7 @@ export class Hub extends EventEmitter {
 
         this.on("payment-done", (mc)=> {
             mc.sendMerchant(mc.msgPaymentAccepted());
-            this.withdraw_payment(mc).then(voidf).catch(console.error)
+            //this.withdraw_payment(mc).then(voidf).catch(console.error)
         });
         this.on("payment-failed", (mc)=> {
             mc.sendMerchant(mc.msgPaymentRejected());
@@ -245,7 +267,7 @@ export class Hub extends EventEmitter {
     async buy_request(msg) {
         let mc;
         let response;
-        console.log("buy-request: " + (JSON.stringify(msg)));
+        this.log("buy-request: " + (JSON.stringify(msg)));
         try {
             mc = MerchantCustomer.FromMerchantRequest(msg);
             // after this request was approved
@@ -270,21 +292,23 @@ export class Hub extends EventEmitter {
 }
 
 
-function array_rm(lst: any[], x: any): void {
-    let idx = lst.indexOf(x);
-    while (idx >= 0) {
-        lst.splice(idx, 1);
-        idx = lst.indexOf(x);
-    }
-}
-
-
-export class ServiceBase {
+export class ServiceBase extends EventEmitter {
     static clients: { "customer": CClient[], "merchant": CClient[] } = {
-        "customer":[],
-        "merchant":[],
-    };
+        "customer":[], "merchant":[] };
+    static getClients(kind: Actor): CClient[] {
+        return ServiceBase.getClients(kind);
+    }
+    getClientByAddress(address:string, kind: Actor): CClient {
+        return ServiceBase.getClientByAddress(address, kind);
+    }
+    addClient(c: CClient, kind: Actor): void {
+        return ServiceBase.addClient(c, kind);
+    }
+    rmClient(c: CClient, kind: Actor): void {
+        return ServiceBase.rmClient(c, kind);
+    }
 
+    //--------------------------------------------
     getClients(kind: Actor): CClient[] {
         return ServiceBase.clients[kind];
     }
@@ -307,28 +331,35 @@ export class ServiceBase {
 }
 
 
+
 @Injectable()
 export class ClientService extends ServiceBase {
-    static m: ChannelServer;
-
     onModuleInit() {
         Hub.Create(this);
-        this.asyncModuleInit().then(() => {
-            ClientService.m = new ChannelServer(ACCOUNT, this);
-            console.log(`The module has been initialized.`);
-        }).catch(console.error);
-    }
-
-    async asyncModuleInit() {
-        await ServerChannel.Init();
+        ServerChannel.Init()
+            .then(voidf).catch(console.error);
     }
 
     connect(toClient: CClient, clientType: Actor): object {
-        ClientService.m.emit(clientType + "-connection", toClient);
+        this.emit(clientType + "-connection", toClient);
         return ServerChannel.GetInfo();
+    }
+
+    constructor() {
+        super();
+        this.on("customer-connection", (client) => {
+            let peer = new CustomerChannel(client);
+            this.emit("connect", peer);
+        });
+        this.on("merchant-connection", (client) => {
+            let peer = new MerchantChannel(client);
+            this.emit("connect", peer);
+        });
+        this.on("connect", (peer) => {
+            peer.initChannel(this)
+        });
     }
 
     static async test() {
     }
 }
-

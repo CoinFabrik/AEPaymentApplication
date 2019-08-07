@@ -1,5 +1,7 @@
+
 const {Channel, Universal, TxBuilder: {unpackTx}} = require('@aeternity/aepp-sdk')
 const {BigNumber} = require('bignumber.js')
+const {enqueueAction} = require('@aeternity/aepp-sdk/es/channel/internal');
 
 const NODEHOST = "10.10.0.79";
 const API_URL = 'http://'+NODEHOST+':3001'
@@ -59,6 +61,7 @@ async function initiatorSign(tag, tx) {
             return initiatorAccount.signTransaction(tx)
         }
     }
+    console.log("****  unsigned:", tag, tx)
 }
 
 async function responderSign(tag, tx, {updates} = {}) {
@@ -71,7 +74,7 @@ async function responderSign(tag, tx, {updates} = {}) {
     const {txType, tx: txData} = unpackTx(tx)
     // When someone wants to transfer a tokens we will receive
     // a sign request with `update_ack` tag
-    if (tag === 'update_ack') {
+    if (tag === 'update_ack'){  //  {
         // Check if update contains only one offchain transaction
         // and sender is initiator
         if (
@@ -80,9 +83,20 @@ async function responderSign(tag, tx, {updates} = {}) {
             updates[0].op === 'OffChainTransfer' &&
             updates[0].from === initiatorAddress
         ) {
-            return responderAccount.signTransaction(tx)
+            let rtx = responderAccount.signTransaction(tx)
+            console.log("\r\nrecv: "+tx +"\r\n")
+            console.log("\r\ntov: "+rtx +"\r\n")
+            return rtx
         }
     }
+
+    if(tag === "deposit_ack") {
+        return responderAccount.signTransaction(tx)
+    }
+    if(tag === "withdraw_ack") {
+        return responderAccount.signTransaction(tx)
+    }
+    console.log("****  unsigned:", tag, tx)
 }
 
 async function connectAsInitiator(params) {
@@ -131,8 +145,8 @@ const params = {
 
 createAccounts().then(() => {
     // initiator connects to state channels endpoint
-    connectAsInitiator(params).then(initiatorChannel => {
-        initiatorChannel.on('statusChanged', (status) => {
+    connectAsInitiator(params).then(async initiatorChannel => {
+        initiatorChannel.on('statusChanged', async (status) => {
             console.log('State channel:', status)
             if (status === 'open') {
                 console.log('State channel has been opened!')
@@ -143,34 +157,81 @@ createAccounts().then(() => {
             console.log('channel_create_tx:', tx)
         })
 
+        initiatorChannel.on('error', err => console.log(err));
+
         initiatorChannel.sendMessage('hello world', responderAddress)
 
-        initiatorChannel.update(
-            // Sender account
-            initiatorAddress,
-            // Recipient account
-            responderAddress,
-            // Amount
-            10,
-            // This function should verify offchain transaction
-            // and sign it with initiator's private key
-            async (tx) => initiatorAccount.signTransaction(tx)
-        ).then((result) => {
-            if (result.accepted) {
-                console.log('Succesfully transfered 10 tokens!')
-            } else {
-                console.log('Transfer has been rejected')
-            }
-        })
+        the_result = null;
+        try{
+            the_result = await initiatorChannel.update(
+                // Sender account
+                initiatorAddress,
+                // Recipient account
+                responderAddress,
+                // Amount
+                10,
+                // This function should verify offchain transaction
+                // and sign it with initiator's private key
+                async (tx) => {
+                    let rtx = initiatorAccount.signTransaction(tx)
+                    //let wtx = responderAccount.signTransaction(rtx)
+                    return rtx
+                }
+            );
 
-        initiatorChannel.on('error', err => console.log(err))
+            console.log("------------------------------------------------")
+            //let other = initiatorChannel.sendMessage
+            //enqueueAction(initiatorChannel)
+            console.log(" fuiunction ::")
+            console.log(enqueueAction)
+        } catch(err) {
+            console.log("UOPDATE ERR:", err);
+        }
+
+        if (the_result.accepted) {
+            console.log('Succesfully transfered 10 tokens!')
+        } else {
+            console.log('Transfer has been rejected')
+        }
+
+
     }).catch(err => {
-        console.log('Initiator failed to connect')
+        console.log('Initiator failed to connect!?')
         console.log(err)
     })
 
+
+/*
+        try{
+            console.log("TESTING deposit")
+            the_result = await initiatorChannel.deposit(
+                10, async (tx) => await initiatorAccount.signTransaction(tx), {
+                    onOnChainTx: (tx) => {console.log(" 1 on chain tx..")},
+                    onOwnDepositLocked: (tx) => {console.log(" 2 onOwnDepositLocked")},
+                    onDepositLocked: (tx) => {console.log(" 3 onDepositLocked")}});
+            console.log("the result:", the_result);
+        } catch(err) {
+            console.log("deposit ERR:", err);
+        }
+
+
+
+        console.log("initiator balance:", await initiatorChannel.balances([initiatorAddress]));
+        try{
+            console.log("TESTING withdraw..")
+            the_result = await initiatorChannel.withdraw(
+                1, async (tx) => await initiatorAccount.signTransaction(tx), {
+                    onOnChainTx: (tx) => {console.log(" 1 on chain tx..")},
+                    onOwnWithdrawLocked: (tx) => {console.log(" 2 onOwnWithdrawLocked")},
+                    onWithdrawLocked: (tx) => {console.log(" 3 onWithdrawLocked")}});
+            console.log("the result:", the_result);
+        } catch(err) {
+            console.log("withdraw ERR:", err);
+        }
+*/
+
     // responder connects to state channels endpoint
-    connectAsResponder(params).then(responderChannel => {
+    connectAsResponder(params).then(async responderChannel => {
         responderChannel.on('message', (msg) => {
             console.log('Received message from:', msg.from)
             console.log(msg.info)
