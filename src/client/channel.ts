@@ -14,7 +14,7 @@ const {
 } = require('@aeternity/aepp-sdk');
 
 const port = 3001;
-let URL = '10.10.0.79:' + port;
+let URL = getEnv('NODE', '10.10.0.79')+ ':' + port;
 //let URL = 'localhost:'+port;
 const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
@@ -176,7 +176,6 @@ export abstract class ServerChannel extends EventEmitter {
             if (tag === "shutdown_sign_ack") {
                 const {txType, tx: txData} = unpackTx(tx);
                 console.log(tag, ": ", JSON.stringify(txData));
-                //BigNumber(txData.responderAmountFinal).plus(fee).eq(BigNumber(DEPOSIT).plus(10))
                 this.log("TX (shutdown): " + (tx.toString()))
             }
             return await self.nodeuser.signTransaction(tx)
@@ -187,8 +186,7 @@ export abstract class ServerChannel extends EventEmitter {
             self.onStatusChange(status.toUpperCase());
         });
         this.channel.on('error', (errir) => {
-            console.log("ERRRORRRRR::::")
-            console.log(errir)
+            console.log("ERRRORRRRR::::", errir)
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);

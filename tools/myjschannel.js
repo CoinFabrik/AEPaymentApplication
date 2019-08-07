@@ -84,7 +84,7 @@ class MyChannel {
             url:  WS_URL+'/channel',
             pushAmount: 0,
             initiatorAmount: INITIATOR_MIN_BALANCE,
-            responderAmount: INITIATOR_MIN_BALANCE,
+            responderAmount: 1,
             channelReserve: 1,
             ttl: 1000,
             // host: "localhost",
