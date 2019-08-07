@@ -16,6 +16,8 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
+
 import QrCodeReader from "../components/QrCodeReader.vue";
 import { AeText } from "@aeternity/aepp-components";
 import HubConnection from "../controllers/hub";
@@ -27,18 +29,36 @@ export default {
     QrCodeReader
   },
   data() {
-    return {};
+    return {
+      qrData: null
+    };
   },
   props: {
     subview: String
   },
   computed: {},
   mounted: function() {
-    if (this.subview !== "onboarding" && this.subview !== "scantxqr") {
-      throw Error("The subview prop must be 'onboarding' or 'scantxqr'");
+    if (
+      this.subview !== "onboarding" &&
+      this.subview !== "scantxqr" &&
+      this.subview !== "scanaddress"
+    ) {
+      throw Error(
+        "The subview prop must be 'onboarding' , 'scantxqr' or 'scanaddress'"
+      );
     }
   },
   methods: {
+    setError(err) {
+      this.$router.push({
+        name: "error",
+        params: {
+          errorTitle: "Oops",
+          errorDescription: err.toString(),
+          retryCancel: false
+        }
+      });
+    },
     onQrHasData(scanData) {
       let dataObj;
       console.log("Obtained QR Data: " + scanData);
@@ -64,52 +84,72 @@ export default {
       alert(error);
     },
     onQrClick() {
+      //
+      // A click on the QR element box will trigger out a simulated
+      // QR scan if its enabled in the environment settings
+      //
       if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === "1") {
-        this.storeTestParams();
+        if (this.subview === "onboarding") {
+          this.storeTestParams();
+        } else if (this.subview === "scanaddress") {
+          this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
+        }
         this.navigateOut();
       }
     },
     async navigateOut() {
       if (this.subview === "onboarding") {
-        if (this.$isClientAppRole) {
-          this.$router.push({
-            name: "deposit",
-            params: { initialDeposit: true }
-          });
-        } else if (this.$isMerchantAppRole) {
-          let hubConnection = new HubConnection(
-            this.$store.state.hubUrl,
-            this.$store.getters.initiatorAddress
-          );
-          try {
-            let ret = await hubConnection.getMerchantName();
-            if (ret.success === false) {
-              if (ret.code === 404) {
-                // No registered merchant name.
-                this.$router.push("register-merchant");
-              } else {
-                // unexpected error.
-                alert(JSON.stringify(ret));
-              
-              }
-            } else {
-              // Welcome back.
-              this.$router.push({
-                name: "deposit",
-                params: { initialDeposit: true, welcomeBack: true }
-              });
-            }
-          } catch (e) {
-            // PROPER ERROR PLEASE.
-
-            alert("Error " + e.toString());
-          }
-        }
+        await this.doOnboardingProcess();
       } else if (this.subview === "scantxqr") {
         this.$router.push({
           name: "confirmtx",
           params: { txKind: "transact-from-qr" }
         });
+      } else if (this.subview === "scanaddress") {
+        await this.doProcessAddress();
+      }
+    },
+    doProcessAddress() {
+      if (this.$isMerchantAppRole) {
+        this.$router.push({
+          name: "enterpurchase",
+          params: { customerAddress: this.qrData }
+        });
+      }
+    },
+    async doOnboardingProcess() {
+      if (this.$isClientAppRole) {
+        this.$router.push({
+          name: "deposit",
+          params: { initialDeposit: true }
+        });
+      } else if (this.$isMerchantAppRole) {
+        let hubConnection = new HubConnection(
+          this.$store.state.hubUrl,
+          this.$store.getters.initiatorAddress
+        );
+        try {
+          let ret = await hubConnection.getMerchantName();
+          if (ret.success === false) {
+            if (ret.code === 404) {
+              // No registered merchant name.
+              this.$router.push("register-merchant");
+            } else {
+              // unexpected error.
+              this.setError(
+                "A problem occurred communicating with the hub. Please contact the system administrator."
+              );
+            }
+          } else {
+            // Welcome back.
+            this.$router.push({
+              name: "deposit",
+              params: { initialDeposit: true, welcomeBack: true }
+            });
+          }
+        } catch (e) {
+          this.setError(e);
+        }
       }
     },
     storeTestParams() {

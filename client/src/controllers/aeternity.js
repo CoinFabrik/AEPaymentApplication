@@ -7,7 +7,7 @@ const {
   Universal
 } = require('@aeternity/aepp-sdk');
 
-const { TxBuilder: { unpackTx, buildTx, calculateFee } } = require('@aeternity/aepp-sdk')
+const { TxBuilder: {  calculateFee } } = require('@aeternity/aepp-sdk')
 
 const aeternity = {
   network: null,
@@ -126,24 +126,6 @@ aeternity.update = async function (channel, fromAddr, toAddr, amountBN) {
   );
 }
 
-aeternity.updateEx = async function (channel, fromAddr, toAddr, amount) {
-  return channel.update(
-    fromAddr,
-    toAddr,
-    amount,
-    async (tx) => aeternity.signTransactionEx(tx)
-  );
-}
-
-aeternity.signTransactionEx = async function (tx) {
-  let unpackedTx = await unpackTx(tx);
-  console.log('unpacked: ');
-  console.log(unpackedTx);
-  unpackedTx.tx.metadata = { kind: "this_is_payment_from_dave" }
-  const tx2 = await buildTx(unpackedTx.tx, 'channelOffChain');
-  return aeternity.client.signTransaction(tx2)
-}
-
 aeternity.estimateDepositFee = function (gasAmount) {
   return calculateFee(null, 'channel_deposit', { gas: gasAmount })
 }
@@ -162,6 +144,11 @@ aeternity.closeChannel = async function (channel, onChainTxCallback, onDepositCa
     onOnChainTx: onChainTxCallback,
     onDepositCallbackLocked: onDepositCallback
   });
+}
+
+aeternity.sendMessage = async function (channel, message, address) {
+  console.log("Sending channel message to " + address + ":", message);
+  return channel.sendMessage(message, address);
 }
 
 aeternity.getTxConfirmations = async function (tx) {

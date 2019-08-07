@@ -34,7 +34,7 @@
         <AeButton face="round" fill="primary" extend @click="withdraw()">Withdraw Funds</AeButton>
       </div>
       <div class="row">
-        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Customer Qr</AeButton>
+        <AeButton face="round" fill="primary" extend @click="scanCustomerQr()">Scan Customer Qr</AeButton>
       </div>
       <div class="row">
         <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
@@ -47,6 +47,8 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
+
 import {
   AeText,
   AeQRCode,
@@ -54,7 +56,6 @@ import {
   AeButton
 } from "@aeternity/aepp-components";
 
-import ChannelNotify from "../components/ChannelNotify";
 
 export default {
   name: "MainMenu",
@@ -62,8 +63,7 @@ export default {
     AeText,
     AeQRCode,
     AeAmount,
-    AeButton,
-    ChannelNotify
+    AeButton
   },
   computed: {
     getAddress: function() {
@@ -82,6 +82,9 @@ export default {
     },
     scanTxQr: function() {
       this.$router.push({ name: "scanqr", params: { subview: "scantxqr" } });
+    },
+    scanCustomerQr: function() {
+      this.$router.push({ name: "scanqr", params: { subview: "scanaddress" } });
     },
     closeChannel: function() {
       this.$router.push("channelClose");

@@ -9,14 +9,14 @@
 </template>
 
 <script>
-import { AeText, AeButton, AeIcon } from "@aeternity/aepp-components";
+import { AeText, AeButton } from "@aeternity/aepp-components";
 
 export default {
   name: "ShutdownDone",
   components: {
     AeText,
-    AeButton,
-    AeIcon
+    AeButton
+    //AeIcon
   },
   methods: {
     dismiss() {

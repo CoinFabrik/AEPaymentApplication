@@ -14,6 +14,7 @@ import ChannelClose from './views/ChannelClose.vue'
 import RegisterMerchant from './views/RegisterMerchant.vue'
 import Withdraw from './views/Withdraw.vue'
 import ShutdownDone from './views/ShutdownDone.vue'
+import EnterPurchase from './views/EnterPurchase.vue'
 
 Vue.use(Router)
 
@@ -95,6 +96,12 @@ export default new Router({
       path: '/channelclose',
       name: 'channelclose',
       component: ChannelClose
+    },
+    {
+      path: '/enterpurchase',
+      name: 'enterpurchase',
+      component: EnterPurchase,
+      props: true
     }
   ]
 })

@@ -9,7 +9,6 @@ class HubConnection {
     }
     this.hubUrl = hubUrl;
     this.address = userAddress;
-
   }
 
   handleError(error) {
