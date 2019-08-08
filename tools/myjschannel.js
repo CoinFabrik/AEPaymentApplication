@@ -8,14 +8,16 @@ const BigNumber = require('bignumber.js');
 const jstools = require("./jstools");
 
 const port=3001;
-let URL = jstools.getEnv("NODE", '10.10.0.79:'+port);
-console.log("Node> ", URL);
+//NODE=165.22.18.138:3001 HUB=165.22.76.228:3001
+let URL = jstools.getEnv("NODE", '165.22.18.138');
+let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
+console.log("hub> ", URL);
 
-const HUBADDR = "localhost";
+//const HUBHOST = "localhost";
 const HUBPORT = 3000;
-const API_URL = "http://" + URL;
-const WS_URL = "ws://" + URL;  // http is ok too
-const INTERNAL_API_URL = API_URL;
+const API_URL = "http://" + URL + ":"+port;
+const WS_URL = "ws://" + URL+ ":"+port;  // http is ok too
+const INTERNAL_API_URL = API_URL+ ":"+port;
 const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
 
@@ -85,12 +87,12 @@ class MyChannel {
             pushAmount: 0,
             initiatorAmount: INITIATOR_MIN_BALANCE,
             responderAmount: 1,
-            channelReserve: 1,
+            channelReserve: 40000,
             //ttl: 1000,
             // host: "localhost",
             host: "localhost", //"10.10.0.79",
             port: 3001,
-            lockPeriod: 60,
+            lockPeriod: 10,
             initiatorId: this.initiator,
             responderId: this.responder,
             role: this.role,

@@ -141,11 +141,11 @@ export abstract class ServerChannel extends EventEmitter {
             pushAmount: 0,
             initiatorAmount: this.client.amount,
             responderAmount: 1,
-            channelReserve: 1,
+            channelReserve: 40000,
             //ttl: 1000,
             host: "localhost",
             port: 3001,
-            lockPeriod: 60,
+            lockPeriod: 10,
             role: this.role,
         };
         this.log("opts:" + JSON.stringify(options));
