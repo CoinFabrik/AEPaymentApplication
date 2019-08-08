@@ -97,6 +97,7 @@ class MerchantCustomer {
         this._base = {
             "id": this.id,
             "merchant": this.merchant,
+            "merchant_name": this.mclient.name,
             "customer": this.customer,
             "amount": this.original_msg["info"]["amount"],
             "something": this.original_msg["info"]["something"],
@@ -171,7 +172,7 @@ class MerchantCustomer {
         return this._cclient;
     }
 
-    static FromMerchantRequest(msg: object) {
+    static FromMerchantRequest(msg: object): MerchantCustomer {
         let merchant = msg["from"];
         let mclient = ClientService.getClientByAddress(merchant, "merchant");
         if(mclient==null) {
@@ -295,6 +296,7 @@ export class Hub extends EventEmitter {
 export class ServiceBase extends EventEmitter {
     static clients: { "customer": CClient[], "merchant": CClient[] } = {
         "customer":[], "merchant":[] };
+
     static getClients(kind: Actor): CClient[] {
         return ServiceBase.getClients(kind);
     }

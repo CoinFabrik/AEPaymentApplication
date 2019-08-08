@@ -126,7 +126,7 @@ const params = {
     // Minimum amount both peers need to maintain
     channelReserve: 40000,
     // Minimum block height to include the channel_create_tx
-    ttl: 1000,
+    //ttl: 1000,
     // Amount of blocks for disputing a solo close
     lockPeriod: 10,
     // Host of the responder's node
