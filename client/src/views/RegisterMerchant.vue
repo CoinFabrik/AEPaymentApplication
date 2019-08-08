@@ -13,8 +13,6 @@
 <script>
 import { AeText, AeButton, AeInput } from "@aeternity/aepp-components";
 
-import HubConnection from "../controllers/hub";
-
 export default {
   name: "RegisterMerchant",
   components: {

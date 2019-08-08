@@ -35,6 +35,8 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
+
 const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1,
   STATUS_ERROR = 2;

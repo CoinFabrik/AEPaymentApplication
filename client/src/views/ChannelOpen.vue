@@ -6,8 +6,9 @@
 </template>
 
 <script>
-const STATUS_INITIAL = 0,
-  STATUS_ACK_HUB = 1,
+/* eslint-disable no-console */
+
+const STATUS_ACK_HUB = 1,
   STATUS_WORKING = 2,
   STATUS_STOPPED = 3,
   STATUS_ERROR = 0xffff;
@@ -52,7 +53,7 @@ export default {
         if (this.channelStatus === "disconnected") {
           return "Channel has been disconnected!";
         } else return "Stopped.";
-      }
+      } else return "Unknown state";
     },
     isWorking() {
       return this.viewStatus === STATUS_WORKING;
@@ -135,17 +136,25 @@ export default {
     }
   },
   mounted: async function() {
+    let res;
     try {
       let res = await this.notifyHub();
+      console.log("res: ", res);
+
       if (!res.success) {
         throw "Error with the hub";
+      } else {
+        console.log("Hub Wallet Address: " + res.address);
+        this.$store.commit("loadHubAddress", res.address);
+        this.$store.commit("setResponderId", res.address);
+
+        await this.createChannel();
       }
     } catch (e) {
       alert("Hub error: " + e.toString());
       this.setErrorStatus("Hub error failure");
       return;
     }
-    await this.createChannel();
   }
 };
 </script>

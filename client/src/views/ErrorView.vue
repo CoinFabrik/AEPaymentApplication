@@ -21,10 +21,8 @@
 <script>
 import ErrorContent from "../components/ErrorContent.vue";
 import {
-  AeText,
   AeButton,
-  AeButtonGroup,
-  AeIcon
+  AeButtonGroup
 } from "@aeternity/aepp-components";
 
 export default {

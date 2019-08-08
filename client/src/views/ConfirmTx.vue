@@ -47,14 +47,10 @@
 <script>
 import {
   AeText,
-  AeAmountInput,
   AeButtonGroup,
   AeButton,
   AePanel,
   AeDivider,
-  AeCard,
-  AeAddress,
-  AeSwitch
 } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
@@ -64,13 +60,9 @@ export default {
   components: {
     AeButton,
     AeText,
-    AeAmountInput,
     AeButtonGroup,
     AePanel,
     AeDivider,
-    AeCard,
-    AeAddress,
-    AeSwitch
   },
   props: {
     txKind: String, // decide following fields based on txKind?

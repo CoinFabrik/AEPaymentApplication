@@ -7,7 +7,7 @@ const {
   Universal
 } = require('@aeternity/aepp-sdk');
 
-const { TxBuilder: {  calculateFee } } = require('@aeternity/aepp-sdk')
+const { TxBuilder: { calculateFee, unpackTx } } = require('@aeternity/aepp-sdk')
 
 const aeternity = {
   network: null,
@@ -15,12 +15,13 @@ const aeternity = {
   address: null,
   pk: null,
   height: null,
-  api_server_proto: null,
-  api_server_port: null,
-  api_server_address: null,
-  state_channel_api_proto: null,
-  state_channel_api_host: null,
-  state_channel_api_port: null
+  apiServerProtocol: null,
+  apiServerPort: null,
+  apiServerAddress: null,
+  stateChannelApiProtocol: null,
+  stateChannelApiHost: null,
+  stateChannelApiPort: null,
+  registeredUpdateHandler: null
 }
 
 aeternity.connectToBaseApp = async function () {
@@ -33,13 +34,13 @@ aeternity.connectToBaseApp = async function () {
     // Forgae Testing Nodes Setup
     //
 
-    aeternity.api_server_address = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
-    aeternity.api_server_port = process.env.VUE_APP_TEST_API_SERVER_PORT;
-    aeternity.api_server_proto = process.env.VUE_APP_TEST_API_SERVER_PROTO;
+    aeternity.apiServerAddress = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
+    aeternity.apiServerPort = process.env.VUE_APP_TEST_API_SERVER_PORT;
+    aeternity.apiServerProtocol = process.env.VUE_APP_TEST_API_SERVER_PROTO;
 
-    aeternity.state_channel_api_proto = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
-    aeternity.state_channel_api_host = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
-    aeternity.state_channel_api_port = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
+    aeternity.stateChannelApiProtocol = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
+    aeternity.stateChannelApiHost = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
+    aeternity.stateChannelApiPort = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
 
 
     const params = {
@@ -90,10 +91,10 @@ aeternity.getPk = function () {
 }
 
 aeternity.getApiServerUrl = function () {
-  return aeternity.api_server_proto + '://' + aeternity.api_server_address + ':' + aeternity.api_server_port
+  return aeternity.apiServerProtocol + '://' + aeternity.apiServerAddress + ':' + aeternity.apiServerPort
 }
 aeternity.getStateChannelApiUrl = function () {
-  return aeternity.state_channel_api_proto + '://' + aeternity.state_channel_api_host + ':' + aeternity.state_channel_api_port + '/channel';
+  return aeternity.stateChannelApiProtocol + '://' + aeternity.stateChannelApiHost + ':' + aeternity.stateChannelApiPort + '/channel';
 }
 aeternity.getAccountBalance = async function () {
   return await aeternity.client.balance(aeternity.address);
@@ -109,11 +110,35 @@ aeternity.createChannel = async function (params) {
   });
 }
 
-aeternity.signFunction = async function (tag, tx) {
+aeternity.signFunction = async function (tag, tx, { updates } = {}) {
+
   console.log('signFunction with tag: ' + tag);
 
   if (tag === 'initiator_sign') {
     return aeternity.client.signTransaction(tx);
+  }
+  else if (tag === 'update_ack') {
+    if (aeternity.registeredUpdateHandler === undefined) {
+      throw new Error("update_ack received but no registered handler");
+    }
+
+    const untx = unpackTx(tx);
+    if (
+      untx.txType === 'channelOffChain' &&
+      updates.length === 1 &&
+      updates[0].op === 'OffChainTransfer'
+    ) {
+      let accept = await aeternity.registeredUpdateHandler(updates[0]);
+      if (accept) {
+        const sign = await aeternity.client.signTransaction(tx);
+        console.log("Update TX successfully signed");
+        return sign;
+      } else {
+        console.warn("Update TX has been rejected by user");
+      }
+    } else {
+      console.warn("Unexpected update_ack.  TxType: " + untx.txType + "Updates: ", updates);
+    }
   }
 }
 
@@ -162,5 +187,8 @@ aeternity.getTxConfirmations = async function (tx) {
   return 0;
 }
 
+aeternity.setRegisteredUpdateHandler = function (f) {
+  aeternity.registeredUpdateHandler = f;
+}
 
 export default aeternity;

@@ -12,17 +12,13 @@
 const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
 const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
-  STATUS_PREPARING_TX = 1,
-  STATUS_WAITING = 2,
-  STATUS_DONE = 3,
-  STATUS_TRACK_TX_PROGRESS = 4,
-  STATUS_ERROR = 0xffff;
+  STATUS_TRACK_TX_PROGRESS = 1
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
 
-import BigNumber from "bignumber.js";
-import { setInterval, setTimeout } from "timers";
-import { Crypto, TxBuilder } from "@aeternity/aepp-sdk";
+import { setTimeout } from "timers";
+import { TxBuilder } from "@aeternity/aepp-sdk";
+import { EventBus } from '../event/eventbus.js';
 
 export default {
   name: "CommitAndWaitTx",
@@ -46,7 +42,9 @@ export default {
   watch: {},
   computed: {
     confirmPercent: function() {
-      return Math.round(Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100));
+      return Math.round(
+        Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100)
+      );
     }
   },
   methods: {
@@ -153,6 +151,8 @@ export default {
               );
               console.log("posted deposit Onchain TX: ", tx);
               this.setStatusTrackProgress(tx);
+
+              EventBus.$emit("desuscribe-channel");
             } catch (error) {
               this.setError(error);
             }

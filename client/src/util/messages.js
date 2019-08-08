@@ -1,5 +1,4 @@
 import { validateAddress } from '../util/validators.js'
-import BigNumber from 'bignumber.js';
 
 export function makeBuyMessage(price, items, customer) {
     if (price <= 0 || !price) {

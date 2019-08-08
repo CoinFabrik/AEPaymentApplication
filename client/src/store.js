@@ -13,7 +13,9 @@ export default new Vuex.Store({
     initiatorBalance: null,
     responderBalance: null,
     hubUrl: null,
-    merchantName: null
+    hubAddress: null,
+    merchantName: null,
+    buyRequestInfo: null
   },
   getters: {
     initiatorAddress(state) {
@@ -36,8 +38,14 @@ export default new Vuex.Store({
     loadChannelParams(state, params) {
       state.channelParams = params;
     },
+    setResponderId(state, addr) {
+      state.channelParams.responderId = addr;
+    },
     loadHubUrl(state, url) {
       state.hubUrl = url;
+    },
+    loadHubAddress(state, addr) {
+      state.hubAddress = addr;
     },
     setInitialDeposit(state, amount) {
       state.channelParams.initiatorAmount = amount;
@@ -53,6 +61,12 @@ export default new Vuex.Store({
     },
     updateResponderBalance(state, amount) {
       state.responderBalance = amount;
+    },
+    storeLastBuyRequestInfo(state, data) {
+      state.buyRequestInfo = data;
+    },
+    clearLastBuyRequestInfo(state) {
+      state.buyRequestInfo  = null;
     }
   },
   actions: {
@@ -63,6 +77,7 @@ export default new Vuex.Store({
       commit('updateBalance', 0);
       commit('updateInitiatorBalance', null);
       commit('updateResponderBalance', null);
+      commit('clearLastBuyRequestInfo');
     },
     updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(

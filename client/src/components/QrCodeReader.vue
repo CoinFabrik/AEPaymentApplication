@@ -1,16 +1,9 @@
 <template>
   <div class="qr-code-reader">
-    <div
-      v-if="browserReader"
-      v-show="cameraAllowed"
-      class="video-wrapper"
-    >
+    <div v-if="browserReader" v-show="cameraAllowed" class="video-wrapper">
       <video ref="qrCodeVideo" />
     </div>
-    <div
-      v-if="!cameraAllowed"
-      class="permission-denied"
-    >
+    <div v-if="!cameraAllowed" class="permission-denied">
       Please enable access to your camera for the mobile browser
       that you are using to open the Base æpp Wallet.
     </div>
@@ -18,12 +11,14 @@
 </template>
 
 <script>
-import { BrowserQRCodeReader } from '@zxing/library/esm5/browser/BrowserQRCodeReader';
+/* eslint-disable no-console */
+
+import { BrowserQRCodeReader } from "@zxing/library/esm5/browser/BrowserQRCodeReader";
 export default {
   name: "QrCodeReader",
   data: () => ({
     cameraAllowed: false,
-    browserReader: new BrowserQRCodeReader(),
+    browserReader: new BrowserQRCodeReader()
   }),
   watch: {
     async cameraAllowed(value) {
@@ -32,26 +27,27 @@ export default {
         return;
       }
       let scanData = await this.scan();
-      this.$emit('hasData', scanData.text);
-    },
+      this.$emit("hasData", scanData.text);
+    }
   },
   async mounted() {
     if (navigator.permissions) {
       try {
-        const status = await navigator.permissions.query({ name: 'camera' });
-        this.cameraAllowed = status.state !== 'denied';
+        const status = await navigator.permissions.query({ name: "camera" });
+        this.cameraAllowed = status.state !== "denied";
         status.onchange = () => {
-          this.cameraAllowed = status.state !== 'denied';
-        };      
-      }
-      catch(err) {
+          this.cameraAllowed = status.state !== "denied";
+        };
+      } catch (err) {
         console.log("queryCameraPermissions failed: " + err.toString());
-        console.log("Trying alternative getUserMedia method" );
+        console.log("Trying alternative getUserMedia method");
       }
     }
 
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true
+      });
       mediaStream.getTracks().forEach(track => track.stop());
       this.cameraAllowed = true;
     } catch (e) {
@@ -65,18 +61,18 @@ export default {
   methods: {
     async scan() {
       return await this.browserReader.decodeFromInputVideoDevice(
-          undefined,
-          this.$refs.qrCodeVideo,
-        );
+        undefined,
+        this.$refs.qrCodeVideo
+      );
     },
     stopReading() {
       this.browserReader.reset();
     },
     cancelReading() {
       this.stopReading();
-      this.$emit('error',new Error('Cancelled by user'));
-    },
-  },
+      this.$emit("error", new Error("Cancelled by user"));
+    }
+  }
 };
 </script>
 
@@ -87,24 +83,23 @@ export default {
   flex-grow: 1;
   min-height: 100vh;
 }
-  .permission-denied {
-    text-align: center;
-    line-height: 1.56;
-    padding: 0 20px;
-    margin: auto;
-    font-size: 18px;
-  }
-  .video-wrapper {
-    flex-grow: 1;
-    overflow: hidden;
-    position: relative;
-
-  }
-   video {
-      padding: 2px;
-      border: grey 1px solid;
-      object-fit: cover;
-      width: 100%;
-      height: 100%;
+.permission-denied {
+  text-align: center;
+  line-height: 1.56;
+  padding: 0 20px;
+  margin: auto;
+  font-size: 18px;
+}
+.video-wrapper {
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative;
+}
+video {
+  padding: 2px;
+  border: grey 1px solid;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 </style>

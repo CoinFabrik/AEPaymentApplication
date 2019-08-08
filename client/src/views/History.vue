@@ -37,10 +37,6 @@
 <script>
   import {
     AeText,
-    AeQRCode,
-    AeDivider,
-    AeLabel,
-    AeAmount,
     AeButton,
     AeList,
     AeListItem,
@@ -51,10 +47,6 @@
     name: "History",
     components: {
       AeText,
-      AeQRCode,
-      AeDivider,
-      AeLabel,
-      AeAmount,
       AeButton,
       AeList,
       AeListItem,

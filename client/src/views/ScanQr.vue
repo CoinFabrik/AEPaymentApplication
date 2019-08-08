@@ -157,7 +157,7 @@ export default {
 
       let params = {
         initiatorId: process.env.VUE_APP_TEST_WALLET_ADDRESS,
-        responderId: process.env.VUE_APP_TEST_RESPONDER_ADDRESS,
+        responderId: null,  // known after connection with Hub
 
         // Initial deposit in favour of the responder by the initiator
         pushAmount: process.env.VUE_APP_TEST_CHANNEL_PUSH_AMOUNT,
@@ -170,10 +170,9 @@ export default {
 
         // Minimum amount both peers need to maintain
         channelReserve: process.env.VUE_APP_TEST_CHANNEL_RESERVE,
-
-        // Minimum block height to include the channel_create_tx
+         // Minimum block height to include the channel_create_tx
         ttl: process.env.VUE_APP_TEST_CHANNEL_TTL,
-
+       
         // Amount of blocks for disputing a solo close
         lockPeriod: process.env.VUE_APP_TEST_CHANNEL_LOCK_PERIOD,
 

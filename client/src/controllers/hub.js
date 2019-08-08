@@ -28,8 +28,9 @@ class HubConnection {
 
   async notifyClientOnboarding(amount) {
     try {
-      await axios.get(this.hubUrl + '/client/' + this.address + '/' + amount);
-      return { success: true };
+      let output = await axios.get(this.hubUrl + '/client/' + this.address + '/' + amount);
+      // console.log(JSON.stringify(output));
+      return { success: true, address: output.data.address };
     } catch (error) {
       return this.handleError(error);
     }
@@ -37,8 +38,9 @@ class HubConnection {
 
   async notifyMerchantOnboarding(amount, name) {
     try {
-      await axios.get(this.hubUrl + '/merchant/' + this.address + '/' + amount + '/' + name);
-      return { success: true };
+      let output = await axios.get(this.hubUrl + '/merchant/' + this.address + '/' + amount + '/' + name);
+      // console.log(JSON.stringify(output));
+      return { success: true, address: output.data.address };
     } catch (error) {
       return this.handleError(error);
     }
