@@ -1,7 +1,7 @@
 const {Channel, Universal, TxBuilder: {unpackTx}} = require('@aeternity/aepp-sdk')
 const {BigNumber} = require('bignumber.js')
 
-const NODEHOST = "10.10.0.79";
+const NODEHOST = process.env["NODE"];
 const API_URL = 'http://'+NODEHOST+':3001'
 const INTERNAL_API_URL = 'http://'+NODEHOST+':3001'
 const STATE_CHANNEL_URL = 'ws://'+NODEHOST+':3001/channel'
@@ -135,6 +135,7 @@ const params = {
     port: RESPONDER_PORT,
 }
 
+console.log("init")
 createAccounts().then(() => {
     // initiator connects to state channels endpoint
     connectAsInitiator(params).then(async initiatorChannel => {
