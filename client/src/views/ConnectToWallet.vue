@@ -64,6 +64,7 @@ export default {
   },
   methods: {
     async connectToBaseApp() {
+
       this.status = STATUS_CONNECTING;
       try {
         const connectStatus = await aeternity.connectToBaseApp();

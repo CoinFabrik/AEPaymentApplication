@@ -21,7 +21,8 @@ const aeternity = {
   stateChannelApiProtocol: null,
   stateChannelApiHost: null,
   stateChannelApiPort: null,
-  registeredUpdateHandler: null
+  updateHandler: null,
+  afterSignHandler: null
 }
 
 aeternity.connectToBaseApp = async function () {
@@ -118,7 +119,7 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
     return aeternity.client.signTransaction(tx);
   }
   else if (tag === 'update_ack') {
-    if (aeternity.registeredUpdateHandler === undefined) {
+    if (aeternity.updateHandler === undefined) {
       throw new Error("update_ack received but no registered handler");
     }
 
@@ -128,10 +129,11 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
       updates.length === 1 &&
       updates[0].op === 'OffChainTransfer'
     ) {
-      let accept = await aeternity.registeredUpdateHandler(updates[0]);
+      let accept = await aeternity.updateHandler(updates[0]);
       if (accept) {
         const sign = await aeternity.client.signTransaction(tx);
         console.log("Update TX successfully signed");
+        await aeternity.afterSignHandler();
         return sign;
       } else {
         console.warn("Update TX has been rejected by user");
@@ -187,8 +189,11 @@ aeternity.getTxConfirmations = async function (tx) {
   return 0;
 }
 
-aeternity.setRegisteredUpdateHandler = function (f) {
-  aeternity.registeredUpdateHandler = f;
+aeternity.setUpdateHandler = function (f) {
+  aeternity.updateHandler = f;
 }
 
+aeternity.setAfterUpdateAckSignHandler = function(f) {
+  aeternity.afterSignHandler = f;
+}
 export default aeternity;

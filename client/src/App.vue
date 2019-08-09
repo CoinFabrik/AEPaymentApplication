@@ -4,7 +4,7 @@
     <AeMain style="padding: 20px; height: 100%;">
       <img id="ae-logo" alt="AE-logo" src="./assets/ae2x.png" />
       <div>
-        <ae-text fill="primary" face="sans-l">Aternity Universe</ae-text>
+        <ae-text fill="primary" face="sans-l">Æternity Universe One</ae-text>
       </div>
       <ae-text fill="secondary" face="sans-base">Developers Conference</ae-text>
       <div id="content">

@@ -55,7 +55,7 @@ import {
   AeAmount,
   AeButton
 } from "@aeternity/aepp-components";
-
+import { setInterval } from "timers";
 
 export default {
   name: "MainMenu",
@@ -96,7 +96,9 @@ export default {
   async mounted() {
     // Report error !
     try {
-      this.$store.dispatch("updateChannelBalances");
+      setInterval(() => {
+        this.$store.dispatch("updateChannelBalances");
+      }, 1000);
     } catch (err) {
       console.log("error getting balances! " + err);
     }

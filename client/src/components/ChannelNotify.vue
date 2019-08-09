@@ -4,9 +4,9 @@
 
 <script>
 /* eslint-disable no-console */
-const POLL_INTERVAL_MS = 1000;
+const POLL_INTERVAL_MS = 100;
 import "sweetalert2/dist/sweetalert2.min.css";
-//import BigNumber from "bignumber.js";
+import BigNumber from "bignumber.js";
 import { EventBus } from "../event/eventbus";
 
 export default {
@@ -21,8 +21,11 @@ export default {
   methods: {
     onSuscribeToChannel() {
       console.warn("ChannelNotify: Received request to suscribe to Channel");
-      this.$store.state.aeternity.setRegisteredUpdateHandler(
+      this.$store.state.aeternity.setUpdateHandler(
         this.onChannelUpdateAck
+      );
+      this.$store.state.aeternity.setAfterUpdateAckSignHandler(
+        this.onAfterUpdateAckSign
       );
       this.$store.state.channel.on("statusChanged", this.onChannelStatusChange);
       this.$store.state.channel.on("message", this.onChannelMessage);
@@ -30,7 +33,8 @@ export default {
     },
     onDesuscribeToChannel() {
       console.warn("ChannelNotify: Received request to desuscribe to Channel");
-      this.$store.state.aeternity.setRegisteredUpdateHandler(null);
+      this.$store.state.aeternity.setUpdateHandler(null);
+      this.$store.state.aeternity.setAfterUpdateAckSignHandler(null);
       this.$store.state.channel.on("statusChanged", null);
       this.$store.state.channel.on("message", null);
     },
@@ -39,6 +43,9 @@ export default {
       console.log("PoS Message received: ", msg);
       this.messageQueue.push(msg);
     },
+    async onAfterUpdateAckSign() {
+      await this.$store.dispatch("updateChannelBalances");
+    },
     onChannelUpdateAck(updateInfo) {
       // Check if we are waiting for signing a purchase that we got through last buy_request message.
       const lastBuyReq = this.$store.state.buyRequestInfo;
@@ -46,26 +53,28 @@ export default {
       console.log("Last known Buy Request data: ", lastBuyReq);
       console.log("Channel Update Information: ", updateInfo);
 
-      if (
-        lastBuyReq &&
-        lastBuyReq.amount === updateInfo.amount &&
-        lastBuyReq.customer === updateInfo.from &&
-        this.$store.getters.responderAddress === updateInfo.to
-      ) {
-        return this.showRequestPaymentModal(
-          lastBuyReq.amount,
-          lastBuyReq.something,
-          lastBuyReq.mechant_name
-        );
-      } else {
-        this.$swal({
-          title: "Oops",
-          text:
-            "We found a Hub request to sign a  purchase you didn't seem to ask. Please contact the application support after dismissing this notice",
-          type: "warning"
-        });
-        return false;
-      }
+      // if (
+      //   lastBuyReq &&
+      //   lastBuyReq.amount === updateInfo.amount &&
+      //   lastBuyReq.customer === updateInfo.from &&
+      //   this.$store.getters.responderAddress === updateInfo.to
+      // ) {
+      return this.showRequestPaymentModal(
+        new BigNumber(lastBuyReq.amount)
+          .dividedBy(new BigNumber(10).pow(18))
+          .toString(10),
+        lastBuyReq.something,
+        lastBuyReq.merchant_name
+      );
+      // } else {
+      //   this.$swal xxx aca rompi algo
+      //     title: "Oops",
+      //     text:
+      //       "We found a Hub request to sign a  purchase you didn't seem to ask. Please contact the application support after dismissing this notice",
+      //     type: "warning"
+      //   });
+      //   return false;
+      // }
     },
     checkMessageQueue() {
       if (this.messageQueue.length > 0) {
@@ -80,7 +89,7 @@ export default {
             this.$store.getters.responderAddress
           );
         } else if (infoObj.type === "buy-request") {
-          console.log("Buy-request message received in channel: ", msg);
+          console.warn("Buy-request message received in channel: ", msg);
           this.$store.commit("storeLastBuyRequestInfo", {
             id: infoObj.id,
             merchant: infoObj.merchant,
@@ -88,6 +97,15 @@ export default {
             amount: infoObj.amount,
             merchant_name: infoObj.merchant_name,
             something: infoObj.something
+          });
+        } else if (infoObj.type === "buy-request-accepted") {
+          console.warn("Buy-request message received in channel: ", msg);
+
+          // TODO: sólo el merchant debe aceptarlo
+          this.$swal.fire({
+            text: "Payment received",
+            type: "success",
+            toast: true
           });
         } else {
           console.warn("An unknown message was present in queue: ", msg);
