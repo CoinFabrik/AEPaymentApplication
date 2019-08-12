@@ -85,6 +85,9 @@ async function responderSign(tag, tx, {updates} = {}) {
         }
     }
 
+    if(tag === "deposit_ack") {
+        return responderAccount.signTransaction(tx)
+    }
     if(tag === "withdraw_ack") {
         return responderAccount.signTransaction(tx)
     }
@@ -135,7 +138,6 @@ const params = {
     port: RESPONDER_PORT,
 }
 
-console.log("init")
 createAccounts().then(() => {
     // initiator connects to state channels endpoint
     connectAsInitiator(params).then(async initiatorChannel => {
@@ -175,18 +177,29 @@ createAccounts().then(() => {
             console.log('Transfer has been rejected')
         }
 
-        console.log("initiator balance:", await initiatorChannel.balances([initiatorAddress]));
-        let b1 = (await initiatorChannel.balances([initiatorAddress]))[initiatorAddress];
-        console.log("balance: ", b1)
-        console.log("without expected fee: ", (new BigNumber(b1)).minus(new BigNumber(20000000000000)).toString(10))
 
+        try{
+            console.log("TESTING deposit")
+            the_result = await initiatorChannel.deposit(
+                10, async (tx) => await initiatorAccount.signTransaction(tx), {
+                    onOnChainTx: (tx) => {console.log(" 1 on chain tx..", tx)},
+                    onOwnDepositLocked: (tx) => {console.log(" 2 onOwnDepositLocked", tx)},
+                    onDepositLocked: (tx) => {console.log(" 3 onDepositLocked", tx)}});
+            console.log("the result:", the_result);
+        } catch(err) {
+            console.log("deposit ERR:", err);
+        }
+
+
+
+        console.log("initiator balance:", await initiatorChannel.balances([initiatorAddress]));
         try{
             console.log("TESTING withdraw..")
             the_result = await initiatorChannel.withdraw(
                 1, async (tx) => await initiatorAccount.signTransaction(tx), {
-                    onOnChainTx: (tx) => {console.log(" 1 on chain tx..")},
-                    onOwnWithdrawLocked: (tx) => {console.log(" 2 onOwnWithdrawLocked")},
-                    onWithdrawLocked: (tx) => {console.log(" 3 onWithdrawLocked")}});
+                    onOnChainTx: (tx) => {console.log(" 1 on chain tx..", tx)},
+                    onOwnWithdrawLocked: (tx) => {console.log(" 2 onOwnWithdrawLocked", tx)},
+                    onWithdrawLocked: (tx) => {console.log(" 3 onWithdrawLocked", tx)}});
             console.log("the result:", the_result);
         } catch(err) {
             console.log("withdraw ERR:", err);
@@ -194,7 +207,7 @@ createAccounts().then(() => {
 
         initiatorChannel.on('error', err => console.log(err))
     }).catch(err => {
-        console.log('Initiator failed to connect')
+        console.log('Initiator failed to connect!?')
         console.log(err)
     })
 
