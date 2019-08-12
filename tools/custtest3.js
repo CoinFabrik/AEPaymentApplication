@@ -10,7 +10,7 @@ const MyChannel = myjschannel.MyChannel;
 
 class Customer extends MyChannel {
     static async Init(account) {
-        let serverdata = await MyChannel.register("client", account.publicKey, 1000000000000000)
+        let serverdata = await Customer.register("client", account.publicKey, 1000000000000000)
         let address = serverdata["address"];
         console.log("server at:", address)
         return new Customer(account.publicKey, account.secretKey, true, address);
@@ -70,7 +70,7 @@ function showDiff(init, final) {
     // await peer.update(10);
     // await peer.showBalances("post-update");
 
-    await myjschannel.sleep(5*1000);
+    await myjschannel.sleep(16000*1000);
     await peer.shutdown();
     await peer.wait_state("DISCONNECTED");
     await myjschannel.sleep(15*1000);

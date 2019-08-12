@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, Index} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, Index, getRepository, Repository} from 'typeorm';
 import {get_private, get_public} from "../tools";
 import {promises} from "fs";
 import {ServerChannel} from "./channel";
@@ -31,6 +31,7 @@ export class InvalidCustomer extends InvalidRequest{}
 
 
 @Entity()
+@Index(["address", "kind"], { unique: true })
 export class CClient {
   @PrimaryGeneratedColumn()
   id: number;
@@ -41,8 +42,10 @@ export class CClient {
   @Column()
   kind: Actor;
 
+  @Column({nullable: true})
   name: string;
-  private?: string;
+
+  private private?: string;
   public channel: ServerChannel;
   public amount: string;
 
@@ -57,6 +60,26 @@ export class CClient {
 
   setChannel(c: ServerChannel) {
       this.channel = c;
+  }
+
+  async get_or_create() {
+      let repo: Repository<CClient> = getRepository<CClient>(CClient);
+      let entity = await repo.findOne({address: this.address, kind: this.kind});
+      if (entity!=undefined) {
+          this.id = entity.id;
+          if ((this.name==undefined) || (this.name.length==0)) {
+              this.name = entity.name;
+              return;
+          } else {
+              entity.name = this.name;
+          }
+      }
+      await this.tsave();
+  }
+
+  async tsave() { //repo?: Repository<CClient>) {
+      let repo: Repository<CClient> = getRepository<CClient>(CClient);
+      await repo.save(this);
   }
 }
 

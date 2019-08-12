@@ -11,7 +11,6 @@ const port=3001;
 //NODE=165.22.18.138:3001 HUB=165.22.76.228:3001
 let URL = jstools.getEnv("NODE", '165.22.18.138');
 let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
-console.log("hub> ", URL);
 
 //const HUBHOST = "localhost";
 const HUBPORT = 3000;
@@ -20,6 +19,10 @@ const WS_URL = "ws://" + URL+ ":"+port;  // http is ok too
 const INTERNAL_API_URL = API_URL+ ":"+port;
 const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
+
+
+console.log("hub>  ", HUBADDR);
+console.log("node> ", URL);
 
 
 async function get(url) {
@@ -44,7 +47,7 @@ async function get(url) {
     });
 }
 
-var INITIATOR_MIN_BALANCE = 1000000000000000;
+var INITIATOR_MIN_BALANCE = "1000000000000000";
 
 class MyChannel {
     static async register(what, addr, amount, name) {
@@ -55,6 +58,7 @@ class MyChannel {
                 url = url + "/" + encodeURIComponent(name);
             }
             data = await get(url);
+            console.log(data);
             return JSON.parse(data);
         } catch (err) {
             console.error(err);
@@ -87,16 +91,15 @@ class MyChannel {
             pushAmount: 0,
             initiatorAmount: INITIATOR_MIN_BALANCE,
             responderAmount: 1,
-            channelReserve: 40000,
-            //ttl: 1000,
-            // host: "localhost",
-            host: "localhost", //"10.10.0.79",
+            channelReserve: 1,
+            host: "localhost",
             port: 3001,
-            lockPeriod: 10,
-            initiatorId: this.initiator,
-            responderId: this.responder,
+            lockPeriod: 1,
             role: this.role,
         };
+        console.log("options:", options);
+        options["initiatorId"] = this.initiator;
+        options["responderId"] = this.responder;
         console.log(1,this.initiator)
         console.log(1,this.responder)
         return options;
@@ -113,7 +116,10 @@ class MyChannel {
         });
 
         let balance = await this.nodeuser.balance(this.pubkey);
-        console.log(" we: ", this.pubkey, " balance: ", balance);
+        console.log(" we: ", this.pubkey);
+        console.log("balance:  ", balance);
+        console.log("required: ", INITIATOR_MIN_BALANCE);
+
         let bal = new BigNumber(balance);
         if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
             console.log("less balance than expected!");

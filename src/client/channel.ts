@@ -14,7 +14,7 @@ const {
 } = require('@aeternity/aepp-sdk');
 
 const port = 3001;
-let URL = getEnv('NODE', '10.10.0.79')+ ':' + port;
+let URL = getEnv('AENODE', '10.10.0.79')+ ':' + port;
 //let URL = 'localhost:'+port;
 const API_URL = "http://" + URL;
 const WS_URL = "ws://" + URL;  // http is ok too
@@ -22,6 +22,7 @@ const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
 export const ACCOUNT = getEnv("ACCOUNT", "hub");
 
+console.log("NODE:", URL)
 
 export abstract class ServerChannel extends EventEmitter {
     private static readonly xlogger = new Logger("Channel");
@@ -141,11 +142,10 @@ export abstract class ServerChannel extends EventEmitter {
             pushAmount: 0,
             initiatorAmount: this.client.amount,
             responderAmount: 1,
-            channelReserve: 40000,
-            //ttl: 1000,
+            channelReserve: 1,
             host: "localhost",
             port: 3001,
-            lockPeriod: 10,
+            lockPeriod: 1,
             role: this.role,
         };
         this.log("opts:" + JSON.stringify(options));
