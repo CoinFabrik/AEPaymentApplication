@@ -64,7 +64,6 @@ export default {
   },
   methods: {
     async connectToBaseApp() {
-
       this.status = STATUS_CONNECTING;
       try {
         const connectStatus = await aeternity.connectToBaseApp();
@@ -77,21 +76,21 @@ export default {
             params: { subview: "onboarding" }
           });
         } else {
-          this.setError(connectStatus.error.toString());
+          this.displayError(connectStatus.error.toString());
         }
       } catch (e) {
-        this.setError(e.toString());
+        this.displayError(e.toString());
       }
     },
-    setError(errorText) {
-      this.$router.push({
-        name: "error",
-        params: {
-          errorTitle: "We could not connect to your wallet",
-          errorDescription: errorText,
-          retryCancel: false
-        }
+    displayError(errorText) {
+      this.$swal.fire({
+        title: "Oops! We could not connect to your wallet",
+        text:
+          "Ensure you are running this application under the Base æpp wallet. Reason: " +
+          errorText
       });
+
+      this.status = STATUS_INIT;
     }
   },
   mounted() {
@@ -103,7 +102,7 @@ export default {
       console.warn("Booting application with role:  CLIENT");
     } else {
       console.error("Cannot find application role in VUE_APP_ROLE variable");
-      this.setError(
+      this.displayError(
         "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
       );
     }
