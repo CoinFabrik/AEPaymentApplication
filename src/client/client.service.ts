@@ -380,4 +380,9 @@ export class ClientService extends ServiceBase {
         return await repo.findOne({address:address, kind: kind});
     }
 
+    async queryClients(kind: Actor): Promise<CClient[]> {
+        let repo = getRepository(CClient);
+        return await repo.find({kind: kind});
+    }
+
 }

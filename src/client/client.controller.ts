@@ -8,7 +8,6 @@ import {Actor, CClient} from "./client.entity";
 abstract class ClientController {
   constructor(  //private readonly appService: AppService,
               private readonly clientService: ClientService) {
-        console.log(new Error);
       setTimeout( () => {
           console.log("1-------- this is:", this);
       }, 0);
@@ -48,14 +47,20 @@ abstract class ClientController {
       return this.service.connect(client);
   }
 
+  @Get("all")
+  async queryClients(@Param() params): Promise<any> {
+      return await this.service.queryClients(this.kind);
+  }
+
   @Get(":address")
   async queryClient(@Param() params): Promise<any> {
       let result = await this.service.queryClient(params.address, this.kind);
-      if (result==undefined) {
-          return null;
-      }
       let response = ServerChannel.GetInfo();
-      response["name"] = result.name;
+      let name = null;
+      if (result!=undefined) {
+          name = result.name;
+      }
+      response["name"] = name;
       return response;
   }
 }

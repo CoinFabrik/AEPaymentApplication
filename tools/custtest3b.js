@@ -70,6 +70,8 @@ function pick_random(arr) {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
+    let merchants = await peer.get_("merchant")
+    let merchant = pick_random(merchants);
 
     // await peer.showBalances("pre-update");
     // await peer.update(10);
