@@ -277,14 +277,12 @@ export class Hub extends EventEmitter {
             response = mc.forwardBuyRequestToCustomer(msg);
             mc.sendCustomer( response );
             let start = Date.now();
-            mc.cclient.channel.sendTxRequest(msg["info"]["amount"]).
-                then((update_result) => {
-                    let end = Date.now();
-                    console.log(" took: ", end-start)
-                    console.log(JSON.stringify(update_result))
-                    this.log("buy-request forwarded!");
-                    this.emit("wait-payment", mc, update_result, pre_balance);
-            }).catch(console.error);
+            let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
+            let end = Date.now();
+            console.log(" took: ", end-start)
+            console.log(JSON.stringify(update_result))
+            this.log("buy-request forwarded!");
+            this.emit("wait-payment", mc, update_result, pre_balance);
         } catch (err) {
             this.log("buy-request ignored: "+ err.toString());
             if(mc!=null) {

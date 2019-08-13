@@ -51,6 +51,8 @@ function showDiff(init, final) {
     console.log( `${cusdif.toString(10)} \t \t \t ${hubdif.toString(10)}`);
 }
 
+
+
 (async function () {
     let account = await jstools.get_account(
         jstools.getArgv(2,
@@ -70,14 +72,21 @@ function showDiff(init, final) {
     // await peer.update(10);
     // await peer.showBalances("post-update");
 
-    await myjschannel.sleep(16000*1000);
-    await peer.shutdown();
-    await peer.wait_state("DISCONNECTED");
-    await myjschannel.sleep(15*1000);
-    let final = await peer.showBalances("final");
+    //await myjschannel.sleep(16000*1000);
 
-    showDiff(initial, final);
-    process.exit(0);
+    async function quit(code) {
+        await peer.shutdown();
+        await peer.wait_state("DISCONNECTED");
+        await myjschannel.sleep(15*1000);
+        let final = await peer.showBalances("final");
+        showDiff(initial, final);
+        process.exit(code);
+    }
+
+    process.on('SIGINT', function() {
+        console.log("Caught interrupt signal");
+        quit(0);
+    });
     //h = await peer.height();
     //console.log("height:", h, "Balance:", await peer.balance({height: h}));
 })();
