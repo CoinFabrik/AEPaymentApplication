@@ -9,7 +9,7 @@ const jstools = require('./jstools');
 class Merchant extends MyChannel {
     static async Init(account) {
         let sdata = await MyChannel.register("merchant",
-                        account.publicKey, 1000000000000000, "dave's beer");
+                        account.publicKey, "1000000000000000", "dave's beer");
         console.log("Server at:", sdata["address"])
         return new Merchant(account.publicKey, account.secretKey, true, sdata["address"]);
     }

@@ -6,6 +6,7 @@ import {CClient, MerchantCustomerAccepted} from "./client/client.entity";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import {getEnv} from "./tools";
+import {CustomerController, MerchantController} from './client/client.controller';
 
 let Entities = [CClient, MerchantCustomerAccepted];
 
@@ -18,7 +19,7 @@ let Entities = [CClient, MerchantCustomerAccepted];
       synchronize: true,
     }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, MerchantController, CustomerController ],
   providers: [AppService, ClientService],
 })
 export class AppModule {}

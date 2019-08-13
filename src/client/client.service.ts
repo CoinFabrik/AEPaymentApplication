@@ -192,7 +192,7 @@ export class Hub extends EventEmitter {
     private static hub: Hub;
     private logger: Logger;
 
-    private constructor(private service: ServiceBase) {
+    private constructor(public service: ClientService) {
         super();
         this.logger = new Logger("Hub");
         this.setup()
@@ -203,7 +203,7 @@ export class Hub extends EventEmitter {
         }
         return this.hub;
     }
-    static Create(service: ServiceBase) {
+    static Create(service: ClientService) {
         if (this.hub!=undefined) {
             throw Error("Already initialized Hub");
         }
@@ -276,11 +276,13 @@ export class Hub extends EventEmitter {
 
             response = mc.forwardBuyRequestToCustomer(msg);
             mc.sendCustomer( response );
-            mc.cclient.channel.sendTxRequest(msg["info"]["amount"]).
-                then((update_result) => {
-                    this.log("buy-request forwarded!");
-                    this.emit("wait-payment", mc, update_result, pre_balance);
-            }).catch(console.error);
+            let start = Date.now();
+            let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
+            let end = Date.now();
+            console.log(" took: ", end-start)
+            console.log(JSON.stringify(update_result))
+            this.log("buy-request forwarded!");
+            this.emit("wait-payment", mc, update_result, pre_balance);
         } catch (err) {
             this.log("buy-request ignored: "+ err.toString());
             if(mc!=null) {
@@ -342,26 +344,40 @@ export class ClientService extends ServiceBase {
             .then(voidf).catch(console.error);
     }
 
-    connect(toClient: CClient, clientType: Actor): object {
-        this.emit(clientType + "-connection", toClient);
+    connect(toClient: CClient, clientType?: Actor): object {
+        if (clientType==undefined) {
+            clientType = toClient.kind;
+        } else {
+            if (clientType!==toClient.kind) {
+                throw new Error(`Invalid kind:  ${clientType}, ${toClient.kind}  !!!`);
+            }
+        }
+        this.emit(toClient.kind + "-connection", toClient);
         return ServerChannel.GetInfo();
     }
 
     constructor() {
         super();
-        this.on("customer-connection", (client) => {
+        this.on("customer-connection", (client: CClient) => {
             let peer = new CustomerChannel(client);
             this.emit("connect", peer);
         });
-        this.on("merchant-connection", (client) => {
+        this.on("merchant-connection", (client: CClient) => {
             let peer = new MerchantChannel(client);
             this.emit("connect", peer);
         });
-        this.on("connect", (peer) => {
-            peer.initChannel(this)
+        this.on("connect", (peer: ServerChannel) => {
+            peer.client.get_or_create().then(voidf).catch(console.error);
+            peer.initChannel(this);
         });
     }
 
     static async test() {
     }
+
+    async queryClient(address: string, kind: Actor): Promise<CClient> {
+        let repo = getRepository(CClient);
+        return await repo.findOne({address:address, kind: kind});
+    }
+
 }
