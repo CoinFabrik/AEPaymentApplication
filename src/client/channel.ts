@@ -311,7 +311,7 @@ export class CustomerChannel extends ServerChannel {
 }
 
 const PING = "beep beep";
-const PINGACK = "heatbeat-ack";
+const PINGACK = "heartbeat-ack";
 const info = "info";
 
 export class MerchantChannel extends ServerChannel {
