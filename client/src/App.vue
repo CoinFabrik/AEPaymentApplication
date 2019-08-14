@@ -1,47 +1,57 @@
 <template>
   <div id="app">
     <ChannelNotify />
-    <AeMain style="padding: 20px; height: 100%;">
-      <img id="ae-logo" alt="AE-logo" src="./assets/ae2x.png" />
-      <div>
-        <ae-text fill="primary" face="sans-l">Æternity Universe One</ae-text>
-      </div>
-      <ae-text fill="secondary" face="sans-base">Developers Conference</ae-text>
-      <div id="content">
-        <transition name="slide" mode="out-in">
-          <router-view></router-view>
-        </transition>
-      </div>
-    </AeMain>
-  </div>
+		<AeBanner/>
+		<AeMain id="main">
+			<div id="content">
+				<transition name="slide" mode="out-in">
+					<router-view></router-view>
+				</transition>
+			</div>
+		</AeMain>
+		<LoadingScreen :isLoading="isLoading" />
+	</div>
 </template>
 
 <script>
-import { AeMain, AeText } from "@aeternity/aepp-components";
-import ChannelNotify from "./components/ChannelNotify";
+	import { AeMain } from "@aeternity/aepp-components";
+	import ChannelNotify from "./components/ChannelNotify";
 
-import "@aeternity/aepp-components/dist/aepp.global.css";
-import "@aeternity/aepp-components/dist/aepp.components.css";
-import "sweetalert2/dist/sweetalert2.min.css";
+	import "@aeternity/aepp-components/dist/aepp.global.css";
+	import "@aeternity/aepp-components/dist/aepp.components.css";
+	import "sweetalert2/dist/sweetalert2.min.css";
+	import LoadingScreen from "./components/LoadingScreen";
+	import AeBanner from "./components/AeBanner";
 
-export default {
-  name: "App",
-  components: { AeMain, AeText, ChannelNotify }
-};
+	export default {
+		name: "App",
+		components: { AeMain, ChannelNotify, LoadingScreen, AeBanner},
+		data() {
+			return { isLoading: false };
+		},
+	};
 </script>
 
 <style>
-#app {
-  height: 100%;
-  text-align: center;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-}
-#ae-logo {
-  height: 10%;
-}
-#content {
-  margin-top: 20px;
-}
+	#app {
+		overflow: hidden;
+		height: 100%;
+		text-align: center;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-align: center;
+		background-color: #311B58;
+	}
+	#main {
+		height: 100%;
+		min-height: 0%;
+		width: 100%;
+		border-radius:20px 20px 0px 0px;
+	}
+	#content {
+		margin-top: 20px;
+		margin-bottom: 20px;
+		height: 100%;
+		width: 100%;
+	}
 </style>
