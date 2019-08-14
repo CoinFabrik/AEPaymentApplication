@@ -5,7 +5,13 @@ import router from './router'
 import store from './store'
 import VueSweetalert2 from 'vue-sweetalert2'
 import Globals from './globals'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import { LayoutPlugin, ModalPlugin, ButtonPlugin } from 'bootstrap-vue'
 
+Vue.use(ButtonPlugin)
+Vue.use(LayoutPlugin)
+Vue.use(ModalPlugin)
 Vue.config.productionTip = false
 
 console.log("The AE Universe One Client Application");
