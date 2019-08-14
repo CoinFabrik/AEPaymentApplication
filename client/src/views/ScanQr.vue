@@ -1,18 +1,27 @@
 <template>
-  <div class="scanqrview">
-    <div v-if="this.subview === 'onboarding'">
-      <AeText>
-        To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
-        Stand
-      </AeText>
-    </div>
-    <div v-if="this.subview === 'scantxqr'">
-      <AeText>Scan a QR Code for your desired transaction</AeText>
-    </div>
-    <div id="scan_qr_container" @click="onQrClick">
-      <QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
-    </div>
-  </div>
+	<div class="scanqrview">
+		<b-container>
+			<b-row align-h="center">
+				<!-- <div v-if="this.subview === 'onboarding'">
+					<AeText face="sans-s">
+						To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
+						Stand
+					</AeText>
+				</div> -->
+				<!-- <br> -->
+				<div v-if="this.subview === 'scantxqr'">
+					<AeText>Scan a QR Code for your desired transaction</AeText>
+				</div>
+
+				<div id="scan_qr_container" @click="onQrClick">
+					<div id="scan_qr_subcontainer" @click="onQrClick">
+						<QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
+					</div>
+				</div>
+			</b-row>
+		</b-container>
+	</div>
+
 </template>
 
 <script>
@@ -172,7 +181,7 @@ export default {
         channelReserve: process.env.VUE_APP_TEST_CHANNEL_RESERVE,
          // Minimum block height to include the channel_create_tx
         ttl: process.env.VUE_APP_TEST_CHANNEL_TTL,
-       
+
         // Amount of blocks for disputing a solo close
         lockPeriod: process.env.VUE_APP_TEST_CHANNEL_LOCK_PERIOD,
 
@@ -193,3 +202,22 @@ export default {
   }
 };
 </script>
+
+<style>
+	#scan_qr_subcontainer {
+		height: 150px;
+		width: 150px;
+		border-radius: 30px;
+		border:1px dashed red;
+		position: relative;
+		top: 50%;
+    left: 50%;
+		transform: translate(-50%, -50%)
+	}
+	#scan_qr_container {
+		height: 200px;
+		width: 200px;
+		border-radius: 30px;
+		border:1px solid #311B58;
+	}
+</style>

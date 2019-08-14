@@ -1,19 +1,48 @@
-
 <template>
   <div class="connectToWallet">
-    <div v-if="isAtInitialState">
-      <AeText>We need access to your wallet. Please click the button below to authorize this application</AeText>
-      <AeButton face="round" fill="primary" extend @click="connectToBaseApp()">Connect your wallet</AeButton>
-    </div>
-    <div v-if="isConnecting">
-      <AeText>Please wait...</AeText>
-      <AeLoader />
-    </div>
-    <div v-if="isAtError">
-      <ae-backdrop>{{ error }}</ae-backdrop>
-    </div>
+    <b-container>
+      <b-col offset-md="4" md="4">
+        <div v-if="isAtInitialState">
+            <AeText weight="bold" face='sans-s'>We need access to your wallet. Please click the button below to authorize this application</AeText>
+            <br>
+            <AeButton face="round" fill="primary" @click="$bvModal.show('authorize-modal')">Connect your wallet</AeButton>
+        </div>
+        <div v-if="isConnecting">
+          <AeText>Please wait...</AeText>
+          <AeLoader />
+        </div>
+        <div v-if="isAtError">
+          <ae-backdrop>{{ error }}</ae-backdrop>
+        </div>
+      </b-col>
+
+      <b-modal id="authorize-modal" centered hide-footer hide-header>
+        <div class="d-block text-center">
+          <AeText weight="bold">Authorize access of this application to your account?</AeText>
+        </div>
+        <br>
+        <b-row>
+          <b-col>
+            <AeButton face="round" fill="neutral" @click="$bvModal.hide('authorize-modal')">Deny</AeButton>
+          </b-col>
+          <b-col>
+            <AeButton face="round" fill="primary" @click="connectToBaseApp(); $bvModal.hide('authorize-modal')">Allow</AeButton>
+          </b-col>
+        </b-row>
+      </b-modal>
+
+    </b-container>
   </div>
 </template>
+
+<style>
+  .connectToWallet {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
 
 <script>
 /* eslint-disable no-console */
