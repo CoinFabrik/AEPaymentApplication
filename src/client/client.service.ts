@@ -144,12 +144,6 @@ class MerchantCustomer {
         return base;
     }
 
-    msgPaymentAccepted() {
-        let base = this.base();
-        base["type"]= "buy-request-accepted";
-        return base;
-    }
-
     msgPaymentRejected() {
         let base = this.base();
         base["type"]= "buy-request-rejected";
@@ -164,6 +158,31 @@ class MerchantCustomer {
         let base = clone(msg);
         base["type"] = "error";
         base["msg"] = err.toString;
+        return base;
+    }
+
+    static paymentRejected(err: Error, msg: any): object {
+        let base = clone(msg);
+        base["type"] = "payment-request-rejected";
+        base["msg"] = err.toString;
+        return base;
+    }
+
+    msgPaymentAccepted(): object {
+        let base = this.base();
+        base["type"] = "payment-request-accepted";
+        return base;
+    }
+
+    msgPaymentRequestCompleted() {
+        let base = this.base();
+        base["type"]= "payment-request-completed";
+        return base;
+    }
+
+    msgPaymentRequestCanceled() {
+        let base = this.base();
+        base["type"]= "payment-request-canceled";
         return base;
     }
 
@@ -294,20 +313,31 @@ export class Hub extends EventEmitter {
         //     mc.sendMerchant(mc.msgPaymentRejected());
         // });
 
-        this.on("payment-request", (msg)=> {
-            this.payment_request(msg).then(voidf).catch(console.error);
+        this.on("user-payment-request", (msg, emitter_channel)=> {
+            this.payment_request(msg)
+                .then((mc) => { this.emit("payment-request-accepted", mc) })
+                .catch((err)=> {
+                    this.emit("payment-request-rejected",
+                        MerchantCustomer.paymentRejected(err, msg), emitter_channel)
+                });
+        });
+        this.on("payment-request-rejected", (err_msg, emitter_channel)=> {
+            emitter_channel.sendMessage(err_msg).then(voidf).catch(console.error);
         });
         this.on("payment-request-accepted", (mc)=> {
-            mc.sendMerchant(mc.msgPaymentAccepted());
             mc.sendCustomer(mc.msgPaymentAccepted());
-        });
-        this.on("payment-request-rejected", (mc)=> {
-            mc.sendMerchant(mc.msgPaymentRejected());
         });
         this.on("wait-payment", (mc, pre_balance) => {
             this.wait_payment(mc, pre_balance)
-                .then(()=> {this.emit("payment-request-accepted", mc)})
-                .catch(()=> {this.emit("payment-request-rejected", mc)});
+                .then(()=> {this.emit("payment-request-completed", mc)})
+                .catch(()=> {this.emit("payment-request-canceled", mc)});
+        });
+        this.on("payment-request-completed", (mc)=> {
+            mc.sendCustomer(mc.msgPaymentRequestCompleted());
+            mc.sendMerchant(mc.msgPaymentRequestCompleted());
+        });
+        this.on("payment-request-canceled", (mc)=> {
+            mc.sendCustomer(mc.msgPaymentRequestCanceled());
         });
 
     }
@@ -331,28 +361,15 @@ export class Hub extends EventEmitter {
 
     async payment_request(msg) {
         let mc;
-        let response;
         this.log("pay-request: " + (mystringify(msg)));
         try {
             mc = MerchantCustomer.FromRequest(msg);
-            // after this request was approved
             let pre_balance = await mc.cclient.channel.hub_balance();
-            // let start = Date.now();
-            //let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
-            //console.log(JSON.stringify(update_result));
-            // let end = Date.now();
-            //console.log(" took: ", end-start);
             this.emit("wait-payment", mc, pre_balance);
-            // this.emit("payment-request-accepted", mc);
-            // this.emit("payment-request-rejected", mc);
+            return mc;
         } catch (err) {
-            console.log(err);
             this.log("payment-request ignored: "+ mystringify(err));
-            if(mc!=null) {
-                mc.sendCustomer( mc.errorMsg(err) );
-            } else {
-                await msg.emitter.sendMessage(MerchantCustomer.errorMsg(err, msg))
-            }
+            throw err;
         }
     }
 

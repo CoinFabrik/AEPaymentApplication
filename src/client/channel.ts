@@ -125,8 +125,7 @@ export abstract class ServerChannel extends EventEmitter {
             } else {
                 try {
                     msg[info] = JSON.parse(msg[info])
-                    msg.emitter = self;
-                    this.hub.emit(msg[info]["type"], msg);
+                    this.hub.emit("user-"+msg[info]["type"], msg, self);
                 } catch(err) {
                     console.log(err);
                     console.log("message was:")

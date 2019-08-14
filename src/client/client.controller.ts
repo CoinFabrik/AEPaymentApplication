@@ -43,10 +43,11 @@ abstract class ClientController {
       client.address = address;
       client.amount = amount;
       client.name = name;
-      if(this.service.isOnOrPendingClientByAddress(address, kind)){
-          console.log("already connected:", address);
-          return res.status(HttpStatus.TEMPORARY_REDIRECT).json({"error": "already connected"});
-      }
+      // TO DO : revisar
+      // if(this.service.isOnOrPendingClientByAddress(address, kind)){
+      //     console.log("already connected:", address);
+      //     return res.status(HttpStatus.TEMPORARY_REDIRECT).json({"error": "already connected"});
+      // }
       return res.json(this.service.connect(client));
   }
 

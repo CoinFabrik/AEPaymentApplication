@@ -57,8 +57,6 @@ class Customer extends MyChannel {
 
     async sendPayment(pr) {
         await this.sendMessage(pr);
-        await myjschannel.sleep(2000);
-        await this.update(pr.amount);
     }
 }
 
@@ -88,16 +86,38 @@ function pick_random(arr) {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
+    peer.on("message", (msg)=> console.log("RECV:>", msg) );
+
+
     let merchants = await peer.get_("merchant");
     console.log(1,JSON.stringify(merchants))
     let merchant = pick_random(merchants);
 
-    // let pr = Message.PaymentRequest(
-    //     merchant.address, merchant.name, peer.pubkey, 1000,
-    //     [{what:"beer", amount:2}]);
-    // let result = await peer.sendPayment(pr);
-    // console.log(JSON.stringify(result));
+    let pr = Message.PaymentRequest(
+        merchant.address, merchant.name, peer.pubkey, 1000,
+        [{what:"beer", amount:2}]);
 
+
+    peer.on("message", (msg) => {
+        console.log("INFO:>", msg);
+        if(msg["type"]==="payment-request-rejected") {
+            console.log("payment canceled:", msg["msg"]);
+        }
+        if(msg["type"]==="payment-request-accepted") {
+            console.log("sending payment..")
+            peer.update(pr.amount).then(()=>{console.log("sent!")}).catch(console.error);
+        }
+        if(msg["type"]==="payment-request-completed") {
+            console.log("payment compelted!")
+            peer.on("message", (msg) => {console.log("RECV:>", msg)})
+        }
+        if(msg["type"]==="payment-request-canceled") {
+            console.log("shouldn'h happen here")
+        }
+    });
+
+    let result = await peer.sendPayment(pr);
+    console.log(JSON.stringify(result));
 
 
     // await peer.showBalances("pre-update");
@@ -111,11 +131,12 @@ function pick_random(arr) {
         await myjschannel.sleep(3*1000);
         let final = await peer.showBalances("final");
         showDiff(initial, final);
-        console.log("exit...")
+        console.log("exit...");
         process.exit(code);
     }
 
     process.on('SIGINT', function() {
+        process.on('SIGINT', function() {});
         console.log("Caught interrupt signal");
         quit(0).then(()=>{}).catch(console.error);
     });

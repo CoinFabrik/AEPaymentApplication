@@ -7,6 +7,19 @@ const jstools = require('./jstools');
 
 
 class Merchant extends MyChannel {
+
+     async getMerchantBalance() {
+        let data;
+        try {
+            let url = "/balance/" + this.pubkey;
+            data = await this.get(url);
+            return JSON.parse(data)["balance"];
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
     static async Init(account) {
         let sdata = await MyChannel.register("merchant",
                         account.publicKey, "1000000000000000", "dave's beer");
@@ -49,6 +62,11 @@ class Merchant extends MyChannel {
     await peer.init();
     await peer.initChannel();
     await peer.wait_state("OPEN");
+
+    while(1) {
+        console.log("Balance:", await peer.getMerchantBalance());
+        await myjschannel.sleep(1000);
+    }
 
     // try {
     //     let customer;

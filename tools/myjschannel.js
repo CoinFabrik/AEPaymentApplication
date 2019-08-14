@@ -6,6 +6,7 @@ const {
 const http = require('http');
 const BigNumber = require('bignumber.js');
 const jstools = require("./jstools");
+const events = require('events');
 
 const port=3001;
 //NODE=165.22.18.138:3001 HUB=165.22.76.228:3001
@@ -50,10 +51,14 @@ async function get(url) {
 var INITIATOR_MIN_BALANCE = "1000000000000000";
 
 
-class MyChannel {
+class MyChannel extends events.EventEmitter {
     async get_(actor) {
         let url = (actor==="merchant") ? "/merchant" : "/client";
         return JSON.parse(await get(url+"/all"));
+    }
+
+    async get(url) {
+        return await get(url);
     }
 
     static async register(what, addr, amount, name) {
@@ -73,6 +78,7 @@ class MyChannel {
     }
 
     constructor(pubkey, privkey, init_role, opposite_addr) {
+        super();
         this.nodeuser = undefined;
         this.pubkey = pubkey;
         this.privkey = privkey;
@@ -173,19 +179,7 @@ class MyChannel {
             try {
                 let info = JSON.parse(msg["info"]);
                 if (info["type"]==="heartbeat") return;
-                console.log("RECV:>", msg)
-                // if (info["type"]==="signnsend") {
-                //     console.log("Received!! sending..")+JSON.stringify(tx)
-                //     self.nodeuser.signTransaction(info["tx"]).then(
-                //         (txx) => {
-                //             this.sendMessage({
-                //                 "type": "signnsend",
-                //                 "txx": txx,
-                //                 "tx": info["tx"]
-                //             });
-                //         }
-                //     ).catch(console.error);
-                // }
+                this.emit("message", info);
             } catch(err) {
                 console.log("cant parse info")
             }
