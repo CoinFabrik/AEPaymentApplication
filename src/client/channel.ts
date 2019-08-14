@@ -121,7 +121,7 @@ export abstract class ServerChannel extends EventEmitter {
         this.status = "";
         const self = this;
         this.on("message", (msg) => {
-            if (msg[info]==PING) {
+            if ((msg[info]==PING)||(msg[info]==PINGACK)) {
             } else {
                 msg[info] = JSON.parse(msg[info])
                 msg.emitter = self;
@@ -305,6 +305,7 @@ export class CustomerChannel extends ServerChannel {
 }
 
 const PING = "beep beep";
+const PINGACK = "heatbeat-ack";
 const info = "info";
 
 export class MerchantChannel extends ServerChannel {
