@@ -6,7 +6,7 @@
       <div>
         <ae-text fill="primary" face="sans-l">Æternity Universe One</ae-text>
       </div>
-      <ae-text fill="secondary" face="sans-base">Developers Conference</ae-text>
+      <ae-text fill="secondary" face="uppercase-xs">{{ this.$isMerchantAppRole ? "merchant wallet" : "customer wallet" }}</ae-text>
       <div id="content">
         <transition name="slide" mode="out-in">
           <router-view></router-view>

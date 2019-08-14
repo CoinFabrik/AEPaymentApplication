@@ -17,50 +17,48 @@ class HubConnection {
       console.log(error.response.data);
       console.log(error.response.status);
       console.log(error.response.headers);
-      return { success: false, code: error.response.status };
+      return { success: false, code: error.response.status, error };
     } else if (error.request) {
       console.log(error.request);
-      return { success: false, request: error.request };
+      return { success: false, request: error.request, error };
     } else {
-      return { success: false, error: error };
+      return { success: false, error };
     }
   }
 
-  async notifyClientOnboarding(amount) {
+  async getRegisteredName(role) {
+    if (role === "client" || role === "merchant") {
+      try {
+        let res = await axios.get(this.hubUrl + '/' + role + '/' + this.address);
+        return { success: true, name: res.data.name };
+      } catch (error) {
+        return this.handleError(error);
+      }
+    } else {
+      throw new Error("Unknown role: ") + role;
+    }
+  }
+
+  async getHubBalance() {
     try {
-      let output = await axios.get(this.hubUrl + '/client/' + this.address + '/' + amount);
-      // console.log(JSON.stringify(output));
-      return { success: true, address: output.data.address };
+      let res = await axios.get(this.hubUrl + '/balance/' + this.address);
+      return { success: true, balance: res.data.balance };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  async notifyMerchantOnboarding(amount, name) {
-    try {
-      let output = await axios.get(this.hubUrl + '/merchant/' + this.address + '/' + amount + '/' + name);
-      // console.log(JSON.stringify(output));
-      return { success: true, address: output.data.address };
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async getMerchantName() {
-    try {
-      const resp = await axios.get(this.hubUrl + '/merchantId/' + this.address);
-      return { success: true, name: resp.name };
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async registerMerchant(name) {
-    try {
-      await axios.put(name);
-      return { success: true };
-    } catch (error) {
-      return this.handleError(error);
+  async notifyUserOnboarding(amount, name, role) {
+    if (role === "client" || role === "merchant") {
+      try {
+        let output = await axios.get(this.hubUrl + '/' + role + '/' + this.address + '/' + amount + '/' + name);
+        // console.log(JSON.stringify(output));
+        return { success: true, address: output.data.address };
+      } catch (error) {
+        return this.handleError(error);
+      }
+    } else {
+      throw new Error("Unknown role: ") + role;
     }
   }
 }

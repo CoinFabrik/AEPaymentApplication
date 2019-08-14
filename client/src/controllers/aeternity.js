@@ -159,11 +159,22 @@ aeternity.estimateDepositFee = function (gasAmount) {
 
 aeternity.deposit = async function (channel, amount, onChainTxCallback) {
   console.log("Deposit: ", amount);
-  return channel.deposit(amount, async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+  return channel.deposit(amount, async (tx) => aeternity.client.signTransaction(tx),
+    {
+      onOnChainTx: onChainTxCallback,
+      onOwnDepositLocked: () => console.log("OnOwnDepositLocked"),
+      onDepositLocked: () => console.log("OnDepositLocked")
+    });
 }
 
 aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
-  return channel.withdraw(amount, async (tx) => aeternity.client.signTransaction(tx), { onOnChainTx: onChainTxCallback });
+  console.log("Withdraw: ", amount);
+  return channel.withdraw(amount, async (tx) => aeternity.client.signTransaction(tx),
+    {
+      onOnChainTx: onChainTxCallback,
+      onOwnWithdrawLocked: () => console.log("OnOwnWithdrawLocked"),
+      onWithdrawLocked: () => console.log("OnWithdrawLocked")
+    });
 }
 
 aeternity.closeChannel = async function (channel, onChainTxCallback, onDepositCallback) {
@@ -193,7 +204,7 @@ aeternity.setUpdateHandler = function (f) {
   aeternity.updateHandler = f;
 }
 
-aeternity.setAfterUpdateAckSignHandler = function(f) {
+aeternity.setAfterUpdateAckSignHandler = function (f) {
   aeternity.afterSignHandler = f;
 }
 export default aeternity;

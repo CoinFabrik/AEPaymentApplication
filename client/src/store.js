@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import Vue from 'vue'
 import Vuex from 'vuex'
+import HubConnection from './controllers/hub'
 
 Vue.use(Vuex)
 
@@ -12,9 +13,10 @@ export default new Vuex.Store({
     channel: null,
     initiatorBalance: null,
     responderBalance: null,
+    hubBalance: null,
     hubUrl: null,
     hubAddress: null,
-    merchantName: null,
+    userName: null,
     buyRequestInfo: null
   },
   getters: {
@@ -50,8 +52,8 @@ export default new Vuex.Store({
     setInitialDeposit(state, amount) {
       state.channelParams.initiatorAmount = amount;
     },
-    setMerchantName(state, name) {
-      state.merchantName = name;
+    setUserName(state, name) {
+      state.userName = name;
     },
     setChannel(state, channel) {
       state.channel = channel;
@@ -62,17 +64,20 @@ export default new Vuex.Store({
     updateResponderBalance(state, amount) {
       state.responderBalance = amount;
     },
+    updateInHubBalance(state,amount){
+      state.hubBalance = amount;
+    },
     storeLastBuyRequestInfo(state, data) {
       state.buyRequestInfo = data;
     },
     clearLastBuyRequestInfo(state) {
-      state.buyRequestInfo  = null;
+      state.buyRequestInfo = null;
     }
   },
   actions: {
     resetState({ commit }) {
       commit('setInitialDeposit', null);
-      commit('setMerchantName', null);
+      commit('setUserName', null);
       commit('setChannel', null);
       commit('updateBalance', 0);
       commit('updateInitiatorBalance', null);
@@ -95,10 +100,17 @@ export default new Vuex.Store({
           commit('updateResponderBalance', balances[rAddr]);
         },
         function (err) {
-          console.error(err);
-          throw err;
+          return Promise.reject(err);
         }
       )
+    },
+    async updateHubBalance({ commit, state, getters }) {
+      let hubConnection = new HubConnection(state.hubUrl, getters.initiatorAddress);
+      let res = await hubConnection.getHubBalance();
+      if (!res.success) {
+        return Promise.reject(new Error(res.error));
+      }
+      commit('updateInHubBalance', res.balance);
     },
     createChannel({ commit, state }) {
       state.aeternity.createChannel(state.channelParams).then(
@@ -114,7 +126,7 @@ export default new Vuex.Store({
           if (accepted) {
             return dispatch('updateChannelBalances');
           } else {
-            throw new Error("Your update has been rejected");
+            return Promise.reject(new Error("channel.updated rejected"));
           }
         }
       );

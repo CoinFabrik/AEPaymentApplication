@@ -21,9 +21,7 @@ export default {
   methods: {
     onSuscribeToChannel() {
       console.warn("ChannelNotify: Received request to suscribe to Channel");
-      this.$store.state.aeternity.setUpdateHandler(
-        this.onChannelUpdateAck
-      );
+      this.$store.state.aeternity.setUpdateHandler(this.onChannelUpdateAck);
       this.$store.state.aeternity.setAfterUpdateAckSignHandler(
         this.onAfterUpdateAckSign
       );
@@ -98,14 +96,18 @@ export default {
             merchant_name: infoObj.merchant_name,
             something: infoObj.something
           });
-        } else if (infoObj.type === "buy-request-accepted") {
+        } else if (
+          infoObj.type === "buy-request-accepted" &&
+          this.$isMerchantAppRole
+        ) {
           console.warn("Buy-request message received in channel: ", msg);
 
           // TODO: sólo el merchant debe aceptarlo
           this.$swal.fire({
-            text: "Payment received",
+            text: "Payment received from HERNAN for 1.5 AE",
             type: "success",
-            toast: true
+            toast: true,
+            position: "top-end"
           });
         } else {
           console.warn("An unknown message was present in queue: ", msg);

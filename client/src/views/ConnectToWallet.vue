@@ -9,9 +9,6 @@
       <AeText>Please wait...</AeText>
       <AeLoader />
     </div>
-    <div v-if="isAtError">
-      <ae-backdrop>{{ error }}</ae-backdrop>
-    </div>
   </div>
 </template>
 
@@ -28,8 +25,7 @@ import {
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
   STATUS_CONNECTING = 1,
-  STATUS_CONNECTED = 2,
-  STATUS_ERROR = 3;
+  STATUS_CONNECTED = 2;
 
 export default {
   name: "ConnectToWallet",
@@ -57,9 +53,6 @@ export default {
     },
     isConnected() {
       return this.status == STATUS_CONNECTED;
-    },
-    isAtError() {
-      return this.status == STATUS_ERROR;
     }
   },
   methods: {
@@ -76,21 +69,19 @@ export default {
             params: { subview: "onboarding" }
           });
         } else {
-          this.displayError(connectStatus.error.toString());
+          this.$displayError(
+            "Oops! We could not connect to your wallet",
+            connectStatus.error.toString()
+          );
+          this.status = STATUS_INIT;
         }
       } catch (e) {
-        this.displayError(e.toString());
+        this.$displayError(
+          "Oops! We could not connect to your wallet",
+          e.toString()
+        );
+        this.status = STATUS_INIT;
       }
-    },
-    displayError(errorText) {
-      this.$swal.fire({
-        title: "Oops! We could not connect to your wallet",
-        text:
-          "Ensure you are running this application under the Base æpp wallet. Reason: " +
-          errorText
-      });
-
-      this.status = STATUS_INIT;
     }
   },
   mounted() {
@@ -102,7 +93,8 @@ export default {
       console.warn("Booting application with role:  CLIENT");
     } else {
       console.error("Cannot find application role in VUE_APP_ROLE variable");
-      this.displayError(
+      this.$displayError(
+        "Unexpected error",
         "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
       );
     }

@@ -39,7 +39,7 @@
             { symbol: 'AE', name: 'æternity' }
           ]"
       @input="onAmountInput"
-      v-bind:disabled="isInError || isQueryingBalance"
+      v-bind:disabled="isQueryingBalance"
     />
     <div v-if="isQueryingBalance">
       <AeText>Please wait while Checking your account balance</AeText>
@@ -57,11 +57,8 @@
       fill="primary"
       extend
       @click="deposit()"
-      :disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
+      :disabled="depositInput.amount <= 0 || isQueryingBalance"
     >Deposit</AeButton>
-    <ae-modal v-if="isInError" @close="setWaitingInputState" title>
-      <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
-    </ae-modal>
   </div>
 </template>
 
@@ -119,9 +116,6 @@ export default {
     isQueryingBalance() {
       return this.viewState == STATUS_QUERY_BALANCE;
     },
-    isInError() {
-      return this.viewState == STATUS_ERROR;
-    },
     estimatedFee() {
       return this.$store.state.aeternity.estimateDepositFee(500000);
     },
@@ -144,7 +138,7 @@ export default {
         let inputBN;
         if (this.$isClientAppRole) {
           inputBN = new BigNumber(this.depositInput.amount);
-          inputBN = inputBN.multipliedBy(10 ** 18);
+          inputBN = inputBN.multipliedBy(new BigNumber(10).exponentiatedBy(18));
         } else if (this.$isMerchantAppRole) {
           inputBN = new BigNumber(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT);
         }
@@ -152,9 +146,13 @@ export default {
         const estimatedFeeBN = new BigNumber(this.estimatedFee);
 
         if (balanceBN.lt(inputBN.plus(estimatedFeeBN))) {
-          this.errorReason = "Not enough funds to cover deposit plus fees.";
-          this.viewState = STATUS_ERROR;
+          await this.$displayError(
+            "Oops!",
+            "Cannot continue. You have not enough funds to cover deposit amount, plus fees."
+          );
           console.log("Setting not enough funds error state");
+
+          this.viewState = STATUS_USER_INPUT;
         } else {
           if (this.initialDeposit) {
             this.$store.commit("setInitialDeposit", inputBN.toFixed(0));
@@ -169,15 +167,10 @@ export default {
               }
             });
           }
-
-          this.viewState = STATUS_USER_INPUT;
         }
       } catch (e) {
-        console.log(
-          "Setting status to STATUS_ERROR with Text: " + e.toString()
-        );
-        this.errorReason = e.toString();
-        this.viewState = STATUS_ERROR;
+        await this.$displayError("Oops!", e.toString());
+        this.viewState = STATUS_USER_INPUT;
       }
     },
     onAmountInput(v) {

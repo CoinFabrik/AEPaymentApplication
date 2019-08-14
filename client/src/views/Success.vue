@@ -52,10 +52,10 @@ export default {
     dismiss: function() {
       switch (this.txKind) {
         case "initial-deposit":
-          this.$router.replace("mainmenu");
+          this.$router.replace("main-menu");
           break;
         case "deposit":
-          this.$router.replace("mainmenu");
+          this.$router.replace("main-menu");
           break;
         case "close-channel":
           this.$router.replace("onboarding");
@@ -64,7 +64,7 @@ export default {
           this.$router.replace( { name: "deposit", params: { initialDeposit: true }})
           break;
         default:
-          this.$router.replace("mainmenu");
+          this.$router.replace("main-menu");
       }
     }
   },

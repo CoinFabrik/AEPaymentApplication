@@ -12,13 +12,13 @@
 const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
 const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
-  STATUS_TRACK_TX_PROGRESS = 1
+  STATUS_TRACK_TX_PROGRESS = 1;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
 
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
-import { EventBus } from '../event/eventbus.js';
+import { EventBus } from "../event/eventbus.js";
 
 export default {
   name: "CommitAndWaitTx",
@@ -67,18 +67,19 @@ export default {
           setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
         }
       } catch (e) {
-        this.setError(e);
+        this.displayError(e);
       }
     },
-    setError(e) {
-      this.$router.replace({
-        name: "error",
-        params: {
-          errorTitle: "Sorry. We could not submit your transaction",
-          errorDescription: "Reason is: " + e.toString(),
-          onDismissNavTo: { name: "MainMenu" }
-        },
-        retryCancel: false
+    displayError(e) {
+      this.$swal.fire({
+        type: "error",
+        title: "Oops!",
+        text:
+          "We could not submit your " +
+          this.txKind +
+          " transaction. " +
+          "Reason: " +
+          e.toString()
       });
     },
 
@@ -88,93 +89,77 @@ export default {
 
       setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
     },
+    async commitDepositTransaction() {
+      console.log("Committing DEPOSIT transaction ... ");
+
+      let r = await this.$store.state.aeternity.deposit(
+        this.$store.state.channel,
+        parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
+        async function(tx) {
+          console.log("posted DEPOSIT Onchain TX: ", tx);
+          this.setStatusTrackProgress(tx);
+        }
+      );
+      if (r.accepted) {
+        console.log("Accepted deposit");
+      } else {
+        throw new Error("Deposit transaction has been rejected");
+      }
+    },
+    async commitWithdrawTransaction() {
+      console.log("Committing WITHDRAW transaction ... ");
+
+      let tx;
+      let accepted = await this.$store.state.aeternity.withdraw(
+        this.$store.state.channel,
+        parseInt(this.txParams.amountAettos),
+        async function(tx) {
+          console.log("posted withdraw Onchain TX: ", tx);
+          this.setStatusTrackProgress(tx);
+        }
+      );
+      if (accepted) {
+        console.log("Accepted withdraw");
+      } else {
+        throw new Error("Withdraw transaction has been rejected");
+      }
+    },
+    async commitCloseTransaction() {
+      console.log("Committing CLOSE transaction ... ");
+
+      let tx = await this.$store.state.aeternity.closeChannel(
+        this.$store.state.channel
+      );
+      console.log("posted CLOSE Onchain TX: ", tx);
+      this.setStatusTrackProgress(tx);
+
+      EventBus.$emit("desuscribe-channel");
+    },
     async commitTransaction() {
       switch (this.txKind) {
         case "deposit":
-          {
-            console.log("Committing DEPOSIT transaction ... ");
-            try {
-              let tx;
-              let r = await this.$store.state.aeternity.deposit(
-                this.$store.state.channel,
-                parseInt(this.txParams.amountAettos), // HORRIBLE CONVERSION
-                async function(tx) {
-                  console.log("posted deposit Onchain TX: ", tx);
-                  //this.setStatusTrackProgress(tx);
-                },
-                async function() {
-                  console.log("Deposit locked");
-                  //this.setStatusTrackProgress(tx);
-                }
-              );
-              if (r.accepted) {
-                console.log("Accepted deposit");
-              } else {
-                throw new Error("Deposit transaction has been rejected");
-              }
-            } catch (error) {
-              this.setError(error);
-            }
-          }
+          await this.commitDepositTransaction();
           break;
 
         case "withdraw":
-          {
-            console.log("Committing WITHDRAW transaction ... ");
-            try {
-              let tx;
-              let accepted = await this.$store.state.aeternity.withdraw(
-                this.$store.state.channel,
-                parseInt(this.txParams.amountAettos), // HORRIBLE CONVERSION
-                async function(tx) {
-                  console.log("posted withdraw Onchain TX: ", tx);
-                  this.setStatusTrackProgress(tx);
-                }
-              );
-              if (accepted) {
-                console.log("Accepted withdraw");
-              } else {
-                throw new Error("Withdraw transaction has been rejected");
-              }
-            } catch (error) {
-              this.setError(error);
-            }
-          }
+          await this.commitWithdrawTransaction();
           break;
 
         case "close":
-          {
-            console.log("Committing CLOSE transaction ... ");
-            try {
-              let tx = await this.$store.state.aeternity.closeChannel(
-                this.$store.state.channel
-              );
-              console.log("posted deposit Onchain TX: ", tx);
-              this.setStatusTrackProgress(tx);
-
-              EventBus.$emit("desuscribe-channel");
-            } catch (error) {
-              this.setError(error);
-            }
-          }
+          await this.commitCloseTransaction();
           break;
 
-        default: {
-          this.setError(
-            new Error(
-              "Unknown Transaction Kind provided. This is a fatal error."
-            )
-          );
-        }
+        default:
+          throw new Error("Transaction type is unknown");
       }
     }
   },
   mounted: async function() {
     try {
       await this.commitTransaction();
-      //setInterval(trackTxProgress, POLL_TIME_MSEC);
     } catch (e) {
-      this.setError(e);
+      this.displayError(e);
+      this.$router.replace("main-menu");
     }
   }
 };
