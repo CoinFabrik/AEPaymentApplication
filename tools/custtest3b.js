@@ -57,7 +57,7 @@ class Customer extends MyChannel {
 
     async sendPayment(pr) {
         await this.sendMessage(pr);
-        await sleep(2000);
+        await myjschannel.sleep(2000);
         await this.update(pr.amount);
     }
 }
