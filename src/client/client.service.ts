@@ -387,6 +387,8 @@ export class Hub extends EventEmitter {
 export class ServiceBase extends EventEmitter {
     static clients: { "customer": CClient[], "merchant": CClient[] } = {
         "customer":[], "merchant":[] };
+    static pending: { "customer": CClient[], "merchant": CClient[] } = {
+        "customer":[], "merchant":[] };
 
     static getClients(kind: Actor): CClient[] {
         return ServiceBase.getClients(kind);
@@ -418,14 +420,38 @@ export class ServiceBase extends EventEmitter {
         return null;
     }
 
+    isOnOrPendingClientByAddress(address:string, kind: Actor): boolean {
+        if (address==undefined) {
+            throw new Error("Looking for no client!!!!!!")
+        }
+        for(let cc of ServiceBase.pending[kind]) {
+            if(cc.address==address) {
+                return true;
+            }
+        }
+        for(let cc of ServiceBase.clients[kind]) {
+            if(cc.address==address) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static addPending(c: CClient, kind: Actor): void {
+        ServiceBase.pending[kind] = ServiceBase.pending[kind].concat([c]);
+    }
+
     static addClient(c: CClient, kind: Actor): void {
-        console.log(" + "+kind+"  - "+c.address);
+        ServiceBase.rmPending(c, kind);
         ServiceBase.clients[kind] = ServiceBase.clients[kind].concat([c]);
     }
 
     static rmClient(c: CClient, kind: Actor): void {
-        console.log(" - "+kind+"  - "+c.address);
         array_rm(ServiceBase.clients[kind], c);
+    }
+
+    static rmPending(c: CClient, kind: Actor): void {
+        array_rm(ServiceBase.pending[kind], c);
     }
 }
 
@@ -447,6 +473,7 @@ export class ClientService extends ServiceBase {
                 throw new Error(`Invalid kind:  ${clientType}, ${toClient.kind}  !!!`);
             }
         }
+        ServiceBase.addPending(toClient, toClient.kind);
         this.emit(toClient.kind + "-connection", toClient);
         return ServerChannel.GetInfo();
     }
