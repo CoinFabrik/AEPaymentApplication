@@ -123,9 +123,15 @@ export abstract class ServerChannel extends EventEmitter {
         this.on("message", (msg) => {
             if ((msg[info]==PING)||(msg[info]==PINGACK)) {
             } else {
-                msg[info] = JSON.parse(msg[info])
-                msg.emitter = self;
-                this.hub.emit(msg[info]["type"], msg);
+                try {
+                    msg[info] = JSON.parse(msg[info])
+                    msg.emitter = self;
+                    this.hub.emit(msg[info]["type"], msg);
+                } catch(err) {
+                    console.log(err);
+                    console.log("message was:")
+                    console.log(msg[info]);
+                }
             }
         });
     }
