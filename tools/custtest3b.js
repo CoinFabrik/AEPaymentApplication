@@ -92,11 +92,13 @@ function pick_random(arr) {
     console.log(1,JSON.stringify(merchants))
     let merchant = pick_random(merchants);
 
-    let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 1000,
-        [{what:"beer", amount:2}]);
-    let result = await peer.sendPayment(pr);
-    console.log(JSON.stringify(result));
+    // let pr = Message.PaymentRequest(
+    //     merchant.address, merchant.name, peer.pubkey, 1000,
+    //     [{what:"beer", amount:2}]);
+    // let result = await peer.sendPayment(pr);
+    // console.log(JSON.stringify(result));
+
+
 
     // await peer.showBalances("pre-update");
     // await peer.update(10);
@@ -109,6 +111,7 @@ function pick_random(arr) {
         await myjschannel.sleep(3*1000);
         let final = await peer.showBalances("final");
         showDiff(initial, final);
+        console.log("exit...")
         process.exit(code);
     }
 

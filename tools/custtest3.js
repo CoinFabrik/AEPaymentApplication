@@ -62,9 +62,13 @@ function pick_random(arr) {
                 jstools.getEnv("ACCOUNT"))
             ), "1234");
 
-    let peer = await Customer.Init(account);
-    if (peer==null)
+    let peer;
+    try {
+        peer = await Customer.Init(account);
+    } catch(err) {
+        console.log("cant connect!")
         return;
+    }
     await peer.init();
     let initial = await peer.showBalances("init");
     await peer.initChannel();
@@ -91,4 +95,4 @@ function pick_random(arr) {
     });
     //h = await peer.height();
     //console.log("height:", h, "Balance:", await peer.balance({height: h}));
-})();
+})().then(()=>{}).catch(console.error);

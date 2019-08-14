@@ -38,10 +38,14 @@ class Merchant extends MyChannel {
                 jstools.getEnv("ACCOUNT"))
             ), "1234");
 
-
-    let peer = await Merchant.Init(account);
-    if (peer===null)
+    let peer;
+    try {
+        peer = await Merchant.Init(account);
+    } catch(err) {
+        console.log("cant connect!")
         return;
+    }
+
     await peer.init();
     await peer.initChannel();
     await peer.wait_state("OPEN");
