@@ -2,11 +2,23 @@
     SIMPLE REVERSI  :-)
 ---------------------------------------------------------------------------------- */
 const BigNumber = require("bignumber.js");
-
 const jstools = require("./jstools");
 const myjschannel = require("./myjschannel");
 const MyChannel = myjschannel.MyChannel;
 
+
+class Message {
+    static PaymentRequest(merchant, merchant_name, customer, amount, something) {
+        return {
+            type: "payment-request",
+            id: jstools.genUUID(),
+            merchant: merchant,
+            customer: customer,
+            amount: amount,
+            something: something
+        }
+    }
+}
 
 class Customer extends MyChannel {
     static async Init(account) {
@@ -42,6 +54,10 @@ class Customer extends MyChannel {
         console.log(`${msg}  total:    ${total}`);
         return {chain: new BigNumber(chain), channel: new BigNumber(channel), total: new BigNumber(total)};
     }
+
+    async sendPayment(pr) {
+        return await this.sendMessage(pr);
+    }
 }
 
 function showDiff(init, final) {
@@ -70,8 +86,16 @@ function pick_random(arr) {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
-    let merchants = await peer.get_("merchant")
+    let merchants = await peer.get_("merchant");
+    console.log(1,JSON.stringify(merchants))
     let merchant = pick_random(merchants);
+
+    console.log(2,JSON.stringify(merchant))
+    let pr = Message.PaymentRequest(
+        merchant.address, merchant.name, peer.pubkey, 1000,
+        [{what:"beer", amount:2}]);
+    let result = await peer.sendPayment(pr);
+    console.log(JSON.stringify(result));
 
     // await peer.showBalances("pre-update");
     // await peer.update(10);
@@ -81,7 +105,7 @@ function pick_random(arr) {
     async function quit(code) {
         await peer.shutdown();
         await peer.wait_state("DISCONNECTED");
-        await myjschannel.sleep(15*1000);
+        await myjschannel.sleep(3*1000);
         let final = await peer.showBalances("final");
         showDiff(initial, final);
         process.exit(code);
@@ -89,7 +113,7 @@ function pick_random(arr) {
 
     process.on('SIGINT', function() {
         console.log("Caught interrupt signal");
-        quit(0);
+        quit(0).then(()=>{}).catch(console.error);
     });
     //h = await peer.height();
     //console.log("height:", h, "Balance:", await peer.balance({height: h}));

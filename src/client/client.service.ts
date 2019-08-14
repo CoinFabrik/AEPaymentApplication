@@ -3,15 +3,14 @@ import {
     Actor,
     CClient,
     InvalidCustomer,
-    InvalidMerchant,
+    InvalidMerchant, InvalidRequest,
     MerchantCustomerAccepted,
     PaymentTimeout
 } from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
-import {array_rm, clone, sleep, voidf} from "../tools";
+import {array_rm, clone, mystringify, sleep, voidf} from "../tools";
 import {getRepository, Repository} from "typeorm";
-import {InjectRepository} from "@nestjs/typeorm";
 import BigNumber from "bignumber.js";
 
 
@@ -89,10 +88,26 @@ class MerchantCustomer {
     readonly original_msg: object;
     readonly _base: object;
 
-    constructor(readonly merchant: string, readonly customer: string, public msg: object,
-                private _mclient?: CClient, private _cclient?: CClient) {
-        this.id = Guid.generate();
+    static save(mc: MerchantCustomer){
+        this.all[mc.id] = mc;
+    }
+
+    static ValidId(id:string): boolean {
+        return this.all[id]==undefined;
+    }
+
+    private constructor(readonly merchant: string, readonly customer: string, public msg: object,
+                        id?: string, private _mclient?: CClient, private _cclient?: CClient) {
+        if(id!=undefined) {
+            if (!MerchantCustomer.ValidId(id)){
+                throw new InvalidRequest("Invalid id:"+id);
+            }
+        } else {
+            id = Guid.generate();
+        }
+        this.id = id;
         MerchantCustomer.save(this);
+
         this.original_msg = msg;
         this._base = {
             "id": this.id,
@@ -121,10 +136,6 @@ class MerchantCustomer {
         return clone(this._base);
     }
 
-    static save(mc: MerchantCustomer){
-        this.all[mc.id] = mc;
-    }
-
     forwardBuyRequestToCustomer(msg: object) {
         let base = this.base();
         base["type"]= "buy-request";
@@ -144,7 +155,11 @@ class MerchantCustomer {
     }
 
     errorMsg(err: Error): object {
-        let base = this.base();
+        return MerchantCustomer.errorMsg(err, this.base());
+    }
+
+    static errorMsg(err: Error, msg: any): object {
+        let base = clone(msg);
         base["type"] = "error";
         base["msg"] = err.toString;
         return base;
@@ -185,6 +200,20 @@ class MerchantCustomer {
         }
         return new MerchantCustomer(merchant, customer, msg);
     }
+
+    static FromRequest(msg: object): MerchantCustomer {
+        let merchant = msg["info"]["merchant"];
+        let mclient = ClientService.getClientByAddress(merchant, "merchant");
+        if(mclient==null) {
+            throw new InvalidMerchant(merchant)
+        }
+        let customer = msg["info"]["customer"];
+        let cclient = ClientService.getClientByAddress(customer, "customer");
+        if(cclient==null) {
+            throw new InvalidCustomer(customer);
+        }
+        return new MerchantCustomer(merchant, customer, msg, msg["id"]);
+    }
 }
 
 
@@ -214,84 +243,122 @@ export class Hub extends EventEmitter {
         this.logger.log("|" + msg);
     }
 
-    async wait_payment(mc:MerchantCustomer, update_result, pre_balance) {
-        const start = Date.now();
-        const timeout = 60*1000;
-        while(Date.now() - start < timeout) {
-            let last_balance = await mc.cclient.channel.hub_balance();
-            this.log(`check balance..: ${pre_balance} ${last_balance} to  ${pre_balance+mc.amount}..`);
-            if (last_balance>=pre_balance+mc.amount){
-                const mca = mc.getEntity();
-                await RepoService.save(mca);
-                return
-            }
-            await sleep(1000);
-        }
-        this.log("Wait for balance timed out...");
-        throw new PaymentTimeout();
-    }
+    // async wait_payment(mc:MerchantCustomer, update_result, pre_balance) {
+    //     const start = Date.now();
+    //     const timeout = 60*1000;
+    //     while(Date.now() - start < timeout) {
+    //         let last_balance = await mc.cclient.channel.hub_balance();
+    //         this.log(`check balance..: ${pre_balance} ${last_balance} to  ${pre_balance+mc.amount}..`);
+    //         if (last_balance>=pre_balance+mc.amount){
+    //             const mca = mc.getEntity();
+    //             await RepoService.save(mca);
+    //             return
+    //         }
+    //         await sleep(1000);
+    //     }
+    //     this.log("Wait for balance timed out...");
+    //     throw new PaymentTimeout();
+    // }
 
-    async withdraw_payment(mc:MerchantCustomer) {
-        let { accepted, signedTx } = await mc.cclient.channel.withdraw(
-                                                Number.parseInt(mc.amount_str));
-        if (!accepted) {
-            throw new Error("cannot remove "+(mc.amount)+ " for merchant: "+mc.merchant);
-        }
-        let { d_accepted, state } = await mc.mclient.channel.deposit(
-                                                Number.parseInt(mc.amount_str));
-        if (!d_accepted) {
-            throw new Error("cannot deposit into merchant: "+mc.merchant);
-        }
-    }
+    // async withdraw_payment(mc:MerchantCustomer) {
+    //     let { accepted, signedTx } = await mc.cclient.channel.withdraw(
+    //                                             Number.parseInt(mc.amount_str));
+    //     if (!accepted) {
+    //         throw new Error("cannot remove "+(mc.amount)+ " for merchant: "+mc.merchant);
+    //     }
+    //     let { d_accepted, state } = await mc.mclient.channel.deposit(
+    //                                             Number.parseInt(mc.amount_str));
+    //     if (!d_accepted) {
+    //         throw new Error("cannot deposit into merchant: "+mc.merchant);
+    //     }
+    // }
 
     private setup() {
-        this.on("buy-request", (msg)=> {
-            this.buy_request(msg).then(voidf).catch(console.error);
-        });
+        // this.on("buy-request", (msg)=> {
+        //     this.buy_request(msg).then(voidf).catch(console.error);
+        // });
+        //
+        // this.on("wait-payment", (mc, update_result, pre_balance) => {
+        //     this.wait_payment(mc, update_result, pre_balance)
+        //         .then(()=> {this.emit("payment-done", mc)})
+        //         .catch(()=> {this.emit("payment-failed", mc)});
+        // });
+        //
+        // this.on("payment-done", (mc)=> {
+        //     mc.sendMerchant(mc.msgPaymentAccepted());
+        //     //this.withdraw_payment(mc).then(voidf).catch(console.error)
+        // });
+        // this.on("payment-failed", (mc)=> {
+        //     mc.sendMerchant(mc.msgPaymentRejected());
+        // });
 
-        this.on("wait-payment", (mc, update_result, pre_balance) => {
-            this.wait_payment(mc, update_result, pre_balance)
-                .then(()=> {this.emit("payment-done", mc)})
-                .catch(()=> {this.emit("payment-failed", mc)});
+        this.on("payment-request", (msg)=> {
+            this.payment_request(msg).then(voidf).catch(console.error);
         });
-
-        this.on("payment-done", (mc)=> {
+        this.on("payment-request-accepted", (mc)=> {
             mc.sendMerchant(mc.msgPaymentAccepted());
-            //this.withdraw_payment(mc).then(voidf).catch(console.error)
+            mc.sendCustomer(mc.msgPaymentAccepted());
         });
-        this.on("payment-failed", (mc)=> {
+        this.on("payment-request-rejected", (mc)=> {
             mc.sendMerchant(mc.msgPaymentRejected());
         });
-
     }
 
-    async buy_request(msg) {
+    async payment_request(msg) {
         let mc;
         let response;
-        this.log("buy-request: " + (JSON.stringify(msg)));
+        this.log("pay-request: " + (mystringify(msg)));
         try {
-            mc = MerchantCustomer.FromMerchantRequest(msg);
+            mc = MerchantCustomer.FromRequest(msg);
             // after this request was approved
-            let pre_balance = await mc.cclient.channel.hub_balance();
-
-            response = mc.forwardBuyRequestToCustomer(msg);
-            mc.sendCustomer( response );
-            let start = Date.now();
+            // let start = Date.now();
             let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
-            let end = Date.now();
-            console.log(" took: ", end-start)
-            console.log(JSON.stringify(update_result))
-            this.log("buy-request forwarded!");
-            this.emit("wait-payment", mc, update_result, pre_balance);
+            //console.log(JSON.stringify(update_result));
+            // let end = Date.now();
+            //console.log(" took: ", end-start);
+            if (update_result.accepted) {
+                const mca = mc.getEntity();
+                await RepoService.save(mca);
+                this.emit("payment-request-accepted", mc);
+            } else {
+                this.emit("payment-request-rejected", mc);
+            }
         } catch (err) {
-            this.log("buy-request ignored: "+ err.toString());
+            console.log(err);
+            this.log("payment-request ignored: "+ mystringify(err));
             if(mc!=null) {
-                mc.sendMerchant( mc.errorMsg(err) );
+                mc.sendCustomer( mc.errorMsg(err) );
+            } else {
+                await msg.emitter.sendMessage(MerchantCustomer.errorMsg(err, msg))
             }
         }
     }
 
-
+    // async buy_request(msg) {
+    //     let mc;
+    //     let response;
+    //     this.log("buy-request: " + (JSON.stringify(msg)));
+    //     try {
+    //         mc = MerchantCustomer.FromMerchantRequest(msg);
+    //         // after this request was approved
+    //         let pre_balance = await mc.cclient.channel.hub_balance();
+    //
+    //         response = mc.forwardBuyRequestToCustomer(msg);
+    //         mc.sendCustomer( response );
+    //         let start = Date.now();
+    //         let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
+    //         let end = Date.now();
+    //         console.log(" took: ", end-start)
+    //         console.log(JSON.stringify(update_result))
+    //         this.log("buy-request forwarded!");
+    //         this.emit("wait-payment", mc, update_result, pre_balance);
+    //     } catch (err) {
+    //         this.log("buy-request ignored: "+ err.toString());
+    //         if(mc!=null) {
+    //             mc.sendMerchant( mc.errorMsg(err) );
+    //         }
+    //     }
+    // }
 }
 
 
@@ -318,18 +385,24 @@ export class ServiceBase extends EventEmitter {
     }
 
     static getClientByAddress(address:string, kind: Actor): CClient {
+        if (address==undefined) {
+            throw new Error("Looking for no client!!!!!!")
+        }
         for(let cc of ServiceBase.clients[kind]) {
-            if(cc.address==address)
+            if(cc.address==address) {
                 return cc;
+            }
         }
         return null;
     }
 
     static addClient(c: CClient, kind: Actor): void {
+        console.log(" + "+kind+"  - "+c.address);
         ServiceBase.clients[kind] = ServiceBase.clients[kind].concat([c]);
     }
 
     static rmClient(c: CClient, kind: Actor): void {
+        console.log(" - "+kind+"  - "+c.address);
         array_rm(ServiceBase.clients[kind], c);
     }
 }

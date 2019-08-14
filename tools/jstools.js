@@ -1,6 +1,10 @@
 const nacl = require('tweetnacl');
 const fs = require('fs');
+const uuid = require('uuid');
 
+function genUUID() {
+    return uuid()
+}
 
 function getEnv(name, defvalue) {
     let value = defvalue;
@@ -186,5 +190,6 @@ module.exports = {
   get_account,
   get_public,
   getEnv,
-  getArgv
+  getArgv,
+  genUUID
 }

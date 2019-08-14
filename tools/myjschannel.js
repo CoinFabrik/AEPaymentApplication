@@ -51,10 +51,9 @@ var INITIATOR_MIN_BALANCE = "1000000000000000";
 
 
 class MyChannel {
-    static async get_(actor) {
+    async get_(actor) {
         let url = (actor==="merchant") ? "/merchant" : "/client";
-        let customers = JSON.parse(await myjschannel.get(url));
-        return customers[0];
+        return JSON.parse(await get(url+"/all"));
     }
 
     static async register(what, addr, amount, name) {

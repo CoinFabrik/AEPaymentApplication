@@ -1,5 +1,4 @@
 import * as nacl from 'tweetnacl'
-import uuid from 'uuid'
 import * as fs from "fs";
 
 
@@ -224,3 +223,23 @@ export function array_rm(lst: any[], x: any): void {
 }
 
 export const voidf = () => {}
+
+
+// Demo: Circular reference
+export function mystringify(o) {
+    // Note: cache should not be re-used by repeated calls to JSON.stringify.
+    let cache = [];
+    let result = JSON.stringify(o, function(key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Duplicate reference found, discard key
+                return;
+            }
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    });
+    cache = null; // Enable garbage collection
+    return result;
+}

@@ -23,9 +23,24 @@ export const AE = 100;
 
 
 export class PaymentTimeout extends Error {}
-export class InvalidRequest extends Error {}
-export class InvalidMerchant extends InvalidRequest{}
-export class InvalidCustomer extends InvalidRequest{}
+export class InvalidRequest extends Error {
+    constructor(message?: string) {
+        if (message==undefined) { message = "" }
+        super("Invalid Request("+message+")");
+    }
+}
+export class InvalidMerchant extends InvalidRequest{
+    constructor(message?: string) {
+        if (message==undefined) { message = "" }
+        super("Invalid merchant("+message+")");
+    }
+}
+export class InvalidCustomer extends InvalidRequest{
+    constructor(message?: string) {
+        if (message==undefined) { message = "" }
+        super("Invalid customer("+message+")");
+    }
+}
 
 
 

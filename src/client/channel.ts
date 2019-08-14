@@ -119,15 +119,13 @@ export abstract class ServerChannel extends EventEmitter {
         this.opposite = customer.address;
         this.is_initiator = false;
         this.status = "";
+        const self = this;
         this.on("message", (msg) => {
             if (msg[info]==PING) {
             } else {
-                try {
-                    msg[info] = JSON.parse(msg[info])
-                    this.hub.emit(msg[info]["type"], msg);
-                } catch(err) {
-
-                }
+                msg[info] = JSON.parse(msg[info])
+                msg.emitter = self;
+                this.hub.emit(msg[info]["type"], msg);
             }
         });
     }
@@ -235,7 +233,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     ///////////////////////////////////////////////////////////
     setService(s: ServiceBase) {
-        this.service = s;
+        //this.service = s;
     }
 
     async update(_from, _to, amount) {
