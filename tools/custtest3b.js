@@ -56,7 +56,9 @@ class Customer extends MyChannel {
     }
 
     async sendPayment(pr) {
-        return await this.sendMessage(pr);
+        await this.sendMessage(pr);
+        await sleep(2000);
+        await this.update(pr.amount);
     }
 }
 
@@ -90,7 +92,6 @@ function pick_random(arr) {
     console.log(1,JSON.stringify(merchants))
     let merchant = pick_random(merchants);
 
-    console.log(2,JSON.stringify(merchant))
     let pr = Message.PaymentRequest(
         merchant.address, merchant.name, peer.pubkey, 1000,
         [{what:"beer", amount:2}]);

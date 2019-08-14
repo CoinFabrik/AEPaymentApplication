@@ -164,6 +164,7 @@ export abstract class ServerChannel extends EventEmitter {
         let options = this.get_options();
 
         options["sign"] = async (tag, tx) => {
+            this.log("");
             this.log("tag: " + tag + " " +(tx.toString()));
             try {
                 const {txType, tx: txData} = unpackTx(tx);
@@ -176,6 +177,7 @@ export abstract class ServerChannel extends EventEmitter {
                 console.log(tag, ": ", JSON.stringify(txData));
                 this.log("TX (shutdown): " + (tx.toString()))
             }
+            this.log("");
             return await self.nodeuser.signTransaction(tx)
         };
 

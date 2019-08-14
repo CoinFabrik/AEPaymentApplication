@@ -24,6 +24,8 @@ class Guid {
   }
 }
 
+const WAIT_PAYMENT_TIMEOUT = 60;
+
 
 // @Injectable()
 // export class MerchantCustomerService {
@@ -302,6 +304,29 @@ export class Hub extends EventEmitter {
         this.on("payment-request-rejected", (mc)=> {
             mc.sendMerchant(mc.msgPaymentRejected());
         });
+        this.on("wait-payment", (mc, pre_balance) => {
+            this.wait_payment(mc, pre_balance)
+                .then(()=> {this.emit("payment-request-accepted", mc)})
+                .catch(()=> {this.emit("payment-request-rejected", mc)});
+        });
+
+    }
+
+    async wait_payment(mc:MerchantCustomer, pre_balance) {
+        const start = Date.now();
+        const timeout = WAIT_PAYMENT_TIMEOUT*1000;
+        while(Date.now() - start < timeout) {
+            let last_balance = await mc.cclient.channel.hub_balance();
+            this.log(`check balance..: ${pre_balance} ${last_balance} to  ${pre_balance+mc.amount}..`);
+            if (last_balance>=pre_balance+mc.amount){
+                const mca = mc.getEntity();
+                await RepoService.save(mca);
+                return
+            }
+            await sleep(1000);
+        }
+        this.log("Wait for balance timed out...");
+        throw new PaymentTimeout();
     }
 
     async payment_request(msg) {
@@ -311,18 +336,15 @@ export class Hub extends EventEmitter {
         try {
             mc = MerchantCustomer.FromRequest(msg);
             // after this request was approved
+            let pre_balance = await mc.cclient.channel.hub_balance();
             // let start = Date.now();
-            let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
+            //let update_result = await mc.cclient.channel.sendTxRequest(msg["info"]["amount"]);
             //console.log(JSON.stringify(update_result));
             // let end = Date.now();
             //console.log(" took: ", end-start);
-            if (update_result.accepted) {
-                const mca = mc.getEntity();
-                await RepoService.save(mca);
-                this.emit("payment-request-accepted", mc);
-            } else {
-                this.emit("payment-request-rejected", mc);
-            }
+            this.emit("wait-payment", mc, pre_balance);
+            // this.emit("payment-request-accepted", mc);
+            // this.emit("payment-request-rejected", mc);
         } catch (err) {
             console.log(err);
             this.log("payment-request ignored: "+ mystringify(err));
