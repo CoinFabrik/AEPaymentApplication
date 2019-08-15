@@ -69,6 +69,7 @@ class MyChannel extends events.EventEmitter {
                 url = url + "/" + encodeURIComponent(name);
             }
             data = await get(url);
+            console.log("data:", data)
             return JSON.parse(data);
         } catch (err) {
             console.log("server returned:", data);

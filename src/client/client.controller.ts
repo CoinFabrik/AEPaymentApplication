@@ -32,7 +32,7 @@ abstract class ClientController {
   async connectMerchant2(@Param() params, @Res() res: Response): Promise<any> {
       let result = await this.service.queryClient(params.address, this.kind);
       if (result==undefined) {
-          return {"error": "No name specified!!"};
+          return res.status(HttpStatus.FORBIDDEN).json({"error":"no name"});
       }
       return this.launchClient(this.kind, params.address.toString(),
                                 result.name, params.amount.toString(), res);

@@ -24,7 +24,7 @@ class Message {
 class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
-        let serverdata = await Customer.register("client", account.publicKey, INIT)
+        let serverdata = await Customer.register("client", account.publicKey, INIT, (Date.now().toString()));
         let address = serverdata["address"];
         return new Customer(account.publicKey, account.secretKey, address, INIT);
     }
@@ -85,7 +85,7 @@ function pick_random(arr) {
             jstools.getEnv("CUSTOMER",
                 jstools.getEnv("ACCOUNT"))
             ), "1234");
-
+    console.log(JSON.stringify(account))
     let peer = await Customer.Init(account);
     if (peer==null)
         return;
@@ -101,6 +101,14 @@ function pick_random(arr) {
     let merchant = pick_random(merchants);
 
 
+    await peer.showBalances("pre");
+    let pr = Message.PaymentRequest(
+        merchant.address, merchant.name, peer.pubkey, 1,
+        [{what:"beer", amount:1}]);
+
+
+    let idx = 0;
+
     peer.on("message", (msg) => {
         if(msg["type"]==="payment-request-rejected") {
             console.log("payment canceled:", msg["msg"]);
@@ -111,20 +119,21 @@ function pick_random(arr) {
         }
         if(msg["type"]==="payment-request-completed") {
             console.log("payment compelted!")
-            peer.on("message", (msg) => {console.log("RECV:>", msg)})
-            peer.showBalances("post").then(()=>{}).catch(console.error);
+            //peer.on("message", (msg) => {console.log("RECV:>", msg)})
+            // peer.showBalances("post")
+            //     .then(()=>{})
+            //     .catch(console.error);
+            peer.sendPayment(pr).then(()=>{
+                idx= idx +1;
+                console.log("time:", idx);
+            }).catch(console.error);
         }
         if(msg["type"]==="payment-request-canceled") {
             console.log("shouldn'h happen here")
         }
     });
 
-    await peer.showBalances("pre");
-    let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 1000,
-        [{what:"beer", amount:2}]);
     await peer.sendPayment(pr);
-
 
     // await peer.showBalances("pre-update");
     // await peer.update(10);
