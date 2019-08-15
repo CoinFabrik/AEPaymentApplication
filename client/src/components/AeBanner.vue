@@ -1,5 +1,5 @@
 <template>
-	<div id="banner">
+	<div id="banner" v-on:click="goHome()">
 		<img id="ae-logo" alt="AE-logo" src="./../assets/ae2x.png" />
 		<ae-text weight="bold" fill="white" face="sans-l">æternity</ae-text>
 	</div>
@@ -11,7 +11,12 @@
 
 	export default {
 		name: "AeBanner",
-		components: { AeText }
+		components: { AeText },
+		methods: {
+			goHome() {
+				this.$router.replace({name: "connectToWallet"});
+			},
+		}
 	};
 </script>
 
