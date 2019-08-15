@@ -7,7 +7,6 @@ const jstools = require('./jstools');
 
 
 class Merchant extends MyChannel {
-
      async getMerchantBalance() {
         let data;
         try {
@@ -22,27 +21,24 @@ class Merchant extends MyChannel {
 
     static async Init(account) {
         let sdata = await MyChannel.register("merchant",
-                        account.publicKey, "1000000000000000", "dave's beer");
+                        account.publicKey, myjschannel.INITIATOR_MIN_BALANCE, "dave's beer");
         console.log("Server at:", sdata["address"])
-        return new Merchant(account.publicKey, account.secretKey, true, sdata["address"]);
-    }
-
-    async buyRequest(customer, items, price) {
-        return await this.sendXMessage({
-            "amount": price,
-            "something": items,
-            "toId": customer,
-            "type": "buy-request",
-        })
-    }
-
-    async sendXMessage(message) {
-        message["from"] = "merchant";
-        message["to"] = "hub";
-        return this.sendMessage(message);
+        return new Merchant(account.publicKey, account.secretKey, sdata["address"], myjschannel.INITIATOR_MIN_BALANCE);
     }
 }
 
+
+async function show_hub_balance(peer) {
+    let last_balance = null;
+    while(1) {
+        let balance = await peer.getMerchantBalance();
+        if (balance!==last_balance) {
+            console.log("Balance:", balance);
+            last_balance = balance;
+        }
+        await myjschannel.sleep(1000);
+    }
+}
 
 (async function () {
     let account = await jstools.get_account(
@@ -63,10 +59,8 @@ class Merchant extends MyChannel {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
-    while(1) {
-        console.log("Balance:", await peer.getMerchantBalance());
-        await myjschannel.sleep(1000);
-    }
+    show_hub_balance(peer).then(()=>{}).catch(console.error);
+
 
     // try {
     //     let customer;

@@ -1,9 +1,10 @@
 import {Controller, Get, HttpStatus, Param, Res} from '@nestjs/common';
 import {AppService} from "../app.service";
-import {ClientService, Hub} from "./client.service";
+import {ClientService} from "./client.service";
 import {ServerChannel} from "./channel";
 import {Actor, CClient} from "./client.entity";
 import { Response } from 'express';
+import {Hub} from "./hub";
 
 abstract class ClientController {
   constructor(  //private readonly appService: AppService,

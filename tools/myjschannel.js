@@ -69,20 +69,24 @@ class MyChannel extends events.EventEmitter {
                 url = url + "/" + encodeURIComponent(name);
             }
             data = await get(url);
-            console.log(data);
             return JSON.parse(data);
         } catch (err) {
+            console.log("server returned:", data);
             console.error(err);
             throw err;
         }
     }
 
-    constructor(pubkey, privkey, init_role, opposite_addr) {
+    constructor(pubkey, privkey, opposite_addr, init_amount) {
         super();
+        if (init_amount===undefined) {
+            this.init_amount = init_amount;
+        }
+        this.init_amount = INITIATOR_MIN_BALANCE;
         this.nodeuser = undefined;
         this.pubkey = pubkey;
         this.privkey = privkey;
-        this.is_initiator = init_role;
+        this.is_initiator = true;
         this.opposite = opposite_addr;
         this.STATUS = "";
     }
@@ -101,7 +105,7 @@ class MyChannel extends events.EventEmitter {
         let options = {
             url:  WS_URL+'/channel',
             pushAmount: 0,
-            initiatorAmount: INITIATOR_MIN_BALANCE,
+            initiatorAmount: this.init_amount,
             responderAmount: 1,
             channelReserve: 1,
             host: "localhost",
@@ -112,13 +116,12 @@ class MyChannel extends events.EventEmitter {
         console.log("options:", options);
         options["initiatorId"] = this.initiator;
         options["responderId"] = this.responder;
-        console.log(1,this.initiator)
-        console.log(1,this.responder)
+        console.log(1,this.initiator);
+        console.log(1,this.responder);
         return options;
     }
 
     async init() {
-        console.log(JSON.stringify({publicKey: this.pubkey, secretKey: this.privkey}))
         this.nodeuser = await Universal({
             networkId: NETWORK_ID,
             url: API_URL,
@@ -128,12 +131,11 @@ class MyChannel extends events.EventEmitter {
         });
 
         let balance = await this.nodeuser.balance(this.pubkey);
-        console.log(" we: ", this.pubkey);
-        console.log("balance:  ", balance);
-        console.log("required: ", INITIATOR_MIN_BALANCE);
-
+        //console.log(" we: ", this.pubkey);
         let bal = new BigNumber(balance);
         if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
+            console.log("balance:  ", balance);
+            console.log("required: ", INITIATOR_MIN_BALANCE);
             console.log("less balance than expected!");
             process.abort();
         }
@@ -224,14 +226,11 @@ class MyChannel extends events.EventEmitter {
     async update(amount) {
         const self = this;
         try {
-            console.log("sending update..", amount)
             let result = await this.channel.update(this.pubkey, this.opposite, amount, async (tx) => {
-                console.log(" signing update..")
                 return await self.nodeuser.signTransaction(tx);
             });
             return result;
         } catch(err) {
-            console.log("---------------------------------------------------")
             console.log("Error on update:", err);
             return null
         }
@@ -257,5 +256,6 @@ async function wait_for(func) {
 module.exports = {
     MyChannel,
     get,
-    sleep
+    sleep,
+    INITIATOR_MIN_BALANCE
 };

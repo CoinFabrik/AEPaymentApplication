@@ -1,8 +1,9 @@
-import {Hub, ServiceBase} from "./client.service";
+import {ServiceBase} from "./client.service";
 import {Actor, AE, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
 import {Account, get_account, getEnv, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
+import {Hub} from "./hub";
 
 
 const NETWORK_ID = 'ae_devnet';
@@ -169,17 +170,24 @@ export abstract class ServerChannel extends EventEmitter {
         let options = this.get_options();
 
         options["sign"] = async (tag, tx) => {
+            // tag: update_ack tx:
+            // {
+            //      "tag":"57","VSN":"2",
+            //      "channelId":"ch_9qgsjDsjHhXvYT8hWtZYwuiCHvgFsvEBPL5tnmH9vgGRPe7PM",
+            //      "round":"2",
+            //      "stateHash":"st_MiomMNZwISj3zZ47c/jCfjgwgREN4r/7dYR08zZOKXSJt6yr"
+            // }
             this.log("");
             this.log("tag: " + tag + " " +(tx.toString()));
             try {
                 const {txType, tx: txData} = unpackTx(tx);
-                console.log(tag, ": ", JSON.stringify(txData));
+                this.log("tag: " + tag + ": "+ JSON.stringify(txData));
             } catch (err) {
                 //console.log(err);
             }
             if (tag === "shutdown_sign_ack") {
                 const {txType, tx: txData} = unpackTx(tx);
-                console.log(tag, ": ", JSON.stringify(txData));
+                this.log("tag: " + tag + ": "+ JSON.stringify(txData));
                 this.log("TX (shutdown): " + (tx.toString()))
             }
             this.log("");
@@ -190,8 +198,8 @@ export abstract class ServerChannel extends EventEmitter {
         this.channel.on('statusChanged', (status) => {
             self.onStatusChange(status.toUpperCase());
         });
-        this.channel.on('error', (errir) => {
-            console.log("ERRRORRRRR::::", errir)
+        this.channel.on('error', (error) => {
+            console.log("ERRRORRRRR:", error)
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);

@@ -20,24 +20,25 @@ class Message {
     }
 }
 
+
 class Customer extends MyChannel {
     static async Init(account) {
-        let serverdata = await Customer.register("client", account.publicKey, 1000000000000000)
+        let INIT = myjschannel.INITIATOR_MIN_BALANCE;
+        let serverdata = await Customer.register("client", account.publicKey, INIT)
         let address = serverdata["address"];
-        console.log("server at:", address)
-        return new Customer(account.publicKey, account.secretKey, true, address);
+        return new Customer(account.publicKey, account.secretKey, address, INIT);
     }
 
     async showBalances(msg) {
-        console.log(`*** ${msg} ***`)
+        console.log(`*** balances: ${msg} ***`);
         let cus = await this.showBalance("cus", this.pubkey);
         let opp = await this.showBalance("hub", this.opposite);
-        console.log("------------------")
+        console.log("------------------");
         return {customer: cus, hub: opp}
     }
 
     async showBalance(msg, addr) {
-        let chain = await this.nodeuser.balance(addr)
+        let chain = await this.nodeuser.balance(addr);
         let total = chain;
         let channel = null;
         try {
@@ -64,7 +65,14 @@ function showDiff(init, final) {
     console.log( "customer: \t \t \t hub:");
     let cusdif = final.customer.total.minus(init.customer.total);
     let hubdif = final.hub.total.minus(init.hub.total);
+
+    //check spending:
+    let open_fee = new BigNumber(  "17520000000000");
+    let close_fee1 = new BigNumber("10000000000000");
+    let close_fee2 = new BigNumber("10000000000000");
+    let result_full = cusdif.plus(open_fee).plus(close_fee1).plus(close_fee2).plus(hubdif);
     console.log( `${cusdif.toString(10)} \t \t \t ${hubdif.toString(10)}`);
+    console.log( `${result_full.toString(10)} `);
 }
 
 function pick_random(arr) {
@@ -86,20 +94,14 @@ function pick_random(arr) {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
-    peer.on("message", (msg)=> console.log("RECV:>", msg) );
-
+    peer.on("message", (msg)=> console.log("INFO:>", msg) );
 
     let merchants = await peer.get_("merchant");
-    console.log(1,JSON.stringify(merchants))
+    console.log("merchants online:", JSON.stringify(merchants))
     let merchant = pick_random(merchants);
-
-    let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 1000,
-        [{what:"beer", amount:2}]);
 
 
     peer.on("message", (msg) => {
-        console.log("INFO:>", msg);
         if(msg["type"]==="payment-request-rejected") {
             console.log("payment canceled:", msg["msg"]);
         }
@@ -110,14 +112,18 @@ function pick_random(arr) {
         if(msg["type"]==="payment-request-completed") {
             console.log("payment compelted!")
             peer.on("message", (msg) => {console.log("RECV:>", msg)})
+            peer.showBalances("post").then(()=>{}).catch(console.error);
         }
         if(msg["type"]==="payment-request-canceled") {
             console.log("shouldn'h happen here")
         }
     });
 
-    let result = await peer.sendPayment(pr);
-    console.log(JSON.stringify(result));
+    await peer.showBalances("pre");
+    let pr = Message.PaymentRequest(
+        merchant.address, merchant.name, peer.pubkey, 1000,
+        [{what:"beer", amount:2}]);
+    await peer.sendPayment(pr);
 
 
     // await peer.showBalances("pre-update");
@@ -126,13 +132,16 @@ function pick_random(arr) {
     //await myjschannel.sleep(16000*1000);
 
     async function quit(code) {
-        await peer.shutdown();
-        await peer.wait_state("DISCONNECTED");
-        await myjschannel.sleep(3*1000);
-        let final = await peer.showBalances("final");
-        showDiff(initial, final);
-        console.log("exit...");
-        process.exit(code);
+        try {
+            await peer.shutdown();
+            await peer.wait_state("DISCONNECTED");
+            await myjschannel.sleep(3*1000);
+            let final = await peer.showBalances("final");
+            showDiff(initial, final);
+        } finally {
+            console.log("exit...");
+            process.exit(code);
+        }
     }
 
     process.on('SIGINT', function() {
