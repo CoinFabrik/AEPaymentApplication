@@ -23,7 +23,7 @@ Vue.mixin(Globals);
 new Vue({
   router,
   store,
-  render: h => h(App)
+	render: h => h(App)
 }).$mount('#app')
 
 Vue.use(VueSweetalert2)

@@ -1,8 +1,7 @@
 <template>
-  <div class="history-view">
-  <AeButton face="round" fill="primary" v-on:click="goBack" style="position: absolute; right: 0; top: 0">X</AeButton>
+  <b-container class="history-view">
     <AeText fill="primary">Transaction History</AeText>
-    <div class="row">
+    <b-row>
       <div class="column">
         Date
       </div>
@@ -12,7 +11,7 @@
       <div class="column">
         Amount
       </div>
-    </div>
+    </b-row>
     <AeView>
       <AeList>
         <div v-for="tx in getTxHistory" v-bind:key="tx.txid">
@@ -30,30 +29,31 @@
         </div>
       </AeList>
     </AeView>
-  </div>
+		<AeButton class="backButton" face="round" fill="primary" extend v-on:click="goBack">←</AeButton>
+  </b-container>
 
 </template>
 
 <script>
   import {
     AeText,
-    AeButton,
     AeList,
     AeListItem,
-    AeView
+		AeView,
+		AeButton
   } from "@aeternity/aepp-components";
 
   export default {
     name: "History",
     components: {
       AeText,
-      AeButton,
       AeList,
       AeListItem,
-      AeView
+			AeView,
+			AeButton
     },
     methods: {
-      goBack: function() { 
+      goBack: function() {
         this.$router.go(-1);
       }
     },
@@ -141,10 +141,15 @@
 
 <style>
   .row {
-    display: flex;
+
   }
 
   .column {
     flex: 50%;
   }
+	.backButton {
+		position: absolute !important;
+		left: 0px;
+		bottom:0px;
+	}
 </style>

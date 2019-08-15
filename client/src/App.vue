@@ -3,13 +3,16 @@
     <ChannelNotify />
 		<AeBanner/>
 		<AeMain id="main">
-			<div id="content">
-				<transition name="slide" mode="out-in">
-					<router-view></router-view>
-				</transition>
-			</div>
+			<b-container>
+				<div id="content">
+					<transition name="slide" mode="out-in">
+						<router-view></router-view>
+					</transition>
+				</div>
+			</b-container>
 		</AeMain>
 		<LoadingScreen :isLoading="isLoading" />
+
 	</div>
 </template>
 
@@ -25,7 +28,7 @@
 
 	export default {
 		name: "App",
-		components: { AeMain, ChannelNotify, LoadingScreen, AeBanner},
+		components: { AeMain, ChannelNotify, LoadingScreen, AeBanner },
 		data() {
 			return { isLoading: false };
 		},
@@ -46,7 +49,7 @@
 		height: 100vh;
 		min-height: 0vh;
 		width: 100vw;
-		border-radius:20px 20px 0px 0px;
+		border-radius:30px 30px 0px 0px;
 	}
 	#content {
 		margin-top: 10vh;

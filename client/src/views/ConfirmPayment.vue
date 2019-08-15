@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { AeText, AeButtonGroup, AeButton, AeDivider } from "@aeternity/aepp-components";
+import { AeText, AeButton, AeDivider } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
 import { clearInterval } from "timers";
@@ -47,7 +47,6 @@ export default {
   components: {
     AeButton,
     AeText,
-		AeButtonGroup,
 		AeDivider
   },
   props: {
