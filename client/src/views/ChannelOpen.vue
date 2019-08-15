@@ -151,9 +151,16 @@ export default {
         await this.createChannel();
       }
     } catch (e) {
-      alert("Hub error: " + e.toString());
-      this.setErrorStatus("Hub error failure");
-      return;
+			this.setErrorStatus("Hub error failure");
+			this.$router.back();
+			this.$swal({
+				title: '<AeText>Hub error</AeText>',
+				type: 'error',
+				html:'<AeText>'+e.toString()+'</AeText>',
+				focusConfirm: false,
+				confirmButtonText: 'OK',
+			});
+			return;
     }
   }
 };
