@@ -81,7 +81,9 @@ export default {
           },
           onOpen: async () => {
             let paymentRequestMessage = paymentData;
-            paymentRequestMessage["customerid"] = this.$state.getters.initiatorAddress;
+            paymentRequestMessage[
+              "customerid"
+            ] = this.$state.getters.initiatorAddress;
             console.warn("Sending payment message:", paymentRequestMessage);
             await this.$store.state.channel.sendMessage(
               paymentRequestMessage,
@@ -89,8 +91,6 @@ export default {
             );
 
             // wait for accepted or rejected message from hub.
-
-
           },
           onClose: () => {
             clearInterval(timerInterval);

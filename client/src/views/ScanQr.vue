@@ -80,6 +80,7 @@ export default {
         if (this.subview === "pay-with-qr") {
           if (!validatePurchaseQr(scanData)) {
             this.$swal.fire({
+              heightAuto: false,
               type: "info",
               title: "Oops...",
               text:
@@ -97,6 +98,7 @@ export default {
         } else if (this.subview === "onboarding") {
           if (!validateOnboardingQr(scanData)) {
             this.$swal.fire({
+              heightAuto: false,
               type: "info",
               title: "Oops...",
               text:
