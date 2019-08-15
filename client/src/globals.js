@@ -15,6 +15,7 @@ export default {
     methods: {
         $displayError(title, text) {
             Vue.swal.fire({
+                heightAuto: false,
                 type: "error",
                 title: "Oops!",
                 text

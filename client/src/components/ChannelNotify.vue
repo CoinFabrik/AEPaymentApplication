@@ -46,10 +46,10 @@ export default {
     },
     onChannelUpdateAck(updateInfo) {
       // Check if we are waiting for signing a purchase that we got through last buy_request message.
-      const lastBuyReq = this.$store.state.buyRequestInfo;
+      //const lastBuyReq = this.$store.state.buyRequestInfo;
 
-      console.log("Last known Buy Request data: ", lastBuyReq);
-      console.log("Channel Update Information: ", updateInfo);
+      //console.log("Last known Buy Request data: ", lastBuyReq);
+      //console.log("Channel Update Information: ", updateInfo);
 
       // if (
       //   lastBuyReq &&
@@ -57,13 +57,13 @@ export default {
       //   lastBuyReq.customer === updateInfo.from &&
       //   this.$store.getters.responderAddress === updateInfo.to
       // ) {
-      return this.showRequestPaymentModal(
-        new BigNumber(lastBuyReq.amount)
-          .dividedBy(new BigNumber(10).pow(18))
-          .toString(10),
-        lastBuyReq.something,
-        lastBuyReq.merchant_name
-      );
+      // return this.showRequestPaymentModal(
+      //   new BigNumber(lastBuyReq.amount)
+      //     .dividedBy(new BigNumber(10).pow(18))
+      //     .toString(10),
+      //   lastBuyReq.something,
+      //   lastBuyReq.merchant_name
+      // );
       // } else {
       //   this.$swal xxx aca rompi algo
       //     title: "Oops",
@@ -114,6 +114,7 @@ export default {
     },
     showRequestPaymentModal(amount, what, merchant_name) {
       return this.$swal({
+        heightAuto: false,
         title: "Are you sure?",
         text:
           "Accept payment of " +

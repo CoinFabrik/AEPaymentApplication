@@ -72,6 +72,7 @@ export default {
     },
     displayError(e) {
       this.$swal.fire({
+        heightAuto: false,
         type: "error",
         title: "Oops!",
         text:
