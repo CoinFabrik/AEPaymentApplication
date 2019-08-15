@@ -35,7 +35,7 @@
 <style>
 	#app {
 		overflow: hidden;
-		height: 100%;
+		height: 100vh;
 		text-align: center;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
@@ -43,15 +43,13 @@
 		background-color: #311B58;
 	}
 	#main {
-		height: 100%;
-		min-height: 0%;
-		width: 100%;
+		height: 100vh;
+		min-height: 0vh;
+		width: 100vw;
 		border-radius:20px 20px 0px 0px;
 	}
 	#content {
-		margin-top: 20px;
+		margin-top: 15vh;
 		margin-bottom: 20px;
-		height: 100%;
-		width: 100%;
 	}
 </style>
