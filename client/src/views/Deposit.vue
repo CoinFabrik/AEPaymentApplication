@@ -1,68 +1,67 @@
 <template>
-  <div class="deposit">
-    <div v-if="initialDeposit">
-      <!-- 
-        Initial deposit at channel open stage 
-      -->
-      <div v-if="$isClientAppRole">
-        <AeText>
-          To open a channel with our Point of Sale services an acquire
-          venue amenities, goods and services,
-          please enter an amount of AE to deposit. This amount can be
-          used immediately. Unspent tokens will be returned to your wallet when the channel closes.
-        </AeText>
-        <AeText face="sans-s">You can add more tokens later</AeText>
-      </div>
 
-      <div v-if="$isMerchantAppRole">
-        <AeText>
-          To open a channel with our Point of Sale services you need
-          to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
-        </AeText>
-        <AeText face="sans-s">This deposit will be returned to your wallet at channel close</AeText>
-      </div>
-    </div>
-    <div v-else>
-      <!-- 
-        Deposit after-channel open case 
-      -->
-      <div v-if="$isClientAppRole">
-        <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
-      </div>
-    </div>
+	<b-container id="deposit">
+		<div v-if="initialDeposit">
+			<AeText weight="bold"> Initial Deposit </AeText>
+		<!--
+			<div v-if="$isClientAppRole">
+				<AeText>
+					To open a channel with our Point of Sale services an acquire
+					venue amenities, goods and services,
+					please enter an amount of AE to deposit. This amount can be
+					used immediately. Unspent tokens will be returned to your wallet when the channel closes.
+				</AeText>
+				<AeText face="sans-s">You can add more tokens later</AeText>
+			</div>
 
-    <ae-amount-input
-      v-show="$isClientAppRole"
-      placeholder="0.00"
-      v-model="depositInput"
-      :units="[
-            { symbol: 'AE', name: 'æternity' }
-          ]"
-      @input="onAmountInput"
-      v-bind:disabled="isInError || isQueryingBalance"
-    />
-    <div v-if="isQueryingBalance">
-      <AeText>Please wait while Checking your account balance</AeText>
-      <AeLoader />
-    </div>
-    <div v-else>
-      <AeText
-        face="sans-xs"
-        v-show="$isClientAppRole"
-      >Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
-    </div>
+			<div v-if="$isMerchantAppRole">
+				<AeText>
+					To open a channel with our Point of Sale services you need
+					to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
+				</AeText>
+				<AeText face="sans-s">This deposit will be returned to your wallet at channel close</AeText>
+			</div>
+		</div>
+		<div v-else>
 
-    <AeButton
-      face="round"
-      fill="primary"
-      extend
-      @click="deposit()"
-      :disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
-    >Deposit</AeButton>
-    <ae-modal v-if="isInError" @close="setWaitingInputState" title>
-      <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
-    </ae-modal>
-  </div>
+			<div v-if="$isClientAppRole">
+				<AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
+			</div>
+			-->
+		</div>
+
+		<ae-amount-input
+			v-show="$isClientAppRole"
+			placeholder="0.00"
+			v-model="depositInput"
+			:units="[
+						{ symbol: 'AE', name: 'æternity' }
+					]"
+			@input="onAmountInput"
+			v-bind:disabled="isInError || isQueryingBalance"
+		/>
+		<div v-if="isQueryingBalance">
+			<AeText>Please wait while Checking your account balance</AeText>
+			<AeLoader />
+		</div>
+		<div v-else>
+			<AeText
+				face="sans-xs"
+				v-show="$isClientAppRole"
+			>Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
+		</div>
+
+		<AeButton
+			face="round"
+			fill="primary"
+			extend
+			@click="deposit()"
+			:disabled="depositInput.amount <= 0 || isInError || isQueryingBalance"
+		>Deposit</AeButton>
+		<ae-modal v-if="isInError" @close="setWaitingInputState" title>
+			<ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
+		</ae-modal>
+	</b-container>
 </template>
 
 <script>
@@ -101,7 +100,7 @@ export default {
       viewState: STATUS_USER_INPUT,
       errorReason: null,
       depositInput: {
-        amount: "1",
+        amount: "",
         symbol: "AE"
       }
     };
@@ -186,3 +185,9 @@ export default {
   }
 };
 </script>
+
+<style>
+	#deposit {
+
+	}
+</style>

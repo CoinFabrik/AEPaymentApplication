@@ -1,9 +1,10 @@
 <template>
-  <div class="confirm-tx">
+  <b-container id="confirm-tx">
     <AeText
+			weight="bold"
       align="center"
       v-if="txKind === 'deposit'"
-    >Please review and confirm your CHANNEL DEPOSIT transaction</AeText>
+    >Deposit detail</AeText>
 
     <AeText
       align="center"
@@ -26,7 +27,7 @@
       <!--
         <AeDivider />
       <AeText align="left" weight="bold" fill="alternative">Transaction Priority</AeText>
-      
+
       <AeSwitch
         style="font-family: sans-serif;"
         name="tx_prio"
@@ -37,17 +38,20 @@
                 ]"
       -->
     </AePanel>
-    <ae-button-group>
-      <AeButton face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-      <AeButton face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
-    </ae-button-group>
-  </div>
+		<div id="button-group">
+			<b-row align-h="center" class="xs-1">
+				<AeButton face="round" fill="primary" @click="confirm()">Confirm</AeButton>
+			</b-row>
+			<b-row align-h="center" >
+				<AeButton face="round" fill="negative" @click="cancel()">Cancel</AeButton>
+			</b-row>
+		</div>
+  </b-container>
 </template>
 
 <script>
 import {
   AeText,
-  AeButtonGroup,
   AeButton,
   AePanel,
   AeDivider,
@@ -60,7 +64,6 @@ export default {
   components: {
     AeButton,
     AeText,
-    AeButtonGroup,
     AePanel,
     AeDivider,
   },
@@ -82,7 +85,7 @@ export default {
   },
   methods: {
     cancel() {
-      this.$router.goBack();
+      this.$router.back();
     },
     confirm() {
       this.$router.replace({
@@ -98,7 +101,9 @@ export default {
 </script>
 
 <style>
-div#tx_confirm_panel {
-  margin-bottom: 8px;
-}
+	#tx_confirm_panel {
+	}
+	#button-group {
+		padding-top: 3vh;
+	}
 </style>

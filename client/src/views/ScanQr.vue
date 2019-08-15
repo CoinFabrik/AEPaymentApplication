@@ -73,13 +73,20 @@ export default {
       console.log("Obtained QR Data: " + scanData);
 
       if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
-        this.storeTestParams();
+				this.storeTestParams();
         this.navigateOut();
       } else {
         try {
           dataObj = JSON.parse(scanData);
         } catch (err) {
-          alert("This is not a valid QR ");
+          this.$swal({
+						title: '<AeText>Is this the correct QR code?</AeText>',
+						type: 'error',
+						html:'<AeText>It seems like that QR code is not correct!</AeText>',
+						focusConfirm: false,
+						confirmButtonText:
+							'SCAN AGAIN',
+					})
           return;
         }
 

@@ -51,7 +51,7 @@ export default {
   },
   methods: {
     cancel() {
-      this.$router.goBack();
+      this.$router.back();
     },
     async confirm() {
       try {
