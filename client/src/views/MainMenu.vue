@@ -1,12 +1,23 @@
 <template>
   <div class="main-app">
     <div class="row">
+      <AeText fill="secondary" face="sans-s">Wallet Funds</AeText>
       <div class="column">
-        <AeQRCode v-bind:value="getAddress" />
+        <ae-amount v-bind:value="getMyWalletBalance" unit="Æ" size="small" clear="right" />
       </div>
+    </div>
+
+    <div class="row">
+      <AeText fill="secondary" face="sans-s">Channel Funds</AeText>
       <div class="column">
-        <AeText fill="secondary">Channel Funds</AeText>
-        <ae-amount v-bind:value="getMyBalance" unit="Æ" size="med" />
+        <ae-amount v-bind:value="getMyChannelBalance" unit="Æ" size="small" />
+      </div>
+    </div>
+
+    <div class="row" v-show="$isMerchantAppRole">
+      <AeText fill="secondary" face="sans-s">In Hub Funds</AeText>
+      <div class="column">
+        <ae-amount v-bind:value="getMyPendingHubBalance" unit="Æ" size="small" />
       </div>
     </div>
 
@@ -17,7 +28,7 @@
         <AeButton face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
       </div>
       <div class="row">
-        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Scan Purchase Qr</AeButton>
+        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Pay With Qr Code</AeButton>
       </div>
       <div class="row">
         <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
@@ -34,7 +45,12 @@
         <AeButton face="round" fill="primary" extend @click="withdraw()">Withdraw Funds</AeButton>
       </div>
       <div class="row">
-        <AeButton face="round" fill="primary" extend @click="scanCustomerQr()">Scan Customer Qr</AeButton>
+        <AeButton
+          face="round"
+          fill="primary"
+          extend
+          @click="generatePaymentQr()"
+        >Generate Payment Qr</AeButton>
       </div>
       <div class="row">
         <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
@@ -51,17 +67,15 @@
 
 import {
   AeText,
-  AeQRCode,
   AeAmount,
   AeButton
 } from "@aeternity/aepp-components";
-import { setInterval } from "timers";
+//import { setInterval } from "timers";
 
 export default {
   name: "MainMenu",
   components: {
     AeText,
-    AeQRCode,
     AeAmount,
     AeButton
   },
@@ -69,8 +83,14 @@ export default {
     getAddress: function() {
       return this.$store.getters.initiatorId;
     },
-    getMyBalance: function() {
+    getMyChannelBalance: function() {
       return this.$store.state.initiatorBalance / 10 ** 18;
+    },
+    getMyWalletBalance: function() {
+      return this.$store.state.balance / 10 ** 18;
+    },
+    getMyPendingHubBalance: function() {
+      return this.$store.state.hubBalance / 10 ** 18;
     }
   },
   methods: {
@@ -81,10 +101,10 @@ export default {
       this.$router.push("deposit");
     },
     scanTxQr: function() {
-      this.$router.push({ name: "scanqr", params: { subview: "scantxqr" } });
+      this.$router.push({ name: "scanqr", params: { subview: "pay-with-qr" } });
     },
-    scanCustomerQr: function() {
-      this.$router.push({ name: "scanqr", params: { subview: "scanaddress" } });
+    generatePaymentQr: function() {
+      this.$router.push("enterpurchase");
     },
     closeChannel: function() {
       this.$router.push("channelClose");
@@ -94,13 +114,20 @@ export default {
     }
   },
   async mounted() {
-    // Report error !
+    // // Report error !
+    // try {
+    //   setInterval(() => {
+    //     this.$store.dispatch("updateChannelBalances");
+    //   }, 1000);
+    // } catch (err) {
+    //   console.log("error getting balances! " + err);
+    // }
     try {
-      setInterval(() => {
-        this.$store.dispatch("updateChannelBalances");
-      }, 1000);
-    } catch (err) {
-      console.log("error getting balances! " + err);
+      await this.$store.dispatch("updateChannelBalances");
+      await this.$store.dispatch("updateOnchainBalance");
+      await this.$store.dispatch("updateHubBalance");
+    } catch (e) {
+      this.$displayError("Oops!", e.toString());
     }
   }
 };

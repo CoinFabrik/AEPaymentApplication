@@ -9,7 +9,7 @@
 					</AeText>
 				</div> -->
 				<!-- <br> -->
-				<div v-if="this.subview === 'scantxqr'">
+				<div v-if="this.subview === 'pay-with-qr'">
 					<AeText>Scan a QR Code for your desired transaction</AeText>
 				</div>
 
@@ -29,7 +29,9 @@
 
 import QrCodeReader from "../components/QrCodeReader.vue";
 import { AeText } from "@aeternity/aepp-components";
-import HubConnection from "../controllers/hub";
+//import HubConnection from "../controllers/hub";
+import BigNumber from "bignumber.js";
+import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
 
 export default {
   name: "ScanQR",
@@ -49,11 +51,11 @@ export default {
   mounted: function() {
     if (
       this.subview !== "onboarding" &&
-      this.subview !== "scantxqr" &&
+      this.subview !== "pay-with-qr" &&
       this.subview !== "scanaddress"
     ) {
       throw Error(
-        "The subview prop must be 'onboarding' , 'scantxqr' or 'scanaddress'"
+        "The subview prop must be 'onboarding' , 'pay-with-qr' or 'scanaddress'"
       );
     }
   },
@@ -69,31 +71,42 @@ export default {
       });
     },
     onQrHasData(scanData) {
-      let dataObj;
       console.log("Obtained QR Data: " + scanData);
 
       if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
 				this.storeTestParams();
         this.navigateOut();
       } else {
-        try {
-          dataObj = JSON.parse(scanData);
-        } catch (err) {
-          this.$swal({
-						title: '<AeText>Is this the correct QR code?</AeText>',
-						type: 'error',
-						html:'<AeText>It seems like that QR code is not correct!</AeText>',
-						focusConfirm: false,
-						confirmButtonText:
-							'SCAN AGAIN',
-					})
-          return;
+        if (this.subview === "pay-with-qr") {
+          if (!validatePurchaseQr(scanData)) {
+            this.$swal.fire({
+              type: "info",
+              title: "Oops...",
+              text:
+                "This QR Code does not seem to contain payment information. Please re-scan a new one."
+            });
+					}
+					// this.$swal({
+					// 	title: '<AeText>Is this the correct QR code?</AeText>',
+					// 	type: 'error',
+					// 	html:'<AeText>It seems like that QR code is not correct!</AeText>',
+					// 	focusConfirm: false,
+					// 	confirmButtonText:
+					// 		'SCAN AGAIN',
+					// })
+        } else if (this.subview === "onboarding") {
+          if (!validateOnboardingQr(scanData)) {
+            this.$swal.fire({
+              type: "info",
+              title: "Oops...",
+              text:
+                "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
+            });
+          }
         }
-
-        if (dataObj.qrkind === "AE_PARAMETER_PACK") {
-          this.$store.commit("loadChannelParams", dataObj.params);
-          this.navigateOut();
-        }
+        // if (dataObj.qrkind === "AE_PARAMETER_PACK") {
+        //   this.$store.commit("loadChannelParams", dataObj.params);
+        //   this.navigateOut();
       }
     },
     onQrHasError(event, error) {
@@ -109,6 +122,15 @@ export default {
           this.storeTestParams();
         } else if (this.subview === "scanaddress") {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
+        } else if (this.subview === "pay-with-qr") {
+          this.qrData = {
+            amount: new BigNumber(3.5)
+              .multipliedBy(new BigNumber(10).exponentiatedBy(18))
+              .toString(10),
+            merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
+            merchant_name: "TOTO'S BAR",
+            something: "3 BEERS"
+          };
         }
         this.navigateOut();
       }
@@ -116,10 +138,11 @@ export default {
     async navigateOut() {
       if (this.subview === "onboarding") {
         await this.doOnboardingProcess();
-      } else if (this.subview === "scantxqr") {
+      } else if (this.subview === "pay-with-qr") {
+        console.log("Gonna confirm", this.qrData);
         this.$router.push({
-          name: "confirmtx",
-          params: { txKind: "transact-from-qr" }
+          name: "confirm-payment",
+          params: { paymentData: this.qrData }
         });
       } else if (this.subview === "scanaddress") {
         await this.doProcessAddress();
@@ -134,46 +157,14 @@ export default {
       }
     },
     async doOnboardingProcess() {
-      if (this.$isClientAppRole) {
-        this.$router.push({
-          name: "deposit",
-          params: { initialDeposit: true }
-        });
-      } else if (this.$isMerchantAppRole) {
-        let hubConnection = new HubConnection(
-          this.$store.state.hubUrl,
-          this.$store.getters.initiatorAddress
-        );
-        try {
-          let ret = await hubConnection.getMerchantName();
-          if (ret.success === false) {
-            if (ret.code === 404) {
-              // No registered merchant name.
-              this.$router.push("register-merchant");
-            } else {
-              // unexpected error.
-              this.setError(
-                "A problem occurred communicating with the hub. Please contact the system administrator."
-              );
-            }
-          } else {
-            // Welcome back.
-            this.$router.push({
-              name: "deposit",
-              params: { initialDeposit: true, welcomeBack: true }
-            });
-          }
-        } catch (e) {
-          this.setError(e);
-        }
-      }
+      this.$router.push("register-user");
     },
     storeTestParams() {
       // Store development test channel parameters
 
       let params = {
         initiatorId: process.env.VUE_APP_TEST_WALLET_ADDRESS,
-        responderId: null,  // known after connection with Hub
+        responderId: null, // known after connection with Hub
 
         // Initial deposit in favour of the responder by the initiator
         pushAmount: process.env.VUE_APP_TEST_CHANNEL_PUSH_AMOUNT,
@@ -186,7 +177,7 @@ export default {
 
         // Minimum amount both peers need to maintain
         channelReserve: process.env.VUE_APP_TEST_CHANNEL_RESERVE,
-         // Minimum block height to include the channel_create_tx
+        // Minimum block height to include the channel_create_tx
         ttl: process.env.VUE_APP_TEST_CHANNEL_TTL,
 
         // Amount of blocks for disputing a solo close

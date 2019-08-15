@@ -10,8 +10,7 @@
 
 const STATUS_ACK_HUB = 1,
   STATUS_WORKING = 2,
-  STATUS_STOPPED = 3,
-  STATUS_ERROR = 0xffff;
+  STATUS_STOPPED = 3
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
 import { EventBus } from "../event/eventbus.js";
@@ -66,10 +65,6 @@ export default {
     }
   },
   methods: {
-    setErrorStatus(reason) {
-      this.viewStatus = STATUS_ERROR;
-      this.errorText = reason;
-    },
     onChannelStatusChange(status) {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
@@ -94,16 +89,11 @@ export default {
         this.$store.getters.initiatorAddress
       );
 
-      if (this.$isClientAppRole) {
-        return hub.notifyClientOnboarding(this.$store.getters.initiatorAmount);
-      } else if (this.$isMerchantAppRole) {
-        return hub.notifyMerchantOnboarding(
-          this.$store.getters.initiatorAmount,
-          this.$store.state.merchantName
-        );
-      } else {
-        throw new Error("Unknown application role!");
-      }
+      return hub.notifyUserOnboarding(
+        this.$store.getters.initiatorAmount,
+        this.$store.state.userName,
+        this.$isClientAppRole ? "client" : "merchant"
+      );
     },
     async createChannel() {
       this.viewStatus = STATUS_WORKING;
@@ -118,31 +108,33 @@ export default {
           console.log("mounted(): Channel already created!");
         }
       } catch (e) {
-        console.error(e);
+        this.$displayError(
+          "Oops! There is some problem",
+          "We cannot open the channel to the Payment Hub. Please try again in a moment. Reason: " +
+            e.toString()
+        );
         this.$router.replace({
-          name: "error",
-          params: {
-            errorTitle: "Error while opening channel",
-            errorDescription: e.toString(),
-            onRetryNavTo: { name: this.$router.currentRoute.name },
-            onCancelNavTo: {
-              name: "deposit",
-              params: { initialDeposit: "true" }
-            },
-            retryCancel: true
-          }
+          name: "deposit",
+          params: { initialDeposit: true }
         });
       }
     }
   },
   mounted: async function() {
-    let res;
     try {
       let res = await this.notifyHub();
       console.log("res: ", res);
 
       if (!res.success) {
-        throw "Error with the hub";
+        this.$displayError(
+          "Oops! There is some problem",
+          "We could not communicate with the payment hub. Please try again later. Reason: " +
+            res.error.toString()
+        );
+        this.$router.replace({
+          name: "deposit",
+          params: { initialDeposit: true }
+        });
       } else {
         console.log("Hub Wallet Address: " + res.address);
         this.$store.commit("loadHubAddress", res.address);
@@ -151,16 +143,15 @@ export default {
         await this.createChannel();
       }
     } catch (e) {
-			this.setErrorStatus("Hub error failure");
-			this.$router.back();
-			this.$swal({
-				title: '<AeText>Hub error</AeText>',
-				type: 'error',
-				html:'<AeText>'+e.toString()+'</AeText>',
-				focusConfirm: false,
-				confirmButtonText: 'OK',
-			});
-			return;
+      this.$displayError(
+        "Oops! There is some problem",
+        "We could not communicate with the payment hub. Please try again later. Reason: " +
+          e.toString()
+      );
+      this.$router.replace({
+        name: "deposit",
+        params: { initialDeposit: true }
+      });
     }
   }
 };

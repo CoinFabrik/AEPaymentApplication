@@ -11,9 +11,6 @@
           <AeText>Please wait...</AeText>
           <AeLoader />
         </div>
-        <div v-if="isAtError">
-          <ae-backdrop>{{ error }}</ae-backdrop>
-        </div>
       </b-col>
 
       <b-modal id="authorize-modal" centered hide-footer hide-header>
@@ -46,22 +43,19 @@ import aeternity from "../controllers/aeternity.js";
 import {
   AeText,
   AeButton,
-  AeBackdrop,
   AeLoader
 } from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
   STATUS_CONNECTING = 1,
-  STATUS_CONNECTED = 2,
-  STATUS_ERROR = 3;
+  STATUS_CONNECTED = 2;
 
 export default {
   name: "ConnectToWallet",
   components: {
     AeButton,
     AeLoader,
-    AeBackdrop,
     AeText
   },
   data() {
@@ -82,14 +76,10 @@ export default {
     },
     isConnected() {
       return this.status == STATUS_CONNECTED;
-    },
-    isAtError() {
-      return this.status == STATUS_ERROR;
     }
   },
   methods: {
     async connectToBaseApp() {
-
       this.status = STATUS_CONNECTING;
       try {
         const connectStatus = await aeternity.connectToBaseApp();
@@ -102,21 +92,19 @@ export default {
             params: { subview: "onboarding" }
           });
         } else {
-          this.setError(connectStatus.error.toString());
+          this.$displayError(
+            "Oops! We could not connect to your wallet",
+            connectStatus.error.toString()
+          );
+          this.status = STATUS_INIT;
         }
       } catch (e) {
-        this.setError(e.toString());
+        this.$displayError(
+          "Oops! We could not connect to your wallet",
+          e.toString()
+        );
+        this.status = STATUS_INIT;
       }
-    },
-    setError(errorText) {
-      this.$router.push({
-        name: "error",
-        params: {
-          errorTitle: "We could not connect to your wallet",
-          errorDescription: errorText,
-          retryCancel: false
-        }
-      });
     }
   },
   mounted() {
@@ -128,7 +116,8 @@ export default {
       console.warn("Booting application with role:  CLIENT");
     } else {
       console.error("Cannot find application role in VUE_APP_ROLE variable");
-      this.setError(
+      this.$displayError(
+        "Unexpected error",
         "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
       );
     }

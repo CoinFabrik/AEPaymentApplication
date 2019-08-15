@@ -4,11 +4,8 @@ Ecosystem of applications for the AEUniverse Conference.
 
 ## Project Structure
 
-* **client** Client application to be used by assistants to connect to the Point-of-Sale service.Should run under Base-Aepp
+* **client** Client/Merchant application to be used by assistants to connect to the Point-of-Sale service.Should run under Base-Aepp
 
-* **posclient** Client application to be used by sellers.
-
-* **posservice** Backend application that coordinates buyers and sellers.
 
 ## Prerequisites
 
@@ -28,4 +25,6 @@ The Aepp-SDK is a constantly evolving software base and at this time is **not co
 * Chequear **todos ** los lugares de conversion de unidades (de AEttos a AE) dado que hacemos inputs de Numbers por limitaciones del SDK. Alternativa; manejar BigNumber y pasar Strings de integers de hasta 18 digitos de precision, COMO DEBERIA SER.
 * "Confirm" cuando el merchant envia el mensaje, ALERT o view separado? 
 * Unificar toda la palabreria (PoS, HUB, customer,merchant,etc)
+* Polling de balances en menu principal?? CHOTO.  Mirar bien todos los updates.
+
 

@@ -1,12 +1,14 @@
 <template>
   <div class="enterpurchase">
-    <AeText face="sans-l">Sell Item</AeText>
-    <AeText>Customer address {{ customerAddress }}</AeText>
-
-    <AeInput label="Quantity" ref="quantity" placeholder="0" v-model="quantity" />
-    <AeInput label="Unit Price" ref="unitprice" placeholder="0.00" v-model="unitPrice" />
-    <AeInput label="Description" ref="desc" placeholder="Enter your Item..." v-model="description" />
-    <AeText>Total {{ totalPrice }} AE</AeText>
+    <AeText face="sans-l">Generate Payment</AeText>
+    <AeText>Please enter the payment information to generate a QR code for your customer</AeText>
+    <AeInput label="Amount" placeholder="0.00" v-model="amount" units="AE" />
+    <AeInput
+      label="Concept (optional)"
+      ref="desc"
+      placeholder="Enter your Item description..."
+      v-model="description"
+    />
     <ae-button-group>
       <AeButton face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
       <AeButton face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
@@ -24,7 +26,7 @@ import {
   AeInput
 } from "@aeternity/aepp-components";
 
-import { makeBuyMessage } from "../util/messages";
+import { makePaymentQrData } from "../util/messages";
 
 export default {
   name: "EnterPurchase",
@@ -34,50 +36,25 @@ export default {
     AeButtonGroup,
     AeInput
   },
-  props: {
-    customerAddress: String
-  },
+  props: {},
   data() {
     return {
-      quantity: 1,
-      unitPrice: 0,
+      amount: "0.00",
       description: ""
     };
   },
-  computed: {
-    totalPrice() {
-      return this.quantity * this.unitPrice;
-    }
-  },
+
   methods: {
     cancel() {
       this.$router.back();
     },
     async confirm() {
-      try {
-        const message = makeBuyMessage(
-          this.totalPrice,
-          [this.description],
-          this.customerAddress
-        );
-        await this.$store.state.aeternity.sendMessage(
-          this.$store.state.channel,
-          message,
-          this.$store.getters.responderAddress
-        );
-
-        this.$swal
-          .fire(
-            "Yayy!",
-            "Your payment request has been sent to the Point-of-Sale hub",
-            "success"
-          )
-          .then(() => {
-            this.$router.replace("mainmenu");
-          });
-      } catch (e) {
-        console.error(e);
-      }
+      const message = makePaymentQrData(
+        this.amount,
+        this.description,
+        this.$state.store.userName
+      );
+      this.$router.replace({ name: "show-payment-qr", params: { message } });
     }
   }
 };

@@ -1,30 +1,17 @@
-import { validateAddress } from '../util/validators.js'
+//import { validateAddress } from '../util/validators.js'
+const uuidv4 = require('uuid/v4');
+import BigNumber from 'bignumber.js'
 
-export function makeBuyMessage(price, items, customer) {
+export function makePaymentQrData(price, items, merchantName) {
     if (price <= 0 || !price) {
         throw Error("Price in Buy-message  must be positive");
     }
 
-    if (items === undefined || items.length == 0) {
-        throw Error("Items array in buy-message must be defined and not-empty");
-    }
-
-    if (customer === undefined) {
-        throw Error("Customer address in buy-message must be defined");
-    }
-
-    if (!validateAddress(customer)) {
-        throw Error("Customer address is not valid");
-    }
-
-    // Convert price to aettos
-
-    // TODO: new BigNumber(price).multipliedBy(10**18);
-
     return {
-        "amount": price * (10**18),
+        "id": uuidv4(),
+        "amount": ((new BigNumber(price)).multipliedBy(new BigNumber(10).exponentiatedBy(18))).toString(10),
         "something": items,
-        "toId": customer,
-        "type": "buy-request",
+        "merchantName": merchantName,
+        "type": "payment-request"
     }
 }

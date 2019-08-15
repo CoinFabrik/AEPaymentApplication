@@ -54,7 +54,7 @@ import {
   AeText,
   AeButton,
   AePanel,
-  AeDivider,
+  AeDivider
 } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
@@ -65,14 +65,16 @@ export default {
     AeButton,
     AeText,
     AePanel,
-    AeDivider,
+    AeDivider
   },
   props: {
     txKind: String, // decide following fields based on txKind?
     amountAettos: String,
     fee: String
   },
-  data() { return {} },
+  data() {
+    return {};
+  },
   computed: {
     amountAE() {
       const BN = new BigNumber(this.amountAettos).dividedBy(10 ** 18);

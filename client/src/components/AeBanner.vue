@@ -2,6 +2,7 @@
 	<div id="banner" v-on:click="goHome()">
 		<img id="ae-logo" alt="AE-logo" src="./../assets/ae2x.png" />
 		<ae-text weight="bold" fill="white" face="sans-l">æternity</ae-text>
+		<ae-text fill="primary" face="uppercase-xs">{{ this.$isMerchantAppRole ? "merchant wallet" : "customer wallet" }}</ae-text>
 	</div>
 </template>
 
@@ -22,7 +23,7 @@
 
 <style>
 	#banner {
-		height: 15%;
+		height: 20%;
 	}
 	#ae-logo {
 		padding-top: 10px;
