@@ -113,8 +113,9 @@ export default {
               .multipliedBy(new BigNumber(10).exponentiatedBy(18))
               .toString(10),
             merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
-            merchant_name: "TOTO'S BAR",
-            something: "3 BEERS"
+            something: "3 BEERS",
+            id: "5e3087e2-441b-49a2-b1c0-83f53c1749d7",
+            type: "payment-request"
           };
         }
         this.navigateOut();

@@ -64,7 +64,7 @@ export default new Vuex.Store({
     updateResponderBalance(state, amount) {
       state.responderBalance = amount;
     },
-    updateInHubBalance(state,amount){
+    updateInHubBalance(state, amount) {
       state.hubBalance = amount;
     },
     storeLastBuyRequestInfo(state, data) {
@@ -119,12 +119,12 @@ export default new Vuex.Store({
         }
       )
     },
-    transferTokensToResponder({ dispatch, state, getters }, amount) {
-      console.log('ACTION: transferTokensToResponder');
-      state.aeternity.updateEx(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
+    triggerUpdate({ dispatch, state, getters }, amount) {
+      console.log('ACTION: triggerUpdate');
+      state.aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
         function (accepted) {
           if (accepted) {
-            return dispatch('updateChannelBalances');
+            dispatch('updateChannelBalances');
           } else {
             return Promise.reject(new Error("channel.updated rejected"));
           }

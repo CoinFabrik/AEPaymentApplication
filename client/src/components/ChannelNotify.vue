@@ -47,10 +47,8 @@ export default {
     onChannelUpdateAck(updateInfo) {
       // Check if we are waiting for signing a purchase that we got through last buy_request message.
       //const lastBuyReq = this.$store.state.buyRequestInfo;
-
       //console.log("Last known Buy Request data: ", lastBuyReq);
       //console.log("Channel Update Information: ", updateInfo);
-
       // if (
       //   lastBuyReq &&
       //   lastBuyReq.amount === updateInfo.amount &&
@@ -91,13 +89,16 @@ export default {
             "Payment-request ACCEPTED message received in channel: ",
             msg
           );
-          EventBus.$emit("payment-request-ack", "accepted");
+          EventBus.$emit("payment-request-ack", { st: "accepted" });
         } else if (infoObj.type === "payment-request-rejected") {
           console.warn(
-            "Payment-request ACCEPTED message received in channel: ",
+            "Payment-request REJECTED message received in channel: ",
             msg
           );
-          EventBus.$emit("payment-request-ack", "rejected");
+          EventBus.$emit("payment-request-ack", {
+            st: "rejected",
+            rejectMsg: infoObj.msg
+          });
         }
         // // TODO: sólo el merchant debe aceptarlo
         // this.$swal.fire({
@@ -111,42 +112,6 @@ export default {
         }
       }
       setTimeout(this.checkMessageQueue, POLL_INTERVAL_MS);
-    },
-    showRequestPaymentModal(amount, what, merchant_name) {
-      return this.$swal({
-        heightAuto: false,
-        title: "Are you sure?",
-        text:
-          "Accept payment of " +
-          amount +
-          " AE for your PURCHASE at " +
-          merchant_name +
-          "?",
-        allowOutsideClick: false,
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Accept",
-        cancelButtonText: "Reject",
-        showCloseButton: false,
-        showLoaderOnConfirm: true
-      })
-        .then(result => {
-          if (result.value) {
-            // reset last buyRequest
-            this.$store.commit("clearLastBuyRequestInfo");
-
-            this.$swal(
-              "Thanks!",
-              "You successfully paid for your purchase",
-              "success"
-            );
-            return true;
-          } else {
-            this.$swal("Cancelled", "You cancelled your purchase", "info");
-            return false;
-          }
-        })
-        .catch(alert);
     }
   },
   mounted() {

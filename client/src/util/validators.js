@@ -44,6 +44,7 @@ export function validatePurchaseQr(qrtext) {
         if (obj.amount === undefined
             || obj.something === undefined
             || obj.id === undefined
+            || obj.merchant === undefined
             || obj.type === undefined) {
             console.error("Payment QR: does not contain required fields");
             return false;

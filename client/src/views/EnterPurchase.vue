@@ -52,7 +52,7 @@ export default {
       const message = makePaymentQrData(
         this.amount,
         this.description,
-        this.$store.state.userName
+        this.$store.getters.initiatorAddress
       );
       this.$router.replace({ name: "show-payment-qr", params: { message } });
     }
