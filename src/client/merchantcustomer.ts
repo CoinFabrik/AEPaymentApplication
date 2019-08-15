@@ -78,7 +78,7 @@ export class MerchantCustomer {
     static paymentRejected(err: Error, msg: any): object {
         let base = clone(msg);
         base["type"] = "payment-request-rejected";
-        base["msg"] = err.toString;
+        base["msg"] = err.toString();
         return base;
     }
 
