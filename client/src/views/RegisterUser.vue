@@ -17,6 +17,8 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
+
 import HubConnection from "../controllers/hub";
 import {
   AeText,

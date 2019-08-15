@@ -66,29 +66,24 @@
 /* eslint-disable no-console */
 
 const STATUS_USER_INPUT = 0,
-  STATUS_QUERY_BALANCE = 1,
-  STATUS_ERROR = 2;
+  STATUS_QUERY_BALANCE = 1;
 
 import {
-  AeModal,
   AeText,
   AeAmountInput,
   AeLoader,
   AeButton
 } from "@aeternity/aepp-components";
 
-import ErrorContent from "../components/ErrorContent";
 import BigNumber from "bignumber.js";
 
 export default {
   name: "Deposit",
   components: {
-    AeModal,
     AeButton,
     AeText,
     AeLoader,
-    AeAmountInput,
-    ErrorContent
+    AeAmountInput
   },
   props: {
     initialDeposit: Boolean

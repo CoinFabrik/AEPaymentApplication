@@ -18,7 +18,6 @@ import aeternity from "../controllers/aeternity.js";
 import {
   AeText,
   AeButton,
-  AeBackdrop,
   AeLoader
 } from "@aeternity/aepp-components";
 
@@ -32,7 +31,6 @@ export default {
   components: {
     AeButton,
     AeLoader,
-    AeBackdrop,
     AeText
   },
   data() {

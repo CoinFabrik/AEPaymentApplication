@@ -20,7 +20,7 @@
 
 import QrCodeReader from "../components/QrCodeReader.vue";
 import { AeText } from "@aeternity/aepp-components";
-import HubConnection from "../controllers/hub";
+//import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
 
@@ -105,12 +105,12 @@ export default {
           this.storeTestParams();
         } else if (this.subview === "scanaddress") {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
-        } else if (this.subview === "pay-qr-code") {
+        } else if (this.subview === "pay-with-qr") {
           this.qrData = {
-            amount: new BigNumber(3.5).multipliedBy(
-              new BigNumber(10).exponentiatedBy(18)
-            ),
-            merchant: "ak_xxxxx",
+            amount: new BigNumber(3.5)
+              .multipliedBy(new BigNumber(10).exponentiatedBy(18))
+              .toString(10),
+            merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
             merchant_name: "TOTO'S BAR",
             something: "3 BEERS"
           };
@@ -122,6 +122,7 @@ export default {
       if (this.subview === "onboarding") {
         await this.doOnboardingProcess();
       } else if (this.subview === "pay-with-qr") {
+        console.log("Gonna confirm", this.qrData);
         this.$router.push({
           name: "confirm-payment",
           params: { paymentData: this.qrData }

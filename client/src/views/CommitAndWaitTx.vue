@@ -109,7 +109,6 @@ export default {
     async commitWithdrawTransaction() {
       console.log("Committing WITHDRAW transaction ... ");
 
-      let tx;
       let accepted = await this.$store.state.aeternity.withdraw(
         this.$store.state.channel,
         parseInt(this.txParams.amountAettos),

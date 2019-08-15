@@ -12,7 +12,6 @@
 import {
   AeText,
   AeQRCode,
-  AeAmount,
   AeButton
 } from "@aeternity/aepp-components";
 
@@ -29,7 +28,6 @@ export default {
   components: {
     AeText,
     AeQRCode,
-    AeAmount,
     AeButton
   },
   methods: {

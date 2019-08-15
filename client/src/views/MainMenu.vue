@@ -67,17 +67,15 @@
 
 import {
   AeText,
-  AeQRCode,
   AeAmount,
   AeButton
 } from "@aeternity/aepp-components";
-import { setInterval } from "timers";
+//import { setInterval } from "timers";
 
 export default {
   name: "MainMenu",
   components: {
     AeText,
-    AeQRCode,
     AeAmount,
     AeButton
   },

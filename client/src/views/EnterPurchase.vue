@@ -2,7 +2,7 @@
   <div class="enterpurchase">
     <AeText face="sans-l">Generate Payment</AeText>
     <AeText>Please enter the payment information to generate a QR code for your customer</AeText>
-    <AeInput label="Amount"  placeholder="0.00" v-model="amount" units="AE" />
+    <AeInput label="Amount" placeholder="0.00" v-model="amount" units="AE" />
     <AeInput
       label="Concept (optional)"
       ref="desc"
@@ -26,7 +26,7 @@ import {
   AeInput
 } from "@aeternity/aepp-components";
 
-import { makeBuyMessage } from "../util/messages";
+import { makePaymentQrData } from "../util/messages";
 
 export default {
   name: "EnterPurchase",
@@ -49,7 +49,11 @@ export default {
       this.$router.back();
     },
     async confirm() {
-      const message = makeBuyMessage(this.amount, this.description);
+      const message = makePaymentQrData(
+        this.amount,
+        this.description,
+        this.$state.store.userName
+      );
       this.$router.replace({ name: "show-payment-qr", params: { message } });
     }
   }

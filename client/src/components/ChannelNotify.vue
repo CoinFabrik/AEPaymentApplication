@@ -86,30 +86,27 @@ export default {
             "heartbeat-ack",
             this.$store.getters.responderAddress
           );
-        } else if (infoObj.type === "buy-request") {
-          console.warn("Buy-request message received in channel: ", msg);
-          this.$store.commit("storeLastBuyRequestInfo", {
-            id: infoObj.id,
-            merchant: infoObj.merchant,
-            customer: infoObj.customer,
-            amount: infoObj.amount,
-            merchant_name: infoObj.merchant_name,
-            something: infoObj.something
-          });
-        } else if (
-          infoObj.type === "buy-request-accepted" &&
-          this.$isMerchantAppRole
-        ) {
-          console.warn("Buy-request message received in channel: ", msg);
-
-          // TODO: sólo el merchant debe aceptarlo
-          this.$swal.fire({
-            text: "Payment received from HERNAN for 1.5 AE",
-            type: "success",
-            toast: true,
-            position: "top-end"
-          });
-        } else {
+        } else if (infoObj.type === "payment-request-accepted") {
+          console.warn(
+            "Payment-request ACCEPTED message received in channel: ",
+            msg
+          );
+          EventBus.$emit("payment-request-ack", "accepted");
+        } else if (infoObj.type === "payment-request-rejected") {
+          console.warn(
+            "Payment-request ACCEPTED message received in channel: ",
+            msg
+          );
+          EventBus.$emit("payment-request-ack", "rejected");
+        }
+        // // TODO: sólo el merchant debe aceptarlo
+        // this.$swal.fire({
+        //   text: "Payment received from HERNAN for 1.5 AE",
+        //   type: "success",
+        //   toast: true,
+        //   position: "top-end"
+        // });
+        else {
           console.warn("An unknown message was present in queue: ", msg);
         }
       }

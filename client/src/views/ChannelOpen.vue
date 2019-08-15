@@ -10,8 +10,7 @@
 
 const STATUS_ACK_HUB = 1,
   STATUS_WORKING = 2,
-  STATUS_STOPPED = 3,
-  STATUS_ERROR = 0xffff;
+  STATUS_STOPPED = 3
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
 import { EventBus } from "../event/eventbus.js";
@@ -122,7 +121,6 @@ export default {
     }
   },
   mounted: async function() {
-    let res;
     try {
       let res = await this.notifyHub();
       console.log("res: ", res);
