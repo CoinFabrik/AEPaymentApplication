@@ -7,11 +7,9 @@ import ConfirmTx from './views/ConfirmTx.vue'
 import ConfirmPayment from './views/ConfirmPayment.vue'
 import CommitAndWaitTx from './views/CommitAndWaitTx.vue'
 import Success from './views/Success.vue'
-import ErrorView from './views/ErrorView.vue'
 import MainMenu from './views/MainMenu.vue'
 import History from './views/History.vue'
 import ChannelOpen from './views/ChannelOpen.vue'
-import ChannelClose from './views/ChannelClose.vue'
 import RegisterUser from './views/RegisterUser.vue'
 import Withdraw from './views/Withdraw.vue'
 import ShutdownDone from './views/ShutdownDone.vue'
@@ -90,12 +88,6 @@ export default new Router({
       component: ShutdownDone
     },
     {
-      path: '/error',
-      name: 'error',
-      component: ErrorView,
-      props: true
-    },
-    {
       path: '/channelopen',
       name: 'channelopen',
       component: ChannelOpen,
@@ -105,11 +97,6 @@ export default new Router({
       path: '/history',
       name: 'history',
       component: History
-    },
-    {
-      path: '/channelclose',
-      name: 'channelclose',
-      component: ChannelClose
     },
     {
       path: '/enterpurchase',
