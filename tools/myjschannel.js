@@ -81,9 +81,9 @@ class MyChannel extends events.EventEmitter {
     constructor(pubkey, privkey, opposite_addr, init_amount) {
         super();
         if (init_amount===undefined) {
-            this.init_amount = init_amount;
+            init_amount = INITIATOR_MIN_BALANCE;
         }
-        this.init_amount = INITIATOR_MIN_BALANCE;
+        this.init_amount = init_amount;
         this.nodeuser = undefined;
         this.pubkey = pubkey;
         this.privkey = privkey;
@@ -176,6 +176,10 @@ class MyChannel extends events.EventEmitter {
             if (this.STATUS === "DISCONNECTED") {
                 //process.exit(0);
             }
+        });
+
+        this.channel.on('error', (msg) => {
+            console.log("ERROR:", msg);
         });
 
         this.channel.on('message', (msg) => {

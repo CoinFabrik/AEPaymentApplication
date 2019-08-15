@@ -20,7 +20,6 @@ class Message {
     }
 }
 
-
 class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
@@ -100,10 +99,13 @@ function pick_random(arr) {
     console.log("merchants online:", JSON.stringify(merchants))
     let merchant = pick_random(merchants);
 
+    //#91841981000000000000000000
+    //#12345678901234567890123456
 
     await peer.showBalances("pre");
+    //XINIT2 = "20000000000000000";
     let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 1,
+        merchant.address, merchant.name, peer.pubkey, 10,
         [{what:"beer", amount:1}]);
 
 
@@ -123,10 +125,12 @@ function pick_random(arr) {
             // peer.showBalances("post")
             //     .then(()=>{})
             //     .catch(console.error);
-            peer.sendPayment(pr).then(()=>{
-                idx= idx +1;
-                console.log("time:", idx);
-            }).catch(console.error);
+            if(-1!==process.argv.indexOf("continue")) {
+                peer.sendPayment(pr).then(()=>{
+                    idx= idx +1;
+                    console.log("iteration:", idx);
+                }).catch(console.error);
+            }
         }
         if(msg["type"]==="payment-request-canceled") {
             console.log("shouldn'h happen here")
