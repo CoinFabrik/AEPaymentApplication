@@ -31,14 +31,15 @@ will move amount from $src to $dst.
 $ AENODE=node_ip_address npm run start
 
 # 2. merchant:
-tools$ HUB=127.0.0.1 ACCOUNT=merchant AENODE=165.22.18.138 node merchtest3b.js  
+tools$ HUB=127.0.0.1 ACCOUNT=merchant NODE=165.22.18.138 node merchtest3b.js  
 
 # 3. customer:
-tools$ HUB=127.0.0.1 ACCOUNT=customer AENODE=165.22.18.138 node custtest3b.js [ continue ]
+tools$ HUB=127.0.0.1 ACCOUNT=customer NODE=165.22.18.138 node custtest3b.js [ continue ]
 
 HUB : address of server 1.
 ACCOUNT : filename of wallet used for this process
 AENODE : AE nodo to connect to.
+NODE : AE nodo to connect to.  (sorry we are changing this)
 
 server uses hub by default
 
