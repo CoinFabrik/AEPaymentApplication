@@ -20,7 +20,7 @@ This will take wallet filename from:
 # development
 
 # server
-$ npm run start
+$ AENODE=node_ip_address npm run start
 ```
 
 ### Clients

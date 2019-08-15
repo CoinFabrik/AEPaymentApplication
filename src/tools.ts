@@ -1,5 +1,6 @@
 import * as nacl from 'tweetnacl'
 import * as fs from "fs";
+import * as http from "http";
 
 
 export class Account {
@@ -242,4 +243,27 @@ export function mystringify(o) {
     });
     cache = null; // Enable garbage collection
     return result;
+}
+
+
+export async function Get(host, url, port=80): Promise<string> {
+    return new Promise((resolve, reject) => {
+        http.get({
+            hostname: host,
+            port: port,
+            path: url
+        }, (res) => {
+            if (res.statusCode !== 200) {
+                reject(res.statusCode);
+            }
+            res.setEncoding('utf8');
+            let rawData = '';
+            res.on('data', (chunk) => {
+                rawData += chunk;
+            });
+            res.on('end', () => {
+                resolve(rawData);
+            });
+        });
+    });
 }

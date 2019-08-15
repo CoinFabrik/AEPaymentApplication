@@ -1,12 +1,12 @@
 import {ServiceBase} from "./client.service";
-import {Actor, AE, CClient} from "./client.entity";
+import {Actor, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
-import {Account, get_account, getEnv, sleep, voidf, wait_for} from "../tools";
+import {Account, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
+import {ACCOUNT, API_URL, INTERNAL_API_URL, NETWORK_ID, WS_URL} from "../config";
 
 
-const NETWORK_ID = 'ae_devnet';
 const {
     Channel,
     Crypto,
@@ -14,16 +14,6 @@ const {
     TxBuilder: {unpackTx}
 } = require('@aeternity/aepp-sdk');
 
-const port = 3001;
-let URL = getEnv('AENODE', '10.10.0.79')+ ':' + port;
-//let URL = 'localhost:'+port;
-const API_URL = "http://" + URL;
-const WS_URL = "ws://" + URL;  // http is ok too
-const INTERNAL_API_URL = API_URL;
-const compilerURL = 'https://compiler.aepps.com';
-export const ACCOUNT = getEnv("ACCOUNT", "hub");
-
-console.log("NODE:", URL)
 
 export abstract class ServerChannel extends EventEmitter {
     private static readonly xlogger = new Logger("Channel");
@@ -62,7 +52,7 @@ export abstract class ServerChannel extends EventEmitter {
                 networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
-                compilerUrl: compilerURL
+                //compilerUrl: compilerURL
             });
         }
 

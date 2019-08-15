@@ -1,8 +1,10 @@
-import {Controller, Get, Logger, Param} from '@nestjs/common';
+import {Controller, Get, HttpStatus, Logger, Param, Res} from '@nestjs/common';
 import { AppService } from './app.service';
 import {CClient} from "./client/client.entity";
 import {ClientService, RepoService} from "./client/client.service";
-
+import {Response} from "express";
+import {API_URL, MoreConfig} from "./config";
+const qr = require('qr-image');
 
 @Controller()
 export class AppController {
@@ -10,10 +12,19 @@ export class AppController {
               private readonly clientService: ClientService) {
   }
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get("/")
+  getHome(@Res() res: Response) {
+    res.send('Point app to this:<br/><iframe width="200" height="200" src="/qr" frameborder="0"></iframe>')
   }
+
+  @Get("/qr")
+  async getQR(@Res() res: Response) {
+    await MoreConfig.Init();
+    let code = qr.image(JSON.stringify({host:MoreConfig.ExternalIP, node:API_URL}), { type: 'svg' });
+    res.type('svg');
+    code.pipe(res);
+  }
+
 
   @Get("/clients")
   async customers(@Param() params): Promise<string[]> {
