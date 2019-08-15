@@ -2,23 +2,23 @@
   <b-container class="main-app">
 
 		<AeText fill="secondary" align="left" face="sans-s">Wallet Funds</AeText>
-		<ae-amount align="left" v-bind:value="getMyWalletBalance" unit="Æ" size="small" clear="right" />
+		<ae-amount class="amount" align="left" v-bind:value="getMyWalletBalance" unit="Æ" size="small" clear="right" />
 
 		<AeText fill="secondary" align="left" face="sans-s">Channel Funds</AeText>
-		<ae-amount v-bind:value="getMyChannelBalance" unit="Æ" size="small" />
+		<ae-amount class="amount" v-bind:value="getMyChannelBalance" unit="Æ" size="small" />
 
 		<div v-show="$isMerchantAppRole">
 			<AeText fill="secondary" face="sans-s">In Hub Funds</AeText>
-			<ae-amount v-bind:value="getMyPendingHubBalance" unit="Æ" size="small" />
+			<ae-amount class="amount" v-bind:value="getMyPendingHubBalance" unit="Æ" size="small" />
 		</div>
-
+		<AeDivider/>
 		<!-- Client Menu -->
 
 		<div class="button-group" v-if="$isClientAppRole">
 				<AeButton class="button" face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
 				<AeButton class="button" face="round" fill="primary" extend @click="scanTxQr()">Pay With Qr Code</AeButton>
 				<AeButton class="button" face="round" fill="primary" extend @click="history()">History</AeButton>
-				<AeButton class="button" face="round" fill="secondary" extend @click="closeChannel()">Close Channel</AeButton>
+				<AeButton class="button" face="round" fill="secondary" extend @click="closeChannelConfirmation()">Close Channel</AeButton>
 		</div>
 
 		<!-- Merchant Menu -->
@@ -34,9 +34,8 @@
 				@click="generatePaymentQr()"
 			>Generate Payment Qr</AeButton>
 
-			<AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
-
 			<AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
+			<AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
 		</div>
   </b-container>
 </template>
@@ -47,7 +46,8 @@
 import {
   AeText,
   AeAmount,
-  AeButton
+	AeButton,
+	AeDivider
 } from "@aeternity/aepp-components";
 //import { setInterval } from "timers";
 
@@ -56,7 +56,8 @@ export default {
   components: {
     AeText,
     AeAmount,
-    AeButton
+		AeButton,
+		AeDivider
   },
   computed: {
     getAddress: function() {
@@ -86,8 +87,33 @@ export default {
       this.$router.push("enterpurchase");
     },
     closeChannel: function() {
-      this.$router.push("channelClose");
-    },
+			this.$router.replace({
+        name: "commit-and-wait-tx",
+        params: { txKind: "close" }
+      });
+		},
+		closeChannelConfirmation: function() {
+			this.$swal.mixin({
+				customClass: {
+					confirmButton: 'ae-button button extend primary round',
+					cancelButton: 'ae-button'
+				},
+				buttonsStyling: false
+			}).fire({
+				heightAuto: false,
+				type: "question",
+				title: "Are you sure you want to close this channel?",
+				text: "Your funds in the channel will be transferred to your wallet.",
+				showCancelButton: true,
+				focusConfirm: false,
+				confirmButtonText: 'Close',
+				cancelButtonText: 'Cancel',
+			}).then(({value}) => {
+				if(value) {
+					this.closeChannel();
+				}
+			});
+		},
     history: function() {
       this.$router.push("history");
     }
@@ -126,5 +152,8 @@ export default {
 }
 .button {
 	margin: 5px;
+}
+.amount {
+	font-weight: bold !important;
 }
 </style>

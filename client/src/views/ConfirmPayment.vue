@@ -1,45 +1,43 @@
 <template>
-  <div class="confirm-payment">
-    <AeText align="center" face="sans-l">Please check your payment</AeText>
-
+  <b-container class="confirm-payment">
+    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
+		<AeDivider/>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText weight="700">Merchant</AeText>
+          <AeText fill="secondary" face="sans-base">Merchant</AeText>
         </div>
         <div class="column">
-          <AeText>{{ paymentData.merchant_name }}</AeText>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="column">
-          <AeText weight="700">Amount</AeText>
-        </div>
-        <div class="column">
-          <AeText>{{ amountAE }} AE</AeText>
+          <AeText face="mono-base">{{ paymentData.merchant_name }}</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText weight="700">Concept</AeText>
+          <AeText fill="secondary" face="sans-base">Amount</AeText>
         </div>
         <div class="column">
-          <AeText>{{ paymentData.something }}</AeText>
+          <AeText face="mono-base">{{ amountAE }} AE</AeText>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="column">
+          <AeText fill="secondary" face="sans-base">Concept</AeText>
+        </div>
+        <div class="column">
+          <AeText face="mono-base">{{ paymentData.something }}</AeText>
         </div>
       </div>
     </div>
-
-    <ae-button-group>
-      <AeButton face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-      <AeButton face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
-    </ae-button-group>
-  </div>
+		<AeDivider/>
+		<AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+		<AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+  </b-container>
 </template>
 
 <script>
-import { AeText, AeButtonGroup, AeButton } from "@aeternity/aepp-components";
+import { AeText, AeButtonGroup, AeButton, AeDivider } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
 import { clearInterval } from "timers";
@@ -49,7 +47,8 @@ export default {
   components: {
     AeButton,
     AeText,
-    AeButtonGroup
+		AeButtonGroup,
+		AeDivider
   },
   props: {
     paymentData: Object
