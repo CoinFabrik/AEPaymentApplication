@@ -49,7 +49,7 @@
 		border-radius:20px 20px 0px 0px;
 	}
 	#content {
-		margin-top: 15vh;
+		margin-top: 10vh;
 		margin-bottom: 10vh;
 		margin-left: 2vh;
 		margin-right: 2vh;
