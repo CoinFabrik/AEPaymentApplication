@@ -23,7 +23,7 @@
 
 <style>
 	#banner {
-		height: 20%;
+		height: 18vh;
 	}
 	#ae-logo {
 		padding-top: 10px;

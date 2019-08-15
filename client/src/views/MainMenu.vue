@@ -1,65 +1,44 @@
 <template>
-  <div class="main-app">
-    <div class="row">
-      <AeText fill="secondary" face="sans-s">Wallet Funds</AeText>
-      <div class="column">
-        <ae-amount v-bind:value="getMyWalletBalance" unit="Æ" size="small" clear="right" />
-      </div>
-    </div>
+  <b-container class="main-app">
 
-    <div class="row">
-      <AeText fill="secondary" face="sans-s">Channel Funds</AeText>
-      <div class="column">
-        <ae-amount v-bind:value="getMyChannelBalance" unit="Æ" size="small" />
-      </div>
-    </div>
+		<AeText fill="secondary" align="left" face="sans-s">Wallet Funds</AeText>
+		<ae-amount align="left" v-bind:value="getMyWalletBalance" unit="Æ" size="small" clear="right" />
 
-    <div class="row" v-show="$isMerchantAppRole">
-      <AeText fill="secondary" face="sans-s">In Hub Funds</AeText>
-      <div class="column">
-        <ae-amount v-bind:value="getMyPendingHubBalance" unit="Æ" size="small" />
-      </div>
-    </div>
+		<AeText fill="secondary" align="left" face="sans-s">Channel Funds</AeText>
+		<ae-amount v-bind:value="getMyChannelBalance" unit="Æ" size="small" />
 
-    <!-- Client Menu -->
+		<div v-show="$isMerchantAppRole">
+			<AeText fill="secondary" face="sans-s">In Hub Funds</AeText>
+			<ae-amount v-bind:value="getMyPendingHubBalance" unit="Æ" size="small" />
+		</div>
 
-    <div v-if="$isClientAppRole">
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
-      </div>
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="scanTxQr()">Pay With Qr Code</AeButton>
-      </div>
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
-      </div>
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
-      </div>
-    </div>
+		<!-- Client Menu -->
 
-    <!-- Merchant Menu -->
+		<div class="button-group" v-if="$isClientAppRole">
+				<AeButton class="button" face="round" fill="primary" extend @click="deposit()">Deposit Funds</AeButton>
+				<AeButton class="button" face="round" fill="primary" extend @click="scanTxQr()">Pay With Qr Code</AeButton>
+				<AeButton class="button" face="round" fill="primary" extend @click="history()">History</AeButton>
+				<AeButton class="button" face="round" fill="secondary" extend @click="closeChannel()">Close Channel</AeButton>
+		</div>
 
-    <div v-if="$isMerchantAppRole">
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="withdraw()">Withdraw Funds</AeButton>
-      </div>
-      <div class="row">
-        <AeButton
-          face="round"
-          fill="primary"
-          extend
-          @click="generatePaymentQr()"
-        >Generate Payment Qr</AeButton>
-      </div>
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
-      </div>
-      <div class="row">
-        <AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
-      </div>
-    </div>
-  </div>
+		<!-- Merchant Menu -->
+
+		<div v-if="$isMerchantAppRole">
+
+			<AeButton face="round" fill="primary" extend @click="withdraw()">Withdraw Funds</AeButton>
+
+			<AeButton
+				face="round"
+				fill="primary"
+				extend
+				@click="generatePaymentQr()"
+			>Generate Payment Qr</AeButton>
+
+			<AeButton face="round" fill="primary" extend @click="closeChannel()">Close Channel</AeButton>
+
+			<AeButton face="round" fill="primary" extend @click="history()">History</AeButton>
+		</div>
+  </b-container>
 </template>
 
 <script>
@@ -141,5 +120,11 @@ export default {
 
 .column {
   flex: 50%;
+}
+.button-group {
+
+}
+.button {
+	margin: 5px;
 }
 </style>

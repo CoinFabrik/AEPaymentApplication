@@ -1,7 +1,7 @@
 <template>
   <div class="connectToWallet">
     <b-container>
-      <b-col offset-md="4" md="4">
+      <b-col>
         <div v-if="isAtInitialState">
             <AeText weight="bold" face='sans-s'>We need access to your wallet. Please click the button below to authorize this application</AeText>
             <br>
@@ -31,11 +31,6 @@
     </b-container>
   </div>
 </template>
-
-<style>
-  .connectToWallet {
-  }
-</style>
 
 <script>
 /* eslint-disable no-console */

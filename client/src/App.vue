@@ -50,6 +50,8 @@
 	}
 	#content {
 		margin-top: 15vh;
-		margin-bottom: 20px;
+		margin-bottom: 10vh;
+		margin-left: 2vh;
+		margin-right: 2vh;
 	}
 </style>
