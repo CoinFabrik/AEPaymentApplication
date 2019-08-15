@@ -5,6 +5,7 @@ import {Account, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
 import {ACCOUNT, API_URL, INTERNAL_API_URL, NETWORK_ID, WS_URL} from "../config";
+import BigNumber from "bignumber.js";
 
 
 const {
@@ -97,7 +98,10 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async hub_balance() {
-        return (await this.channel.balances([this.address]))[this.address];
+        let data = await this.channel.balances([this.address])
+        console.log(typeof data)
+        console.log(data)
+        return new BigNumber((data)[this.address]);
     }
 
     get hub(): Hub {

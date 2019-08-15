@@ -4,6 +4,7 @@ import {mystringify, sleep, voidf} from "../tools";
 import {PaymentTimeout} from "./client.entity";
 import {ClientService, RepoService} from "./client.service";
 import {MerchantCustomer} from "./merchantcustomer";
+import BigNumber from "bignumber.js";
 
 
 const WAIT_PAYMENT_TIMEOUT = 60;
@@ -99,8 +100,10 @@ export class Hub extends EventEmitter {
         const timeout = WAIT_PAYMENT_TIMEOUT * 1000;
         while (Date.now() - start < timeout) {
             let last_balance = await mc.cclient.channel.hub_balance();
-            this.log(`check balance..: ${pre_balance} ${last_balance} to  ${pre_balance + mc.amount}..`);
-            if (last_balance >= pre_balance + mc.amount) {
+            this.log("balances: "+typeof last_balance);
+            let sum = pre_balance.plus(new BigNumber(mc.amount));
+            this.log(`check balance..: ${pre_balance.toString(10)} ${last_balance.toString(10)} to  ${sum.toString(10)} ..`);
+            if (last_balance.isGreaterThanOrEqualTo(pre_balance.plus(new BigNumber(mc.amount)))) {
                 const mca = mc.getEntity();
                 await RepoService.save(mca);
                 return

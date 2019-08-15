@@ -75,7 +75,7 @@ export class ServiceBase extends EventEmitter {
 
     static getClientByAddress(address:string, kind: Actor): CClient {
         if (address==undefined) {
-            throw new Error("Looking for no client!!!!!!")
+            throw new Error("Looking for no client: "+kind)
         }
         for(let cc of ServiceBase.clients[kind]) {
             if(cc.address==address) {

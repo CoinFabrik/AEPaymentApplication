@@ -10,42 +10,37 @@ AEHub
 $ npm install
 ```
 
-## Running the app
-## merchant example: merchtest3.js
-
-This will take wallet filename from: 
- env:**ACCOUNT**, if fails, file: hub. 
-
 ```bash
 # development
 
-# server
+# 0.1 create accounts you'll use - we use 1234 as paassword for all (not configurable yet)
+$ aecli account create hub
+$ aecli account create merchant
+$ aecli account create customer
+
+#  0.2 transfer funds            (src)                      (dst)
+tools$ AENODE=.. node tx.js <init or wallet_filename> <wallet_filename or address>  amount
+
+will move amount from $src to $dst.
+-init = is a shortcut to first account from forgae
+-src wallet file shouold have 1234 as pwd.
+-amount is expressed aettos
+
+
+# 1. server:
 $ AENODE=node_ip_address npm run start
+
+# 2. merchant:
+tools$ HUB=127.0.0.1 ACCOUNT=merchant AENODE=165.22.18.138 node merchtest3b.js  
+
+# 3. customer:
+tools$ HUB=127.0.0.1 ACCOUNT=customer AENODE=165.22.18.138 node custtest3b.js [ continue ]
+
+HUB : address of server 1.
+ACCOUNT : filename of wallet used for this process
+AENODE : AE nodo to connect to.
+
+server uses hub by default
+
+
 ```
-
-### Clients
-
-```bash
-# customer
-$ cd tools/
-$ NODE=10.10.0.79:3001 node custtest3.js
-
-# merchant
-$ cd tools/
-$ NODE=10.10.0.79:3001 node merchtest3.js
-
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
