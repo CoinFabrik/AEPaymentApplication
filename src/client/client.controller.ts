@@ -1,6 +1,6 @@
 import {Controller, Get, HttpStatus, Param, Res} from '@nestjs/common';
 import {AppService} from "../app.service";
-import {ClientService} from "./client.service";
+import {ClientService, RepoService} from "./client.service";
 import {ServerChannel} from "./channel";
 import {Actor, CClient} from "./client.entity";
 import { Response } from 'express';
@@ -21,6 +21,22 @@ abstract class ClientController {
   }
 
   abstract get kind(): Actor ;
+
+
+  @Get("history/:address/:start/:take")
+  async history3(@Param() params): Promise<any> {
+      return RepoService.getHistory(this.kind, params.address, params.start, params.take);
+  }
+
+  @Get("history/:address/:start")
+  async history2(@Param() params): Promise<any> {
+      return RepoService.getHistory(this.kind, params.address, params.start);
+  }
+
+  @Get("history/:address")
+  async history(@Param() params): Promise<any> {
+      return RepoService.getHistory(this.kind, params.address);
+  }
 
   @Get(":address/:amount/:name")
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {

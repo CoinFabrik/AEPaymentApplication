@@ -90,6 +90,7 @@ export class MerchantCustomer {
 
     msgPaymentRequestCompleted() {
         let base = this.base();
+        base["customer_name"] = this.cclient.name;
         base["type"] = "payment-request-completed";
         return base;
     }

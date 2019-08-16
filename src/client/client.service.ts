@@ -3,7 +3,7 @@ import {Actor, CClient, MerchantCustomerAccepted} from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
 import {array_rm, voidf} from "../tools";
-import {getRepository} from "typeorm";
+import {FindManyOptions, getRepository} from "typeorm";
 import BigNumber from "bignumber.js";
 import {Hub} from "./hub";
 
@@ -48,17 +48,31 @@ export class RepoService {
       return repo.createQueryBuilder(kind).select("DISTINCT(?)", kind).getRawMany();
   }
 
-  static async getHistory(kind: Actor, address: string): Promise<object[]> {
+  static async getHistory(kind: Actor, address: string, start="0", take="10"): Promise<object[]> {
+      let nstart = Number.parseInt(start);
+      let ntake = Number.parseInt(take);
       let repo = getRepository(MerchantCustomerAccepted);
-      let results: object[];
-
+      let where: object;
+      // let select: string[];
       if (kind=="merchant") {
-        results = await repo.find({merchant: address})
+        where = {merchant: address}
+        // select = ["timestamp", "customer"]
       } else {
-        results = await repo.find({customer: address})
+        where = {customer: address}
+        // select = ["timestamp", "merchant"]
       }
-      return results;
+      // let full_select: string[] = select.concat(["amount", "item"]);
 
+      let opts : FindManyOptions<MerchantCustomerAccepted> = {
+          where: where,
+          order: {
+              timestamp: "DESC"
+          },
+          skip: nstart,
+          take: ntake
+      };
+
+      return await repo.find(opts);
   }
 }
 
