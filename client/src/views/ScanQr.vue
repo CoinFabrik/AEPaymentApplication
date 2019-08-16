@@ -23,6 +23,7 @@ import { AeText } from "@aeternity/aepp-components";
 //import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
+const uuidv4 = require('uuid/v4');
 
 export default {
   name: "ScanQR",
@@ -109,12 +110,12 @@ export default {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
         } else if (this.subview === "pay-with-qr") {
           this.qrData = {
-            amount: new BigNumber(3.5)
+            amount: new BigNumber(0.001234)
               .multipliedBy(new BigNumber(10).exponentiatedBy(18))
               .toString(10),
             merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
             something: "3 BEERS",
-            id: "5e3087e2-441b-49a2-b1c0-83f53c1749d7",
+            id: uuidv4(),
             type: "payment-request"
           };
         }

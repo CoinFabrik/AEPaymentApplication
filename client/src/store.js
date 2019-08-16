@@ -2,10 +2,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import HubConnection from './controllers/hub'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+  plugins: [createPersistedState()],
   state: {
     balance: 0,
     aeternity: null,
@@ -16,8 +18,7 @@ export default new Vuex.Store({
     hubBalance: null,
     hubUrl: null,
     hubAddress: null,
-    userName: null,
-    buyRequestInfo: null
+    userName: null
   },
   getters: {
     initiatorAddress(state) {
@@ -66,12 +67,6 @@ export default new Vuex.Store({
     },
     updateInHubBalance(state, amount) {
       state.hubBalance = amount;
-    },
-    storeLastBuyRequestInfo(state, data) {
-      state.buyRequestInfo = data;
-    },
-    clearLastBuyRequestInfo(state) {
-      state.buyRequestInfo = null;
     }
   },
   actions: {
@@ -82,7 +77,7 @@ export default new Vuex.Store({
       commit('updateBalance', 0);
       commit('updateInitiatorBalance', null);
       commit('updateResponderBalance', null);
-      commit('clearLastBuyRequestInfo');
+      commit('updateInHubBalance', null);
     },
     updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(

@@ -44,7 +44,8 @@ const PAYMENT_UNKNOWN = 0,
   PAYMENT_ACK_REJECTED = 1,
   PAYMENT_ACK_ACCEPTED = 2,
   PAYMENT_UPDATE_REJECTED = 3,
-  PAYMENT_UPDATE_ACCEPTED = 4;
+  PAYMENT_UPDATE_ACCEPTED = 4,
+  PAYMENT_COMPLETED = 5;
 let paymentProcessStatus = PAYMENT_UNKNOWN;
 let paymentRejectInfo;
 
@@ -83,29 +84,26 @@ export default {
         this.$store.state.hubUrl,
         this.paymentData.merchant
       );
-      try {
-        let r = await hub.getRegisteredName("merchant");
-        if (r.success) {
-          this.registeredMerchantName = r.name;
-        }
-        this.registeredMerchantName = "N/A";
-      } catch (e) {
-        this.registeredMerchantName = "N/A";
+      let r = await hub.getRegisteredName("merchant");
+      if (r.success) {
+        this.registeredMerchantName = r.name;
       }
     },
     async sendPaymentRequest() {
       let paymentRequestMessage = this.paymentData;
-      paymentRequestMessage[
-        "customerid"
-      ] = this.$store.getters.initiatorAddress;
+      paymentRequestMessage["customer"] = this.$store.getters.initiatorAddress;
       console.warn("Sending payment message:", paymentRequestMessage);
       await this.$store.state.channel.sendMessage(
         paymentRequestMessage,
         this.$store.getters.responderAddress
       );
     },
+    onPaymentComplete() {
+      paymentProcessStatus = PAYMENT_COMPLETED;
+      this.$swal.close();
+    },
     async onPaymentRequestAck(eventdata) {
-      console.log("Received Payment_ack event: " ,eventdata);
+      console.log("Received Payment_ack event: ", eventdata);
       if (eventdata.st === "accepted") {
         paymentProcessStatus = PAYMENT_ACK_ACCEPTED;
         //
@@ -113,8 +111,14 @@ export default {
         //
         console.log("Payment request ACK: accepted.  Sending update... ");
         try {
-          await this.$store.dispatch("triggerUpdate", this.paymentData.amount);
+          await this.$store.dispatch(
+            "triggerUpdate",
+            parseInt(this.paymentData.amount)
+          );
           paymentProcessStatus = PAYMENT_UPDATE_ACCEPTED;
+
+          // Wait for completion now.
+          EventBus.$once("payment-request-completed", this.onPaymentComplete);
         } catch (e) {
           paymentProcessStatus = PAYMENT_UPDATE_REJECTED;
           paymentRejectInfo = e.toString();
@@ -164,7 +168,7 @@ export default {
                 "Your payment submission has timed out. This may indicate connection problems. <br> Please try again later"
             });
           }
-          const emptyResult =  !Object.keys(result).length;
+          const emptyResult = !Object.keys(result).length;
           if (emptyResult) {
             if (paymentProcessStatus === PAYMENT_ACK_REJECTED) {
               this.$swal.fire({
@@ -172,7 +176,8 @@ export default {
                 type: "error",
                 title: "Oops!",
                 html:
-                  "The Payment Hub has rejected your payment <br> Please try again later <br><br> Reason: " + paymentRejectInfo
+                  "The Payment Hub has rejected your payment <br> Please try again later <br><br> Reason: " +
+                  paymentRejectInfo
               });
             } else if (paymentProcessStatus === PAYMENT_UPDATE_REJECTED) {
               this.$swal.fire({
@@ -182,13 +187,17 @@ export default {
                 html:
                   "The transfer of funds over the channel has been rejected <br> Please try again later"
               });
-            } else if (paymentProcessStatus === PAYMENT_UPDATE_ACCEPTED) {
-              this.$swal.fire({
-                heightAuto: false,
-                type: "success",
-                title: "Thank you",
-                html: "Your payment has been successfully submitted."
-              });
+            } else if (paymentProcessStatus === PAYMENT_COMPLETED) {
+              this.$swal
+                .fire({
+                  heightAuto: false,
+                  type: "success",
+                  title: "Thank you",
+                  html: "Your payment has been successfully submitted."
+                })
+                .then(() => {
+                  this.$router.replace("main-menu");
+                });
             }
           }
         });
@@ -202,6 +211,14 @@ export default {
   },
   async mounted() {
     await this.queryMerchantName();
+    if (this.registeredMerchantName === "N/A") {
+      this.$swal.fire({
+        type: "warning",
+        html:
+          "The merchant name for this payment could not be determined. <br>" +
+          "This may indicate network problems. Dismiss this payment if you are not sure of the payment origin"
+      });
+    }
   }
 };
 </script>

@@ -15,11 +15,7 @@
 <script>
 /* eslint-disable no-console */
 import aeternity from "../controllers/aeternity.js";
-import {
-  AeText,
-  AeButton,
-  AeLoader
-} from "@aeternity/aepp-components";
+import { AeText, AeButton, AeLoader } from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
@@ -83,19 +79,23 @@ export default {
     }
   },
   mounted() {
-    // Preflight checks
+    // Clear any state
 
-    if (process.env.VUE_APP_ROLE === "merchant") {
-      console.warn("Booting application with role:  MERCHANT");
-    } else if (process.env.VUE_APP_ROLE === "client") {
-      console.warn("Booting application with role:  CLIENT");
-    } else {
-      console.error("Cannot find application role in VUE_APP_ROLE variable");
-      this.$displayError(
-        "Unexpected error",
-        "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
-      );
-    }
+    this.$store.dispatch("resetState").then(() => {
+      // Preflight checks
+
+      if (process.env.VUE_APP_ROLE === "merchant") {
+        console.warn("Booting application with role:  MERCHANT");
+      } else if (process.env.VUE_APP_ROLE === "client") {
+        console.warn("Booting application with role:  CLIENT");
+      } else {
+        console.error("Cannot find application role in VUE_APP_ROLE variable");
+        this.$displayError(
+          "Unexpected error",
+          "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+        );
+      }
+    });
   }
 };
 </script>

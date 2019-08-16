@@ -144,11 +144,11 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
   }
 }
 
-aeternity.update = async function (channel, fromAddr, toAddr, amountBN) {
+aeternity.update = async function (channel, fromAddr, toAddr, amount) {
   return channel.update(
     fromAddr,
     toAddr,
-    amountBN.toFixed(0),
+    amount,
     async (tx) => aeternity.client.signTransaction(tx)
   );
 }
