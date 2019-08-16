@@ -23,6 +23,7 @@ class Message {
 class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
+        INIT = "2000000000000000"
         let serverdata = await Customer.register("client", account.publicKey, INIT, (Date.now().toString()));
         let address = serverdata["address"];
         return new Customer(account.publicKey, account.secretKey, address, INIT);
@@ -105,7 +106,7 @@ function pick_random(arr) {
     await peer.showBalances("pre");
     //XINIT2 = "20000000000000000";
     let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 10,
+        merchant.address, merchant.name, peer.pubkey, 2000000000000000,
         [{what:"beer", amount:1}]);
 
 
