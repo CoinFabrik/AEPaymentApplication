@@ -21,6 +21,7 @@ export class MoreConfig {
 
     static async Init() {
         try {
+            this.external_ip = getEnv("EXTERNAL_IP");
             if (this.external_ip==undefined) {
                 let result = await Get("ipcheck.dynu.com", "/ipcheck.asp");
                 if(result.startsWith("ip")) {

@@ -28,13 +28,20 @@ will move amount from $src to $dst.
 
 
 # 1. server:
+# optional environment: EXTERNAL_IP for generated qr-code. if not, external ip address service will be used.
+# you can point your app to: http://its_ip:3000/ to get qr required for the application (not req. for scripts below)
+
 $ AENODE=node_ip_address npm run start
+
 
 # 2. merchant:
 tools$ HUB=127.0.0.1 ACCOUNT=merchant NODE=165.22.18.138 node merchtest3b.js  
 
 # 3. customer:
 tools$ HUB=127.0.0.1 ACCOUNT=customer NODE=165.22.18.138 node custtest3b.js [ continue ]
+
+
+
 
 HUB : address of server 1.
 ACCOUNT : filename of wallet used for this process

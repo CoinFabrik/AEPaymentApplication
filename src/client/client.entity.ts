@@ -100,7 +100,8 @@ export class CClient {
 
 
 @Entity()
-@Index(["merchant", "customer"])
+@Index(["merchant"])
+@Index(["customer"])
 @Index(["tx_uuid"], { unique: true })
 export class MerchantCustomerAccepted {
     @PrimaryGeneratedColumn()

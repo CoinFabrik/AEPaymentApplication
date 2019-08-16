@@ -47,6 +47,19 @@ export class RepoService {
       let repo = getRepository(MerchantCustomerAccepted);
       return repo.createQueryBuilder(kind).select("DISTINCT(?)", kind).getRawMany();
   }
+
+  static async getHistory(kind: Actor, address: string): Promise<object[]> {
+      let repo = getRepository(MerchantCustomerAccepted);
+      let results: object[];
+
+      if (kind=="merchant") {
+        results = await repo.find({merchant: address}).take(10);
+      } else {
+        results = await repo.find({customer: address}).take(10);
+      }
+      return results;
+
+  }
 }
 
 

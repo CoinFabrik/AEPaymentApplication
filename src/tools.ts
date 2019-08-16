@@ -18,7 +18,7 @@ export class Account {
     }
 }
 
-export function getEnv(name: string, defvalue) {
+export function getEnv(name: string, defvalue?: string) {
     let value = defvalue;
     try{
         value = process.env[name];

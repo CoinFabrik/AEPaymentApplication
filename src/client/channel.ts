@@ -99,8 +99,6 @@ export abstract class ServerChannel extends EventEmitter {
 
     async hub_balance() {
         let data = await this.channel.balances([this.address])
-        console.log(typeof data)
-        console.log(data)
         return new BigNumber((data)[this.address]);
     }
 
