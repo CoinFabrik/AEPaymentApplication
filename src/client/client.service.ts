@@ -53,9 +53,9 @@ export class RepoService {
       let results: object[];
 
       if (kind=="merchant") {
-        results = await repo.find({merchant: address}).take(10);
+        results = await repo.find({merchant: address})
       } else {
-        results = await repo.find({customer: address}).take(10);
+        results = await repo.find({customer: address})
       }
       return results;
 
