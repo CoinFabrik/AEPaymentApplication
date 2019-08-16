@@ -103,8 +103,6 @@ export default {
 </script>
 
 <style>
-	#tx_confirm_panel {
-	}
 	#button-group {
 		padding-top: 3vh;
 	}

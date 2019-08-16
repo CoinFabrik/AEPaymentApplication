@@ -145,10 +145,6 @@
 </script>
 
 <style>
-  .row {
-
-  }
-
   .column {
     flex: 50%;
   }

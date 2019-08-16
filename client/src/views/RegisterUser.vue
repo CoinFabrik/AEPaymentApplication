@@ -89,9 +89,3 @@ export default {
   }
 };
 </script>
-
-<style>
-	#register-merch {
-
-	}
-</style>

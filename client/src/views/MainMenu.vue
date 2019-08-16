@@ -147,9 +147,6 @@ export default {
 .column {
   flex: 50%;
 }
-.button-group {
-
-}
 .button {
 	margin: 5px;
 }

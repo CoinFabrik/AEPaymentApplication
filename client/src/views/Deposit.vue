@@ -176,9 +176,3 @@ export default {
   }
 };
 </script>
-
-<style>
-	#deposit {
-
-	}
-</style>
