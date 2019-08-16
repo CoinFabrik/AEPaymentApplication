@@ -29,7 +29,7 @@
         </div>
       </AeList>
     </AeView>
-		<AeButton class="backButton" face="round" fill="primary" extend v-on:click="goBack">←</AeButton>
+		<AeButton v-if="isIOS()" class="backButton" face="round" fill="primary" extend v-on:click="goBack">←</AeButton>
   </b-container>
 
 </template>
@@ -41,7 +41,7 @@
     AeListItem,
 		AeView,
 		AeButton
-  } from "@aeternity/aepp-components";
+	} from "@aeternity/aepp-components";
 
   export default {
     name: "History",
@@ -55,7 +55,12 @@
     methods: {
       goBack: function() {
         this.$router.go(-1);
-      }
+			},
+			isIOS: function() {
+				if(/iPhone/i.test(navigator.userAgent)) {
+					return true
+				}
+			},
     },
     computed: {
       getAddress: function () { return "xxxxxx"; },
