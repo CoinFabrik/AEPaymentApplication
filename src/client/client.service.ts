@@ -52,16 +52,33 @@ export class RepoService {
       let nstart = Number.parseInt(start);
       let ntake = Number.parseInt(take);
       let repo = getRepository(MerchantCustomerAccepted);
+
+      // we should be doing this, but:
+      //   -  with getrawmany() doesn't honor start/take
+      //   -  getmany() doesn't return joined table columns..
+      //
+      // let select = ["timestamp", "merchant", "customer", "amount", "item"];
+      // select = ["mca.id", "mca.timestamp", "mca.merchant", "mca.customer", "mca.amount", "mca.item", "client.name"]
+      // let name_field = kind=="merchant"? "customer" : "merchant";
+      // array_rm(select, "mca."+kind);
+      //
+      // console.log(select)
+      // let query = repo.createQueryBuilder("mca")
+      //     .leftJoinAndSelect(CClient, "client", "client.address = mca."+name_field)
+      //     // .select(["mca.timestamp", "mca.merchant", "mca.customer", "mca.amount", "mca.item"])
+      //     .select(select)
+      //     .where(kind+" = :address", {address:address})
+      //     // .orderBy("mca.timestamp", "DESC")
+      //     .skip(nstart)
+      //     .take(ntake);
+      // return await query.getRawMany();
+
       let where: object;
-      // let select: string[];
       if (kind=="merchant") {
         where = {merchant: address}
-        // select = ["timestamp", "customer"]
       } else {
         where = {customer: address}
-        // select = ["timestamp", "merchant"]
       }
-      // let full_select: string[] = select.concat(["amount", "item"]);
 
       let opts : FindManyOptions<MerchantCustomerAccepted> = {
           where: where,
