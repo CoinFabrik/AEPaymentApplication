@@ -23,7 +23,7 @@ import { AeText } from "@aeternity/aepp-components";
 //import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
-const uuidv4 = require('uuid/v4');
+const uuidv4 = require("uuid/v4");
 
 export default {
   name: "ScanQR",
@@ -52,22 +52,27 @@ export default {
     }
   },
   methods: {
-    setError(err) {
-      this.$router.push({
-        name: "error",
-        params: {
-          errorTitle: "Oops",
-          errorDescription: err.toString(),
-          retryCancel: false
-        }
-      });
-    },
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
 
       if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
-        this.storeTestParams();
-        this.navigateOut();
+        this.qrData.hub = process.env.VUE_APP_TEST_HUB_URL;
+        this.qrData.node =
+          process.env.VUE_APP_TEST_API_SERVER_PROTO +
+          "//" +
+          process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
+          ":" +
+          process.env.VUE_APP_TEST_API_SERVER_PORT;
+
+        console.warn(
+          "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
+            this.qrData
+        );
+        this.$store
+          .dispatch("storeNetChannelParameters", this.qrData.hub)
+          .then(() => {
+            this.navigateOut();
+          });
       } else {
         if (this.subview === "pay-with-qr") {
           if (!validatePurchaseQr(scanData)) {
@@ -78,6 +83,9 @@ export default {
               text:
                 "This QR Code does not seem to contain payment information. Please re-scan a new one."
             });
+          } else {
+            this.qrData = JSON.parse(scanData);
+            this.navigateOut();
           }
         } else if (this.subview === "onboarding") {
           if (!validateOnboardingQr(scanData)) {
@@ -88,15 +96,22 @@ export default {
               text:
                 "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
             });
+          } else {
+            this.qrData = JSON.parse(scanData);
+            this.$store
+              .dispatch("storeNetChannelParameters", this.qrData.hub)
+              .then(() => this.navigateOut());
           }
         }
-        // if (dataObj.qrkind === "AE_PARAMETER_PACK") {
-        //   this.$store.commit("loadChannelParams", dataObj.params);
-        //   this.navigateOut();
       }
     },
     onQrHasError(event, error) {
-      alert(error);
+      this.$displayError(
+        "Oops!",
+        "The QR Scanning process failed with an unexpected error. Reason is: " +
+          error.toString() +
+          ".  Please try again with another code"
+      );
     },
     onQrClick() {
       //
@@ -105,11 +120,29 @@ export default {
       //
       if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === "1") {
         if (this.subview === "onboarding") {
-          this.storeTestParams();
+          this.qrData.hub = process.env.VUE_APP_TEST_HUB_URL;
+          this.qrData.node =
+            process.env.VUE_APP_TEST_API_SERVER_PROTO +
+            "//" +
+            process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
+            ":" +
+            process.env.VUE_APP_TEST_API_SERVER_PORT;
+
+          console.warn(
+            "VUE_APP_SIMULATE_QRSCAN_CLICK active. Setup simulated onboarding QR data: " +
+              this.qrData
+          );
+          this.$store
+            .dispatch("storeNetChannelParameters")
+            .then(() => this.navigateOut());
         } else if (this.subview === "scanaddress") {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
+          this.navigateOut();
         } else if (this.subview === "pay-with-qr") {
           this.qrData = {
+            //
+            // Mock payment data
+            //
             amount: new BigNumber(0.001234)
               .multipliedBy(new BigNumber(10).exponentiatedBy(18))
               .toString(10),
@@ -118,8 +151,12 @@ export default {
             id: uuidv4(),
             type: "payment-request"
           };
+          console.warn(
+            "VUE_APP_SIMULATE_QRSCAN_CLICK active. Setup simulated payment QR data: " +
+              this.qrData
+          );
+          this.navigateOut();
         }
-        this.navigateOut();
       }
     },
     async navigateOut() {
@@ -145,44 +182,6 @@ export default {
     },
     async doOnboardingProcess() {
       this.$router.push("register-user");
-    },
-    storeTestParams() {
-      // Store development test channel parameters
-
-      let params = {
-        initiatorId: process.env.VUE_APP_TEST_WALLET_ADDRESS,
-        responderId: null, // known after connection with Hub
-
-        // Initial deposit in favour of the responder by the initiator
-        pushAmount: process.env.VUE_APP_TEST_CHANNEL_PUSH_AMOUNT,
-
-        // Amount of tokes initiator will deposit into state channel
-        initiatorAmount: 0,
-
-        // Amount of tokes responder will deposit into state channel
-        responderAmount: process.env.VUE_APP_TEST_CHANNEL_RESPONDER_AMOUNT,
-
-        // Minimum amount both peers need to maintain
-        channelReserve: process.env.VUE_APP_TEST_CHANNEL_RESERVE,
-        // Minimum block height to include the channel_create_tx
-        ttl: process.env.VUE_APP_TEST_CHANNEL_TTL,
-
-        // Amount of blocks for disputing a solo close
-        lockPeriod: process.env.VUE_APP_TEST_CHANNEL_LOCK_PERIOD,
-
-        // Host of the responder's node
-        host: process.env.VUE_APP_TEST_RESPONDER_HOST,
-
-        // Port of the responders node
-        port: process.env.VUE_APP_TEST_RESPONDER_PORT,
-        //
-        role: "initiator",
-        url: this.$store.state.aeternity.getStateChannelApiUrl(),
-        sign: this.$store.state.aeternity.signFunction
-      };
-
-      this.$store.commit("loadChannelParams", params);
-      this.$store.commit("loadHubUrl", process.env.VUE_APP_TEST_HUB_URL);
     }
   }
 };

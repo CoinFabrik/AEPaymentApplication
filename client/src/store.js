@@ -44,7 +44,7 @@ export default new Vuex.Store({
     setResponderId(state, addr) {
       state.channelParams.responderId = addr;
     },
-    loadHubUrl(state, url) {
+    loadHubIpAddr(state, url) {
       state.hubUrl = url;
     },
     loadHubAddress(state, addr) {
@@ -125,6 +125,30 @@ export default new Vuex.Store({
           }
         }
       );
+    },
+    storeNetChannelParameters({ commit, state }, hubIpAddr) {
+      let params = {
+        initiatorId:
+          process.env.VUE_APP_TEST_ENV !== "0"
+            ? state.aeternity.address
+            : process.env.VUE_APP_TEST_WALLET_ADDRESS,
+        responderId: null, // known after connection with Hub
+        pushAmount: process.env.VUE_APP_CHANNEL_PUSH_AMOUNT,
+        initiatorAmount: 0,
+        responderAmount: process.env.VUE_APP_CHANNEL_RESPONDER_AMOUNT,
+        channelReserve: process.env.VUE_APP_CHANNEL_RESERVE,
+        ttl: process.env.VUE_APP_CHANNEL_TTL,
+        lockPeriod: process.env.VUE_APP_CHANNEL_LOCK_PERIOD,
+        host: process.env.VUE_APP_RESPONDER_HOST,
+        port: process.env.VUE_APP_RESPONDER_PORT,
+        role: "initiator",
+        url: state.aeternity.getStateChannelApiUrl(),
+        sign: state.aeternity.signFunction
+      };
+
+      console.log("Storing up Channel Parameters:" + JSON.stringify(params)+ ", Hub IP: " + hubIpAddr);
+      commit("loadChannelParams", params);
+      commit("loadHubIpAddr", hubIpAddr);
     }
   }
 })
