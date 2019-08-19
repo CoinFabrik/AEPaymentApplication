@@ -10,7 +10,7 @@ const events = require('events');
 
 const port=3001;
 //NODE=165.22.18.138:3001 HUB=165.22.76.228:3001
-let URL = jstools.getEnv("NODE", '165.22.18.138');
+let URL = jstools.getEnv("AENODE", jstools.getEnv("NODE", '165.22.18.138'));
 let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
 
 //const HUBHOST = "localhost";
@@ -179,7 +179,7 @@ class MyChannel extends events.EventEmitter {
         });
 
         this.channel.on('error', (msg) => {
-            console.log("ERROR:", msg);
+            console.log(" ****   ERROR:", msg);
         });
 
         this.channel.on('message', (msg) => {
@@ -237,7 +237,7 @@ class MyChannel extends events.EventEmitter {
             return result;
         } catch(err) {
             console.log("Error on update:", err);
-            return null
+            throw err;
         }
     }
 }

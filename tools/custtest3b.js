@@ -23,7 +23,7 @@ class Message {
 class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
-        INIT = "2000000000000000"
+        //INIT = "2000000000000000"
         let serverdata = await Customer.register("client", account.publicKey, INIT, (Date.now().toString()));
         let address = serverdata["address"];
         return new Customer(account.publicKey, account.secretKey, address, INIT);
@@ -91,13 +91,19 @@ function pick_random(arr) {
         return;
     await peer.init();
     let initial = await peer.showBalances("init");
+
+    let merchants = await peer.get_("merchant");
+    console.log("merchants online:", JSON.stringify(merchants))
+    if (merchants.length===0) {
+        console.log("no merchants online. come back later!");
+        process.exit(-1);
+    }
+
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
     peer.on("message", (msg)=> console.log("INFO:>", msg) );
 
-    let merchants = await peer.get_("merchant");
-    console.log("merchants online:", JSON.stringify(merchants))
     let merchant = pick_random(merchants);
 
     //#91841981000000000000000000
@@ -106,7 +112,7 @@ function pick_random(arr) {
     await peer.showBalances("pre");
     //XINIT2 = "20000000000000000";
     let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 2000000000000000,
+        merchant.address, merchant.name, peer.pubkey, 1,
         [{what:"beer", amount:1}]);
 
 
@@ -117,11 +123,11 @@ function pick_random(arr) {
             console.log("payment canceled:", msg["msg"]);
         }
         if(msg["type"]==="payment-request-accepted") {
-            console.log("sending payment..")
+            console.log("sending payment..");
             peer.update(pr.amount).then(()=>{console.log("sent!")}).catch(console.error);
         }
         if(msg["type"]==="payment-request-completed") {
-            console.log("payment compelted!")
+            console.log("payment completed!")
             //peer.on("message", (msg) => {console.log("RECV:>", msg)})
             // peer.showBalances("post")
             //     .then(()=>{})
@@ -134,7 +140,7 @@ function pick_random(arr) {
             }
         }
         if(msg["type"]==="payment-request-canceled") {
-            console.log("shouldn'h happen here")
+            console.log("payment request canceled is unexpected! :-o !")
         }
     });
 

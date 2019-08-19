@@ -20,7 +20,11 @@ export class AppController {
   @Get("/qr")
   async getQR(@Res() res: Response) {
     await MoreConfig.Init();
-    let code = qr.image(JSON.stringify({host:MoreConfig.ExternalIP, node:API_URL}), { type: 'svg' });
+    let code = qr.image(
+        JSON.stringify(
+            {
+                hub:MoreConfig.ExternalIP
+            }), { type: 'svg' });
     res.type('svg');
     code.pipe(res);
   }
