@@ -2,12 +2,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import HubConnection from './controllers/hub'
-import createPersistedState from 'vuex-persistedstate'
+// import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  plugins: [createPersistedState()],
+  // plugins: [createPersistedState()],
   state: {
     balance: 0,
     aeternity: null,
@@ -51,7 +51,9 @@ export default new Vuex.Store({
       state.hubAddress = addr;
     },
     setInitialDeposit(state, amount) {
-      state.channelParams.initiatorAmount = amount;
+      if (state.channelParams !== null) {
+        state.channelParams.initiatorAmount = amount;
+      }
     },
     setUserName(state, name) {
       state.userName = name;
@@ -126,11 +128,11 @@ export default new Vuex.Store({
         }
       );
     },
-    storeNetChannelParameters({ commit, state }, hubIpAddr) {
+    async storeNetChannelParameters({ commit, state }, hubIpAddr) {
       let params = {
         initiatorId:
           process.env.VUE_APP_TEST_ENV !== "0"
-            ? state.aeternity.address
+            ? await state.aeternity.getAddress()
             : process.env.VUE_APP_TEST_WALLET_ADDRESS,
         responderId: null, // known after connection with Hub
         pushAmount: process.env.VUE_APP_CHANNEL_PUSH_AMOUNT,
@@ -146,7 +148,7 @@ export default new Vuex.Store({
         sign: state.aeternity.signFunction
       };
 
-      console.log("Storing up Channel Parameters:" + JSON.stringify(params)+ ", Hub IP: " + hubIpAddr);
+      console.log("Storing up Channel Parameters:" + JSON.stringify(params) + ", Hub IP: " + hubIpAddr);
       commit("loadChannelParams", params);
       commit("loadHubIpAddr", hubIpAddr);
     }

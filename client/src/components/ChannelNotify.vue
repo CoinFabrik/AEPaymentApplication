@@ -66,7 +66,7 @@ export default {
     async onAfterUpdateAckSign() {
       await this.$store.dispatch("updateChannelBalances");
     },
-    onChannelUpdateAck(updateInfo) {},
+    onChannelUpdateAck(/* updateInfo */) {},
     async checkMessageQueue() {
       if (this.messageQueue.length > 0) {
         const msg = this.messageQueue.pop();

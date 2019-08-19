@@ -2,10 +2,11 @@
 /* eslint-disable no-console */
 
 const {
-  Aepp,
   Channel,
   Universal
 } = require('@aeternity/aepp-sdk');
+
+import Aepp from '@aeternity/aepp-sdk/es/ae/aepp';
 
 const { TxBuilder: { calculateFee, unpackTx } } = require('@aeternity/aepp-sdk')
 
@@ -27,14 +28,10 @@ const aeternity = {
 
 aeternity.connectToBaseApp = async function () {
 
-  if (process.env.VUE_APP_MOCK_BASEAEPP_CONNECTION === "1") {
-    return { status: true, error: null }
-  }
   if (process.env.VUE_APP_USE_TEST_ENV === "1") {
     //
     // Forgae Testing Nodes Setup
     //
-
     aeternity.apiServerAddress = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
     aeternity.apiServerPort = process.env.VUE_APP_TEST_API_SERVER_PORT;
     aeternity.apiServerProtocol = process.env.VUE_APP_TEST_API_SERVER_PROTO;
@@ -42,7 +39,6 @@ aeternity.connectToBaseApp = async function () {
     aeternity.stateChannelApiProtocol = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
     aeternity.stateChannelApiHost = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
     aeternity.stateChannelApiPort = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
-
 
     const params = {
       networkId: 'ae_devnet',
@@ -68,23 +64,37 @@ aeternity.connectToBaseApp = async function () {
       return { status: false, error: err }
     }
   } else {
-    if (window.parent !== window) {
-      try {
-        aeternity.client = await Aepp();
-        return { status: true, error: null };
-      } catch (err) {
-        console.log(err);
-        return { status: false, error: err };
-      }
-    }
-    else {
-      return { status: false, error: "Please run this application under the Base AEpp Wallet!" };
+    //
+    // Connect through the Base Aepp Object 
+    //
+    try {
+      aeternity.client = await Aepp();
+
+      console.log("Connected to Base-Aepp Object. Chain height: " + await aeternity.client.height());
+      console.log("Your address: " +  await aeternity.client.address());
+
+      // console.log("Node Address: " + await aeternity.client.getNodeInfo());
+
+      // TODO : getNodeInfo DOES NOT WORK. All hardcoded for testnet.
+
+      aeternity.apiServerAddress = "sdk-testnet.aepps.com";
+      aeternity.apiServerPort = "3001";
+      aeternity.apiServerProtocol = "https";
+  
+      aeternity.stateChannelApiProtocol = "https";
+      aeternity.stateChannelApiHost = "sdk-testnet.aepps.com";
+      aeternity.stateChannelApiPort = "3001";
+
+      return { status: true, error: null };
+    } catch (err) {
+      console.log(err);
+      return { status: false, error: err };
     }
   }
 }
 
-aeternity.getAddress = function () {
-  return aeternity.address;
+aeternity.getAddress = async function () {
+  return aeternity.client.address();
 }
 
 aeternity.getPk = function () {
