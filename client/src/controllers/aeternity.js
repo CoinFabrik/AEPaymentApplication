@@ -85,9 +85,9 @@ aeternity.connectToBaseApp = async function () {
       // aeternity.stateChannelApiHost = "sdk-testnet.aepps.com";
       // aeternity.stateChannelApiPort = "";
 
-      aeternity.apiServerAddress = "165.22.18.138";
-      aeternity.apiServerPort = "3001";
-      aeternity.apiServerProtocol = "http";
+      // aeternity.apiServerAddress = "aehub.coinfabrik.com";
+      // aeternity.apiServerPort = "";
+      // aeternity.apiServerProtocol = "https";
   
       aeternity.stateChannelApiProtocol = "ws";
       aeternity.stateChannelApiHost = "165.22.18.138";
