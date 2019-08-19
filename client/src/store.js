@@ -109,13 +109,23 @@ export default new Vuex.Store({
       }
       commit('updateInHubBalance', res.balance);
     },
-    createChannel({ commit, state }) {
-      state.aeternity.createChannel(state.channelParams).then(
+    async createChannel({ commit, state }) {
+      return new Promise((resolve,reject) => {
+        state.aeternity.createChannel(state.channelParams).then(
         function (channel) {
           commit('setChannel', channel);
+          resolve(channel);
         }
-      )
+      ).catch(err => reject(err));
+      });
     },
+    // async createChannel({ commit, state }) {
+    //   state.aeternity.createChannel(state.channelParams).then(
+    //     function (channel) {
+    //       commit('setChannel', channel);
+    //     }
+    //   )
+    // },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
       state.aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
