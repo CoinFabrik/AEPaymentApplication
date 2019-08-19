@@ -79,12 +79,7 @@ function pick_random(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-(async function () {
-    let account = await jstools.get_account(
-        jstools.getArgv(2,
-            jstools.getEnv("CUSTOMER",
-                jstools.getEnv("ACCOUNT"))
-            ), "1234");
+async function main(account) {
     console.log(JSON.stringify(account))
     let peer = await Customer.Init(account);
     if (peer==null)
@@ -96,24 +91,17 @@ function pick_random(arr) {
     console.log("merchants online:", JSON.stringify(merchants))
     if (merchants.length===0) {
         console.log("no merchants online. come back later!");
-        process.exit(-1);
+        return;
     }
 
     await peer.initChannel();
     await peer.wait_state("OPEN");
-
-    //peer.on("message", (msg)=> console.log("INFO:>", msg) );
-
     let merchant = pick_random(merchants);
-
-    await peer.showBalances("pre");
     let pr = Message.PaymentRequest(
         merchant.address, merchant.name, peer.pubkey, 1,
         [{what:"beer", amount:1}]);
 
-
     let idx = 0;
-
     peer.on("message", (msg) => {
         if(msg["type"]==="payment-request-rejected") {
             console.log("payment canceled:", msg["msg"]);
@@ -124,10 +112,6 @@ function pick_random(arr) {
         }
         if(msg["type"]==="payment-request-completed") {
             console.log("payment completed!")
-            //peer.on("message", (msg) => {console.log("RECV:>", msg)})
-            // peer.showBalances("post")
-            //     .then(()=>{})
-            //     .catch(console.error);
             if(-1!==process.argv.indexOf("continue")) {
                 peer.sendPayment(pr).then(()=>{
                     idx= idx +1;
@@ -142,19 +126,11 @@ function pick_random(arr) {
 
     await peer.sendPayment(pr);
 
-    // await peer.showBalances("pre-update");
-    // await peer.update(10);
-    // await peer.showBalances("post-update");
-    //await myjschannel.sleep(16000*1000);
-
     async function quit(code) {
         try {
-            await peer.showBalances("pre-shutdown");
             await peer.shutdown();
             await peer.wait_state("DISCONNECTED");
             await myjschannel.sleep(3*1000);
-            let final = await peer.showBalances("final");
-            showDiff(initial, final);
         } finally {
             console.log("exit...");
             process.exit(code);
@@ -166,6 +142,58 @@ function pick_random(arr) {
         console.log("Caught interrupt signal");
         quit(0).then(()=>{}).catch(console.error);
     });
-    //h = await peer.height();
-    //console.log("height:", h, "Balance:", await peer.balance({height: h}));
+}
+
+
+
+// Write file to filesystem
+export function writeFile (name, data) {
+  try {
+    fs.writeFileSync(name, data);
+    return true
+  } catch (e) {
+    process.exit(1)
+  }
+}
+
+
+// Generate `keypair` encrypt it using password and write to `ethereum` keystore file
+export async function generateSecureWallet (name, { output = '', password, overwrite }) {
+  if (!overwrite && !(await askForOverwrite(name, output))) process.exit(1)
+  password = password || await prompt(PROMPT_TYPE.askPassword)
+  const { secretKey, publicKey } = Crypto.generateKeyPair(true)
+
+  writeFile(path.join(output, name), JSON.stringify(await dump(name, password, secretKey)))
+
+}
+
+
+
+(async function () {
+    let accountIdx={};
+    try {
+        accountIdx = JSON.parse(fs.readFileSync("accounts_idx.json"));
+    } catch (err) {
+    }
+
+    let max = Number.parseInt(process.argv[2]);
+    console.log("Accounts: ", max.toString());
+
+    for(var idx=0; idx<max; idx++ ) {
+
+       try {
+
+       } catch (err) {
+
+       }
+    }
+
+    let account = await jstools.get_account(
+        jstools.getArgv(2,
+            jstools.getEnv("CUSTOMER",
+                jstools.getEnv("ACCOUNT"))
+            ), "1234");
+
+
+    await main();
 })();

@@ -4,7 +4,7 @@ import {EventEmitter} from 'events';
 import {Account, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
-import {ACCOUNT, API_URL, INTERNAL_API_URL, NETWORK_ID, WS_URL} from "../config";
+import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
 import BigNumber from "bignumber.js";
 
 
@@ -70,7 +70,10 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static GetInfo() {
-        return {address: this.address}
+        return {
+            address: this.address,
+            node: MoreConfig.USER_NODE,
+        }
     }
 
     static get responder() {
@@ -191,7 +194,7 @@ export abstract class ServerChannel extends EventEmitter {
             self.onStatusChange(status.toUpperCase());
         });
         this.channel.on('error', (error) => {
-            console.log("ERRRORRRRR:", error)
+            console.log("ERRRORRRRR:", error);
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);

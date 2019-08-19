@@ -45,7 +45,8 @@ export class AppController {
   @Get("/balance/:merchant")
   async balances(@Param() params): Promise<any> {
     let merchant = params.merchant;
-    return {merchant:merchant, balance: await RepoService.MerchantBalance(merchant)}
+    return {merchant:merchant,
+          balance: await RepoService.MerchantBalance(merchant)}
   }
 
   @Get("/all_merchants")

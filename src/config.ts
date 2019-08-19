@@ -39,5 +39,10 @@ export class MoreConfig {
     static get ExternalIP(): string {
         return this.external_ip;
     }
+
+    static get USER_NODE(): string {
+        return getEnv('USER_NODE', WS_URL);
+
+    }
 }
 
