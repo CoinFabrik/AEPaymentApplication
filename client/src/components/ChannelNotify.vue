@@ -8,6 +8,7 @@ const POLL_INTERVAL_MS = 100;
 import "sweetalert2/dist/sweetalert2.min.css";
 import BigNumber from "bignumber.js";
 import { EventBus } from "../event/eventbus";
+import HubConnection from "../controllers/hub";
 
 export default {
   name: "ChannelNotify",
@@ -19,6 +20,27 @@ export default {
   },
   props: {},
   methods: {
+    async notifyPaymentReceived(amount, something, customer) {
+      let customerName = "(unknown)";
+      const hub = new HubConnection(this.$store.state.hubUrl, customer);
+      let r = await hub.getRegisteredName("client");
+      if (r.success) {
+        customerName = r.name;
+      }
+      await this.$swal.fire({
+        heightAuto: true,
+        title: "Payment Received",
+        text:
+          "You received " +
+          amount / 10 ** 18 +
+          " AE from " +
+          customerName + ( (something !== "")
+            ? " in concept of " + something
+            : "") +
+          ". This payment will be accredited in your In-hub balance"
+      });
+      await this.$store.dispatch("updateHubBalance");
+    },
     onSuscribeToChannel() {
       console.warn("ChannelNotify: Received request to suscribe to Channel");
       this.$store.state.aeternity.setUpdateHandler(this.onChannelUpdateAck);
@@ -44,37 +66,8 @@ export default {
     async onAfterUpdateAckSign() {
       await this.$store.dispatch("updateChannelBalances");
     },
-    onChannelUpdateAck(updateInfo) {
-      // Check if we are waiting for signing a purchase that we got through last buy_request message.
-      //const lastBuyReq = this.$store.state.buyRequestInfo;
-
-      //console.log("Last known Buy Request data: ", lastBuyReq);
-      //console.log("Channel Update Information: ", updateInfo);
-
-      // if (
-      //   lastBuyReq &&
-      //   lastBuyReq.amount === updateInfo.amount &&
-      //   lastBuyReq.customer === updateInfo.from &&
-      //   this.$store.getters.responderAddress === updateInfo.to
-      // ) {
-      // return this.showRequestPaymentModal(
-      //   new BigNumber(lastBuyReq.amount)
-      //     .dividedBy(new BigNumber(10).pow(18))
-      //     .toString(10),
-      //   lastBuyReq.something,
-      //   lastBuyReq.merchant_name
-      // );
-      // } else {
-      //   this.$swal xxx aca rompi algo
-      //     title: "Oops",
-      //     text:
-      //       "We found a Hub request to sign a  purchase you didn't seem to ask. Please contact the application support after dismissing this notice",
-      //     type: "warning"
-      //   });
-      //   return false;
-      // }
-    },
-    checkMessageQueue() {
+    onChannelUpdateAck(/* updateInfo */) {},
+    async checkMessageQueue() {
       if (this.messageQueue.length > 0) {
         const msg = this.messageQueue.pop();
 
@@ -91,62 +84,39 @@ export default {
             "Payment-request ACCEPTED message received in channel: ",
             msg
           );
-          EventBus.$emit("payment-request-ack", "accepted");
+          if (this.$isClientAppRole) {
+            EventBus.$emit("payment-request-ack", { st: "accepted" });
+          } else {
+            console.warn("unexpected message for MERCHANT role");
+          }
         } else if (infoObj.type === "payment-request-rejected") {
           console.warn(
-            "Payment-request ACCEPTED message received in channel: ",
+            "Payment-request REJECTED message received in channel: ",
             msg
           );
-          EventBus.$emit("payment-request-ack", "rejected");
-        }
-        // // TODO: sólo el merchant debe aceptarlo
-        // this.$swal.fire({
-        //   text: "Payment received from HERNAN for 1.5 AE",
-        //   type: "success",
-        //   toast: true,
-        //   position: "top-end"
-        // });
-        else {
+          EventBus.$emit("payment-request-ack", {
+            st: "rejected",
+            rejectMsg: infoObj.msg
+          });
+        } else if (infoObj.type === "payment-request-completed") {
+          console.warn(
+            "Payment-request COMPLETE message received in channel: ",
+            msg
+          );
+          if (this.$isClientAppRole) {
+            EventBus.$emit("payment-request-completed");
+          } else {
+            await this.notifyPaymentReceived(
+              infoObj.amount,
+              infoObj.something,
+              infoObj.customer
+            );
+          }
+        } else {
           console.warn("An unknown message was present in queue: ", msg);
         }
       }
       setTimeout(this.checkMessageQueue, POLL_INTERVAL_MS);
-    },
-    showRequestPaymentModal(amount, what, merchant_name) {
-      return this.$swal({
-        heightAuto: false,
-        title: "Are you sure?",
-        text:
-          "Accept payment of " +
-          amount +
-          " AE for your PURCHASE at " +
-          merchant_name +
-          "?",
-        allowOutsideClick: false,
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Accept",
-        cancelButtonText: "Reject",
-        showCloseButton: false,
-        showLoaderOnConfirm: true
-      })
-        .then(result => {
-          if (result.value) {
-            // reset last buyRequest
-            this.$store.commit("clearLastBuyRequestInfo");
-
-            this.$swal(
-              "Thanks!",
-              "You successfully paid for your purchase",
-              "success"
-            );
-            return true;
-          } else {
-            this.$swal("Cancelled", "You cancelled your purchase", "info");
-            return false;
-          }
-        })
-        .catch(alert);
     }
   },
   mounted() {

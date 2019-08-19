@@ -20,12 +20,12 @@ export function validateOnboardingQr(qrtext) {
             return false;
         }
 
-        // const ip_port_regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$";
+        const ip_port_regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$";
 
-        // if ((!validator.matches(obj.hub, ip_port_regex)) || (!validator.matches(obj.node, ip_port_regex))) {
-        //     console.error("Onboarding QR: Requires hub and node  in IP:PORT format");
-        //     return false;
-        // }
+        if ((!validator.matches(obj.hub, ip_port_regex)) || (!validator.matches(obj.node, ip_port_regex))) {
+            console.error("Onboarding QR: Requires hub and node  in IP:PORT format");
+            return false;
+        }
 
         return true;
     } catch (e) {
@@ -44,6 +44,7 @@ export function validatePurchaseQr(qrtext) {
         if (obj.amount === undefined
             || obj.something === undefined
             || obj.id === undefined
+            || obj.merchant === undefined
             || obj.type === undefined) {
             console.error("Payment QR: does not contain required fields");
             return false;

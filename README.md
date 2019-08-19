@@ -10,6 +10,16 @@ Ecosystem of applications for the AEUniverse Conference.
 ## Prerequisites
 
 The Aepp-SDK is a constantly evolving software base and at this time is **not considered ready for production**. For that reason, we choose to lock development on a fixed version, unless a showstopper bug is encountered and it's already fixed in a newer release.
+
+## QR Codes
+
+The onboarding QR must contain the following text format:
+
+```
+{ "node": "ip:port", "hub": "ip:port" }
+```
+
+
   
 ## TODO:
 

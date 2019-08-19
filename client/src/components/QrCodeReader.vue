@@ -39,8 +39,11 @@ export default {
           this.cameraAllowed = status.state !== "denied";
         };
       } catch (err) {
-        console.log("queryCameraPermissions failed: " + err.toString());
-        console.log("Trying alternative getUserMedia method");
+        console.warn(
+          "queryCameraPermissions failed: " +
+            err.toString() +
+            " -- Trying alternative getUserMedia method"
+        );
       }
     }
 
@@ -48,6 +51,7 @@ export default {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: true
       });
+      console.log("Obtained mediaStream by getUserMedia method");
       mediaStream.getTracks().forEach(track => track.stop());
       this.cameraAllowed = true;
     } catch (e) {
