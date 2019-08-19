@@ -47,7 +47,7 @@ const PAYMENT_UNKNOWN = 0,
 let paymentProcessStatus = PAYMENT_UNKNOWN;
 let paymentRejectInfo;
 
-import { AeText, AeButtonGroup, AeButton } from "@aeternity/aepp-components";
+import { AeText, AeButton } from "@aeternity/aepp-components";
 import { EventBus } from "../event/eventbus";
 import BigNumber from "bignumber.js";
 import { clearInterval } from "timers";
@@ -57,8 +57,7 @@ export default {
   name: "ConfirmPayment",
   components: {
     AeButton,
-    AeText,
-		AeDivider
+    AeText
   },
   props: {
     paymentData: Object
