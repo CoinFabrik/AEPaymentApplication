@@ -136,8 +136,13 @@ export default {
           params: { initialDeposit: true }
         });
       } else {
+        const channelApiUrl =  'ws' + res.node + '/channel';
         console.log("Hub Wallet Address: " + res.address);
+        console.log("Hub Node: " + res.node);
+        console.log("Assumed WS API at " + channelApiUrl);
         this.$store.commit("loadHubAddress", res.address);
+        this.$store.commit("loadHubNode", res.node);
+        this.$store.commit("setChannelApiUrl", channelApiUrl);
         this.$store.commit("setResponderId", res.address);
 
         await this.createChannel();
