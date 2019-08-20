@@ -100,7 +100,8 @@ export class RepoService {
                         '"mca"."timestamp" AS "timestamp", ' +
                         '"mca"."amount" AS "amount", ' +
                         '"mca"."item" AS "item", ' +
-                        '"client"."name" AS "name" ' +
+                        '"client"."name" AS "name", ' +
+                        '"mca"."tx_uuid" AS "uuid" ' +
                     'FROM "merchant_customer_accepted" "mca" ' +
                     'LEFT JOIN "c_client" "client" ON "client"."address" = peer ' +
                     'WHERE '+kind+' = ?' +
