@@ -161,8 +161,7 @@ function pick_random(arr) {
         }
     }
 
-    process.on('SIGINT', function() {
-        process.on('SIGINT', function() {});
+    process.once('SIGINT', function() {
         console.log("Caught interrupt signal");
         quit(0).then(()=>{}).catch(console.error);
     });

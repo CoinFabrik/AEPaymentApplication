@@ -3,7 +3,7 @@ import {Actor, CClient, MerchantCustomerAccepted} from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
 import {array_rm, voidf} from "../tools";
-import {FindManyOptions, getRepository} from "typeorm";
+import {FindManyOptions, getManager, getRepository} from "typeorm";
 import BigNumber from "bignumber.js";
 import {Hub} from "./hub";
 
@@ -49,20 +49,22 @@ export class RepoService {
   }
 
   static async getHistory(kind: Actor, address: string, start="0", take="10"): Promise<object[]> {
+      let name_field = kind=="merchant"? "customer" : "merchant";
       let nstart = Number.parseInt(start);
       let ntake = Number.parseInt(take);
-      let repo = getRepository(MerchantCustomerAccepted);
 
-      // we should be doing this, but:
-      //   -  with getrawmany() doesn't honor start/take
-      //   -  getmany() doesn't return joined table columns..
+      // query builder version fails to export columns from joined table.. and when using
+      // rawquerymany(), cannot be paginated.
       //
+      // let repo = getRepository(MerchantCustomerAccepted);
+      // // we should be doing this, but:
+      // //   -  with getrawmany() doesn't honor start/take
+      // //   -  getmany() doesn't return joined table columns..
+      // //
       // let select = ["timestamp", "merchant", "customer", "amount", "item"];
-      // select = ["mca.id", "mca.timestamp", "mca.merchant", "mca.customer", "mca.amount", "mca.item", "client.name"]
-      // let name_field = kind=="merchant"? "customer" : "merchant";
+      // select = ["mca.id", "mca.timestamp", "mca.merchant", "mca.customer", "mca.amount",
+      //           "mca.item", "client.name"]
       // array_rm(select, "mca."+kind);
-      //
-      // console.log(select)
       // let query = repo.createQueryBuilder("mca")
       //     .leftJoinAndSelect(CClient, "client", "client.address = mca."+name_field)
       //     // .select(["mca.timestamp", "mca.merchant", "mca.customer", "mca.amount", "mca.item"])
@@ -71,25 +73,40 @@ export class RepoService {
       //     // .orderBy("mca.timestamp", "DESC")
       //     .skip(nstart)
       //     .take(ntake);
-      // return await query.getRawMany();
+      // console.log(query.getQueryAndParameters())
+      // // return await query.getRawMany();
 
-      let where: object;
-      if (kind=="merchant") {
-        where = {merchant: address}
-      } else {
-        where = {customer: address}
-      }
-
-      let opts : FindManyOptions<MerchantCustomerAccepted> = {
-          where: where,
-          order: {
-              timestamp: "DESC"
-          },
-          skip: nstart,
-          take: ntake
-      };
-
-      return await repo.find(opts);
+      // this doesn't returns customer or merchant's name..
+      //
+      // let where: object;
+      // if (kind=="merchant") {
+      //   where = {merchant: address}
+      // } else {
+      //   where = {customer: address}
+      // }
+      //
+      // let opts : FindManyOptions<MerchantCustomerAccepted> = {
+      //     where: where,
+      //     order: {
+      //         timestamp: "DESC"
+      //     },
+      //     skip: nstart,
+      //     take: ntake
+      // };
+      // return await repo.find(opts);
+    return getManager().query(
+          'SELECT ' +   //"mca"."id" AS "mca_id",
+                        '"mca"."'+name_field+'" AS "peer", ' +
+                        '"mca"."timestamp" AS "timestamp", ' +
+                        '"mca"."amount" AS "amount", ' +
+                        '"mca"."item" AS "item", ' +
+                        '"client"."name" AS "name" ' +
+                    'FROM "merchant_customer_accepted" "mca" ' +
+                    'LEFT JOIN "c_client" "client" ON "client"."address" = peer ' +
+                    'WHERE '+kind+' = ?' +
+                    'ORDER BY timestamp DESC LIMIT ? OFFSET ?',
+                    [address, ntake, nstart]
+      );
   }
 }
 
