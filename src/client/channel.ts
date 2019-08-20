@@ -6,6 +6,7 @@ import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
 import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
 import BigNumber from "bignumber.js";
+import {stringify} from "querystring";
 
 
 const {
@@ -14,6 +15,36 @@ const {
     Universal,
     TxBuilder: {unpackTx}
 } = require('@aeternity/aepp-sdk');
+
+
+export interface UpdateItem {
+    amount: number | BigNumber;
+    from: string;
+    to: string;
+    op: string;
+}
+
+
+export class InvalidUpdateOperation extends Error {
+    constructor(update: UpdateItem) {
+        super("Invalid Update: operation: " + update.op );
+    }
+}
+export class InvalidUpdateWrongFrom extends Error {
+    constructor(update: UpdateItem) {
+        super("Invalid Update: wrong from: " + update.from );
+    }
+}
+export class InvalidUpdateWrongTo extends Error {
+    constructor(update: UpdateItem) {
+        super("Invalid Update: wrong to: " + update.to );
+    }
+}
+export class InvalidUpdateNegativeAmount extends Error {
+    constructor(update: UpdateItem) {
+        super("Invalid Update: negative amount " + update.amount );
+    }
+}
 
 
 export abstract class ServerChannel extends EventEmitter {
@@ -164,7 +195,7 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         let options = this.get_options();
 
-        options["sign"] = async (tag, tx) => {
+        options["sign"] = async (tag, tx, { updates = {} } = {}) => {
             // tag: update_ack tx:
             // {
             //      "tag":"57","VSN":"2",
@@ -179,6 +210,36 @@ export abstract class ServerChannel extends EventEmitter {
                 this.log("tag: " + tag + ": "+ JSON.stringify(txData));
             } catch (err) {
                 //console.log(err);
+            }
+
+            if (tag === "update_ack") {
+                // [{
+                //      "amount":1,
+                //      "from":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
+                //      "op":"OffChainTransfer",
+                //      "to":"ak_2TccoDkdWZ28yBYZ7QsdqBMAH5DjsVnMnZHBRyUnxPD5z1whYb"
+                //  }]
+                try {
+                    let fupdates: UpdateItem[] = updates as UpdateItem[];
+                    for (let update of fupdates) {
+                        if (update["op"]!=="OffChainTransfer") {
+                            throw new InvalidUpdateOperation(update);
+                        }
+                        if (update["from"]!==this.initiator) {
+                            throw new InvalidUpdateWrongFrom(update);
+                        }
+                        if (update["to"]!==this.address) {
+                            throw new InvalidUpdateWrongTo(update);
+                        }
+                        if ((new BigNumber(update["amount"])).isNegative()) {
+                            throw new InvalidUpdateNegativeAmount(update);
+                        }
+                    }
+                } catch(err) {
+                    console.error(err.toString());
+                    console.error("wont be signed: ", JSON.stringify(updates));
+                    return
+                }
             }
             if (tag === "shutdown_sign_ack") {
                 const {txType, tx: txData} = unpackTx(tx);

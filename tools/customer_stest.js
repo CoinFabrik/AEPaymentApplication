@@ -170,17 +170,17 @@ export async function generateSecureWallet (name, { output = '', password, overw
 
 
 (async function () {
-    let accountIdx={};
+    let accounts=[];
     try {
-        accountIdx = JSON.parse(fs.readFileSync("accounts_idx.json"));
+        accounts = JSON.parse(fs.readFileSync("accounts_idx.json"));
     } catch (err) {
     }
 
     let max = Number.parseInt(process.argv[2]);
     console.log("Accounts: ", max.toString());
+    console.log("Loaded Accounts: ", accounts.length);
 
     for(var idx=0; idx<max; idx++ ) {
-
        try {
 
        } catch (err) {
