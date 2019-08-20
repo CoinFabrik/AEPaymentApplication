@@ -1,65 +1,71 @@
 <template>
-
-	<b-container id="deposit">
-		<div v-if="initialDeposit">
-			<AeText weight="bold"> Initial Deposit </AeText>
+  <b-container id="deposit">
+    <div v-if="initialDeposit">
+      <AeText weight="bold">
+        Initial Deposit
+      </AeText>
 		
-			<div v-if="$isClientAppRole">
-				<AeText>
-					To open a channel with our Point of Sale services an acquire
-					venue amenities, goods and services,
-					please enter an amount of AE to deposit. This amount can be
-					used immediately. Unspent tokens will be returned to your wallet when the channel closes.
-				</AeText>
-				<AeText face="sans-s">You can add more tokens later</AeText>
-			</div>
+      <div v-if="$isClientAppRole">
+        <AeText>
+          To open a channel with our Point of Sale services an acquire
+          venue amenities, goods and services,
+          please enter an amount of AE to deposit. This amount can be
+          used immediately. Unspent tokens will be returned to your wallet when the channel closes.
+        </AeText>
+        <AeText face="sans-s">
+          You can add more tokens later
+        </AeText>
+      </div>
 
-			<div v-if="$isMerchantAppRole">
-				<AeText>
-					To open a channel with our Point of Sale services you need
-					to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
-				</AeText>
-				<AeText face="sans-s">This deposit will be returned to your wallet at channel close</AeText>
-			</div>
-		</div>
-		<div v-else>
+      <div v-if="$isMerchantAppRole">
+        <AeText>
+          To open a channel with our Point of Sale services you need
+          to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
+        </AeText>
+        <AeText face="sans-s">
+          This deposit will be returned to your wallet at channel close
+        </AeText>
+      </div>
+    </div>
+    <div v-else>
+      <div v-if="$isClientAppRole">
+        <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
+      </div>
+    </div>
 
-			<div v-if="$isClientAppRole">
-				<AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
-			</div>
-			
-		</div>
+    <ae-amount-input
+      v-show="$isClientAppRole"
+      v-model="depositInput"
+      placeholder="0.00"
+      :units="[
+        { symbol: 'AE', name: 'æternity' }
+      ]"
+      :disabled="isQueryingBalance"
+      @input="onAmountInput"
+    />
+    <div v-if="isQueryingBalance">
+      <AeText>Please wait while Checking your account balance</AeText>
+      <AeLoader />
+    </div>
+    <div v-else>
+      <AeText
+        v-show="$isClientAppRole"
+        face="sans-xs"
+      >
+        Estimated Fee: {{ estimatedFee / (10**18) }} AE
+      </AeText>
+    </div>
 
-		<ae-amount-input
-			v-show="$isClientAppRole"
-			placeholder="0.00"
-			v-model="depositInput"
-			:units="[
-						{ symbol: 'AE', name: 'æternity' }
-					]"
-			@input="onAmountInput"
-			v-bind:disabled="isQueryingBalance"
-		/>
-		<div v-if="isQueryingBalance">
-			<AeText>Please wait while Checking your account balance</AeText>
-			<AeLoader />
-		</div>
-		<div v-else>
-			<AeText
-				face="sans-xs"
-				v-show="$isClientAppRole"
-			>Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
-		</div>
-
-		<AeButton
-			face="round"
-			fill="primary"
-			extend
-			@click="deposit()"
-			:disabled="depositInput.amount <= 0 || isQueryingBalance"
-		>Deposit</AeButton>
-
-	</b-container>
+    <AeButton
+      face="round"
+      fill="primary"
+      extend
+      :disabled="depositInput.amount <= 0 || isQueryingBalance"
+      @click="deposit()"
+    >
+      Deposit
+    </AeButton>
+  </b-container>
 </template>
 
 <script>

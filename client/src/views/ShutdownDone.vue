@@ -1,10 +1,21 @@
 <template>
   <div class="shutdowndone">
-    <AeText face="sans-l">Thanks for operating with our service!</AeText>
+    <AeText face="sans-l">
+      Thanks for operating with our service!
+    </AeText>
     <AeText
       face="sans"
-    >You will need to redo the onboarding steps to operate again with the PoS service.</AeText>
-    <AeButton face="round" fill="primary" extend @click="dismiss()">Dismiss</AeButton>
+    >
+      You will need to redo the onboarding steps to operate again with the PoS service.
+    </AeText>
+    <AeButton
+      face="round"
+      fill="primary"
+      extend
+      @click="dismiss()"
+    >
+      Dismiss
+    </AeButton>
   </div>
 </template>
 

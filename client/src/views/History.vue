@@ -1,20 +1,34 @@
 <template>
   <b-container class="history-view">
-    <AeText fill="primary">Transaction History</AeText>
+    <AeText
+      class="title"
+      fill="primary"
+    >
+      Transaction History
+    </AeText>
     <b-row>
       <div class="column">
-        Date
+        <AeText weight="bold">
+          Date
+        </AeText>
       </div>
       <div class="column">
-        To/From
+        <AeText weight="bold">
+          To/From
+        </AeText>
       </div>
       <div class="column">
-        Amount
+        <AeText weight="bold">
+          Amount
+        </AeText>
       </div>
     </b-row>
-    <AeView>
+    <div class="scroll">
       <AeList>
-        <div v-for="tx in getTxHistory" v-bind:key="tx.txid">
+        <div
+          v-for="tx in getTxHistory"
+          :key="tx.txid"
+        >
           <AeListItem fill="neutral">
             <div class="column">
               {{ tx.date }}
@@ -27,11 +41,26 @@
             </div>
           </AeListItem>
         </div>
+        <AeButton
+          face="round"
+          fill="secondary"
+          @click="addMoreItems"
+        >
+          +
+        </AeButton>
       </AeList>
-    </AeView>
-		<AeButton v-if="isIOS()" class="backButton" face="round" fill="primary" extend v-on:click="goBack">←</AeButton>
+      <AeButton
+        v-if="isIOS()"
+        class="backButton"
+        face="round"
+        fill="primary"
+        extend
+        @click="goBack"
+      >
+        ←
+      </AeButton>
+    </div>
   </b-container>
-
 </template>
 
 <script>
@@ -39,7 +68,6 @@
     AeText,
     AeList,
     AeListItem,
-		AeView,
 		AeButton
 	} from "@aeternity/aepp-components";
 
@@ -49,18 +77,7 @@
       AeText,
       AeList,
       AeListItem,
-			AeView,
 			AeButton
-    },
-    methods: {
-      goBack: function() {
-        this.$router.go(-1);
-			},
-			isIOS: function() {
-				if(/iPhone/i.test(navigator.userAgent)) {
-					return true
-				}
-			},
     },
     computed: {
       getAddress: function () { return "xxxxxx"; },
@@ -136,21 +153,42 @@
             txid: 'tx_2bbbbbbbbbbbbbbbbb913923089',
             date: '9/4/19 10:30',
             to: 'ak_addr3',
-            amount: 4.5
+            amount: 4.999
           }
         ]
       }
+    },
+    methods: {
+			addMoreItems: function() {
+
+			},
+      goBack: function() {
+        this.$router.go(-1);
+			},
+			isIOS: function() {
+				if(/iPhone/i.test(navigator.userAgent)) {
+					return true
+				}
+			},
     }
   };
 </script>
 
 <style>
   .column {
-    flex: 50%;
+    flex: 1;
   }
 	.backButton {
-		position: absolute !important;
+		position: fixed !important;
 		left: 0px;
 		bottom:0px;
+	}
+	#progress-el {
+		background-color: #FF0D6A !important;
+	}
+	.scroll {
+		overflow: scroll;
+		max-height: 50vh;
+		padding-bottom: 20;
 	}
 </style>

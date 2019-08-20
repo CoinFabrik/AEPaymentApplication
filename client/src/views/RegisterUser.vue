@@ -1,17 +1,33 @@
 <template>
   <b-container class="register-merch">
-    <AeText weight="bold" face="sans-s">Before we begin, you need to register a name to identify yourself or your business.</AeText>
-    <AeText face="sans-xs"
-    >Entering your name enables customers and merchants to track the transactions between them</AeText>
+    <AeText
+      weight="bold"
+      face="sans-s"
+    >
+      Before we begin, you need to register a name to identify yourself or your business.
+    </AeText>
+    <AeText
+      face="sans-xs"
+    >
+      Entering your name enables customers and merchants to track the transactions between them
+    </AeText>
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
-      placeholder="Your personal or business identity name"
       v-model="nameInput"
-    ></AeInput>
+      placeholder="Your personal or business identity name"
+    />
     <AeLoader v-show="fetchingName" />
 
-    <AeButton v-show="!fetchingName" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton
+      v-show="!fetchingName"
+      face="round"
+      fill="primary"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
   </b-container>
 </template>
 
@@ -46,17 +62,6 @@ export default {
       return this.nameInput.length > 0;
     }
   },
-  methods: {
-    confirm() {
-      this.$store.commit("setUserName", this.nameInput);
-      this.$router.replace({
-        name: "deposit",
-        params: {
-          initialDeposit: true
-        }
-      });
-    }
-  },
   async mounted() {
     try {
       this.fetchingName = true;
@@ -85,6 +90,17 @@ export default {
           e.toString()
       );
       this.fetchingName = false;
+    }
+  },
+  methods: {
+    confirm() {
+      this.$store.commit("setUserName", this.nameInput);
+      this.$router.replace({
+        name: "deposit",
+        params: {
+          initialDeposit: true
+        }
+      });
     }
   }
 };

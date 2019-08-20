@@ -8,10 +8,14 @@ import Globals from './globals'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import { LayoutPlugin, ModalPlugin, ButtonPlugin } from 'bootstrap-vue'
+import VueScrollProgress from 'vue-scroll-progress'
+import vuescroll from 'vue-scroll'
 
+Vue.use(vuescroll)
 Vue.use(ButtonPlugin)
 Vue.use(LayoutPlugin)
 Vue.use(ModalPlugin)
+Vue.use(VueScrollProgress)
 Vue.config.productionTip = false
 
 console.log("The AE Universe One Client Application");

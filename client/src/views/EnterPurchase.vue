@@ -1,17 +1,38 @@
 <template>
   <div class="enterpurchase">
-    <AeText face="sans-l">Generate Payment</AeText>
+    <AeText face="sans-l">
+      Generate Payment
+    </AeText>
     <AeText>Please enter the payment information to generate a QR code for your customer</AeText>
-    <AeInput label="Amount" placeholder="0.00" v-model="amount" units="AE" />
     <AeInput
-      label="Concept (optional)"
+      v-model="amount"
+      label="Amount"
+      placeholder="0.00"
+      units="AE"
+    />
+    <AeInput
       ref="desc"
-      placeholder="Enter your Item description..."
       v-model="description"
+      label="Concept (optional)"
+      placeholder="Enter your Item description..."
     />
     <ae-button-group>
-      <AeButton face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-      <AeButton face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+      <AeButton
+        face="round"
+        fill="primary"
+        extend
+        @click="confirm()"
+      >
+        Confirm
+      </AeButton>
+      <AeButton
+        face="round"
+        fill="secondary"
+        extend
+        @click="cancel()"
+      >
+        Cancel
+      </AeButton>
     </ae-button-group>
   </div>
 </template>

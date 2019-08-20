@@ -1,27 +1,35 @@
 <template>
-	<div class="scanqrview">
-		<b-container>
-			<b-row align-h="center">
-				<!-- <div v-if="this.subview === 'onboarding'">
+  <div class="scanqrview">
+    <b-container>
+      <b-row align-h="center">
+        <!-- <div v-if="this.subview === 'onboarding'">
 					<AeText face="sans-s">
 						To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
 						Stand
 					</AeText>
 				</div> -->
-				<!-- <br> -->
-				<div v-if="this.subview === 'pay-with-qr'">
-					<AeText>Scan a QR Code for your desired transaction</AeText>
-				</div>
+        <!-- <br> -->
+        <div v-if="this.subview === 'pay-with-qr'">
+          <AeText>Scan a QR Code for your desired transaction</AeText>
+        </div>
 
-				<div id="scan_qr_container" @click="onQrClick">
-					<div id="scan_qr_subcontainer" @click="onQrClick">
-						<QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
-					</div>
-				</div>
-			</b-row>
-		</b-container>
-	</div>
-
+        <div
+          id="scan_qr_container"
+          @click="onQrClick"
+        >
+          <div
+            id="scan_qr_subcontainer"
+            @click="onQrClick"
+          >
+            <QrCodeReader
+              @hasData="onQrHasData"
+              @error="onQrHasError"
+            />
+          </div>
+        </div>
+      </b-row>
+    </b-container>
+  </div>
 </template>
 
 <script>
@@ -40,13 +48,13 @@ export default {
     AeText,
     QrCodeReader
   },
+  props: {
+    subview: String
+  },
   data() {
     return {
       qrData: null
     };
-  },
-  props: {
-    subview: String
   },
   computed: {},
   mounted: function() {

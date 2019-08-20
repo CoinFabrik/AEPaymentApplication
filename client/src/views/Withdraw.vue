@@ -2,13 +2,13 @@
   <div class="withdraw">
     <AeText>How many AE do you want to withdraw from your channel funds?</AeText>
     <ae-amount-input
-      placeholder="0.00"
       v-model="withdrawInput"
+      placeholder="0.00"
       :units="[
-            { symbol: 'AE', name: 'æternity' }
-          ]"
+        { symbol: 'AE', name: 'æternity' }
+      ]"
+      :disabled="isInError || isQueryingBalance"
       @input="onAmountInput"
-      v-bind:disabled="isInError || isQueryingBalance"
     />
     <div v-if="isQueryingBalance">
       <AeText>Please wait while Checking your account balance</AeText>
@@ -24,12 +24,21 @@
       face="round"
       fill="primary"
       extend
-      @click="withdraw()"
       :disabled="withdrawInput.amount <= 0 || isInError || isQueryingBalance"
-    >Withdraw</AeButton>
+      @click="withdraw()"
+    >
+      Withdraw
+    </AeButton>
 
-    <ae-modal v-if="isInError" @close="setWaitingInputState" title>
-      <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
+    <ae-modal
+      v-if="isInError"
+      title
+      @close="setWaitingInputState"
+    >
+      <ErrorContent
+        error-title="An error has occurred"
+        :error-description="errorReason"
+      />
     </ae-modal>
   </div>
 </template>

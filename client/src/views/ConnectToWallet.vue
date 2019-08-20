@@ -3,9 +3,20 @@
     <b-container>
       <b-col>
         <div v-if="isAtInitialState">
-            <AeText weight="bold" face='sans-s'>We need access to your wallet. Please click the button below to authorize this application</AeText>
-            <br>
-            <AeButton face="round" fill="primary" @click="$bvModal.show('authorize-modal')">Connect your wallet</AeButton>
+          <AeText
+            weight="bold"
+            face="sans-s"
+          >
+            We need access to your wallet. Please click the button below to authorize this application
+          </AeText>
+          <br>
+          <AeButton
+            face="round"
+            fill="primary"
+            @click="$bvModal.show('authorize-modal')"
+          >
+            Connect your wallet
+          </AeButton>
         </div>
         <div v-if="isConnecting">
           <AeText>Please wait...</AeText>
@@ -13,21 +24,39 @@
         </div>
       </b-col>
 
-      <b-modal id="authorize-modal" centered hide-footer hide-header>
+      <b-modal
+        id="authorize-modal"
+        centered
+        hide-footer
+        hide-header
+      >
         <div class="d-block text-center">
-          <AeText weight="bold">Authorize access of this application to your account?</AeText>
+          <AeText weight="bold">
+            Authorize access of this application to your account?
+          </AeText>
         </div>
         <br>
         <b-row>
           <b-col>
-            <AeButton face="round" fill="neutral" @click="$bvModal.hide('authorize-modal')">Deny</AeButton>
+            <AeButton
+              face="round"
+              fill="neutral"
+              @click="$bvModal.hide('authorize-modal')"
+            >
+              Deny
+            </AeButton>
           </b-col>
           <b-col>
-            <AeButton face="round" fill="primary" @click="connectToBaseApp(); $bvModal.hide('authorize-modal')">Allow</AeButton>
+            <AeButton
+              face="round"
+              fill="primary"
+              @click="connectToBaseApp(); $bvModal.hide('authorize-modal')"
+            >
+              Allow
+            </AeButton>
           </b-col>
         </b-row>
       </b-modal>
-
     </b-container>
   </div>
 </template>
@@ -69,6 +98,23 @@ export default {
       return this.status == STATUS_CONNECTED;
     }
   },
+  mounted() {
+    // Clear any state
+    this.$store.dispatch("resetState").then(() => {
+      // Preflight checks
+      if (process.env.VUE_APP_ROLE === "merchant") {
+        console.warn("Booting application with role:  MERCHANT");
+      } else if (process.env.VUE_APP_ROLE === "client") {
+        console.warn("Booting application with role:  CLIENT");
+      } else {
+        console.error("Cannot find application role in VUE_APP_ROLE variable");
+        this.$displayError(
+          "Unexpected error",
+          "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+        );
+      }
+    });
+  },
   methods: {
     async connectToBaseApp() {
       this.status = STATUS_CONNECTING;
@@ -97,23 +143,6 @@ export default {
         this.status = STATUS_INIT;
       }
     }
-  },
-  mounted() {
-    // Clear any state
-    this.$store.dispatch("resetState").then(() => {
-      // Preflight checks
-      if (process.env.VUE_APP_ROLE === "merchant") {
-        console.warn("Booting application with role:  MERCHANT");
-      } else if (process.env.VUE_APP_ROLE === "client") {
-        console.warn("Booting application with role:  CLIENT");
-      } else {
-        console.error("Cannot find application role in VUE_APP_ROLE variable");
-        this.$displayError(
-          "Unexpected error",
-          "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
-        );
-      }
-    });
   }
 };
 </script>
