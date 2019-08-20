@@ -17,7 +17,7 @@ export default {
             Vue.swal.fire({
                 heightAuto: false,
                 type: "error",
-                title: "Oops!",
+                title,
                 text
             });
         }

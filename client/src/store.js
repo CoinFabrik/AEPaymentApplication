@@ -2,10 +2,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import HubConnection from './controllers/hub'
+// import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+  // plugins: [createPersistedState()],
   state: {
     balance: 0,
     aeternity: null,
@@ -16,8 +18,7 @@ export default new Vuex.Store({
     hubBalance: null,
     hubUrl: null,
     hubAddress: null,
-    userName: null,
-    buyRequestInfo: null
+    userName: null
   },
   getters: {
     initiatorAddress(state) {
@@ -43,14 +44,16 @@ export default new Vuex.Store({
     setResponderId(state, addr) {
       state.channelParams.responderId = addr;
     },
-    loadHubUrl(state, url) {
+    loadHubIpAddr(state, url) {
       state.hubUrl = url;
     },
     loadHubAddress(state, addr) {
       state.hubAddress = addr;
     },
     setInitialDeposit(state, amount) {
-      state.channelParams.initiatorAmount = amount;
+      if (state.channelParams !== null) {
+        state.channelParams.initiatorAmount = amount;
+      }
     },
     setUserName(state, name) {
       state.userName = name;
@@ -64,14 +67,8 @@ export default new Vuex.Store({
     updateResponderBalance(state, amount) {
       state.responderBalance = amount;
     },
-    updateInHubBalance(state,amount){
+    updateInHubBalance(state, amount) {
       state.hubBalance = amount;
-    },
-    storeLastBuyRequestInfo(state, data) {
-      state.buyRequestInfo = data;
-    },
-    clearLastBuyRequestInfo(state) {
-      state.buyRequestInfo = null;
     }
   },
   actions: {
@@ -82,7 +79,7 @@ export default new Vuex.Store({
       commit('updateBalance', 0);
       commit('updateInitiatorBalance', null);
       commit('updateResponderBalance', null);
-      commit('clearLastBuyRequestInfo');
+      commit('updateInHubBalance', null);
     },
     updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(
@@ -112,24 +109,58 @@ export default new Vuex.Store({
       }
       commit('updateInHubBalance', res.balance);
     },
-    createChannel({ commit, state }) {
-      state.aeternity.createChannel(state.channelParams).then(
+    async createChannel({ commit, state }) {
+      return new Promise((resolve,reject) => {
+        state.aeternity.createChannel(state.channelParams).then(
         function (channel) {
           commit('setChannel', channel);
+          resolve(channel);
         }
-      )
+      ).catch(err => reject(err));
+      });
     },
-    transferTokensToResponder({ dispatch, state, getters }, amount) {
-      console.log('ACTION: transferTokensToResponder');
-      state.aeternity.updateEx(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
+    // async createChannel({ commit, state }) {
+    //   state.aeternity.createChannel(state.channelParams).then(
+    //     function (channel) {
+    //       commit('setChannel', channel);
+    //     }
+    //   )
+    // },
+    triggerUpdate({ dispatch, state, getters }, amount) {
+      console.log('ACTION: triggerUpdate');
+      state.aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
         function (accepted) {
           if (accepted) {
-            return dispatch('updateChannelBalances');
+            dispatch('updateChannelBalances');
           } else {
             return Promise.reject(new Error("channel.updated rejected"));
           }
         }
       );
+    },
+    async storeNetChannelParameters({ commit, state }, hubIpAddr) {
+      let params = {
+        initiatorId:
+          process.env.VUE_APP_TEST_ENV !== "0"
+            ? await state.aeternity.getAddress()
+            : process.env.VUE_APP_TEST_WALLET_ADDRESS,
+        responderId: null, // known after connection with Hub
+        pushAmount: process.env.VUE_APP_CHANNEL_PUSH_AMOUNT,
+        initiatorAmount: 0,
+        responderAmount: process.env.VUE_APP_CHANNEL_RESPONDER_AMOUNT,
+        channelReserve: process.env.VUE_APP_CHANNEL_RESERVE,
+        ttl: process.env.VUE_APP_CHANNEL_TTL,
+        lockPeriod: process.env.VUE_APP_CHANNEL_LOCK_PERIOD,
+        host: process.env.VUE_APP_RESPONDER_HOST,
+        port: process.env.VUE_APP_RESPONDER_PORT,
+        role: "initiator",
+        url: state.aeternity.getStateChannelApiUrl(),
+        sign: state.aeternity.signFunction
+      };
+
+      console.log("Storing up Channel Parameters:" + JSON.stringify(params) + ", Hub IP: " + hubIpAddr);
+      commit("loadChannelParams", params);
+      commit("loadHubIpAddr", hubIpAddr);
     }
   }
 })

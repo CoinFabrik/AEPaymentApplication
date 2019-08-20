@@ -3,7 +3,7 @@
 	<b-container id="deposit">
 		<div v-if="initialDeposit">
 			<AeText weight="bold"> Initial Deposit </AeText>
-		<!--
+		
 			<div v-if="$isClientAppRole">
 				<AeText>
 					To open a channel with our Point of Sale services an acquire
@@ -27,7 +27,7 @@
 			<div v-if="$isClientAppRole">
 				<AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
 			</div>
-			-->
+			
 		</div>
 
 		<ae-amount-input
@@ -38,7 +38,7 @@
 						{ symbol: 'AE', name: 'æternity' }
 					]"
 			@input="onAmountInput"
-			v-bind:disabled="isInError || isQueryingBalance"
+			v-bind:disabled="isQueryingBalance"
 		/>
 		<div v-if="isQueryingBalance">
 			<AeText>Please wait while Checking your account balance</AeText>
@@ -58,9 +58,7 @@
 			@click="deposit()"
 			:disabled="depositInput.amount <= 0 || isQueryingBalance"
 		>Deposit</AeButton>
-		<ae-modal v-if="isInError" @close="setWaitingInputState" title>
-			<ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
-		</ae-modal>
+
 	</b-container>
 </template>
 
@@ -95,7 +93,7 @@ export default {
       viewState: STATUS_USER_INPUT,
       errorReason: null,
       depositInput: {
-        amount: "",
+        amount: "1",
         symbol: "AE"
       }
     };
