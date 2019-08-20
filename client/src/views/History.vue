@@ -26,7 +26,7 @@
     <div class="scroll">
       <AeList>
         <div
-          v-for="tx in getTxHistory"
+          v-for="tx in history"
           :key="tx.txid"
         >
           <AeListItem fill="neutral">
@@ -78,89 +78,26 @@
       AeList,
       AeListItem,
 			AeButton
-    },
+		},
+		data: () => {
+			return {
+				history: [
+				],
+			}
+		},
     computed: {
       getAddress: function () { return "xxxxxx"; },
-      getTxHistory: function () {
-        return [
-          {
-            txid: 'tx_2390230923098230892308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa098230892308923089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_2bbbbbbbbkkkk923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_2390230923yyyyy2308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa098230mmmmm089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_mmmmmmbbbbbbbbbbbbbb92308923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_23902309230982ssss30892308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaxssss92308923089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_2bbbbbbbbbbb3f0s092308923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_2390230923098230892308923089X',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa09823089230892Z',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
+		},
+    methods: {
+			addMoreItems: function() {
+				this.history.push(
+					{
             txid: 'tx_2bbbbbbbbbbbbbbbbb913923089',
             date: '9/4/19 10:30',
             to: 'ak_addr3',
             amount: 4.999
           }
-        ]
-      }
-    },
-    methods: {
-			addMoreItems: function() {
-
+				)
 			},
       goBack: function() {
         this.$router.go(-1);
