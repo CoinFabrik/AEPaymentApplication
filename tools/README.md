@@ -67,7 +67,7 @@ At the moment, no stat is performed by this script.  But you can check merchants
 where `which` can be:
 
  1. "init" meaning you refer to the first hardcoded address 
- 2. a simple ak_...  address
+ 2. a simple `ak_...`  address
  3. a wallet filename
  4. a massive account file like `accounts_idx.json` is used above 
 
