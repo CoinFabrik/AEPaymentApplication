@@ -2,8 +2,8 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText>{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
-    <AeLoader />
+    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
+    <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
 
@@ -54,36 +54,61 @@ export default {
         console.log("Obtained TX Hash: ", this.transactionHash);
       }
 
-      try {
-        this.elapsedBlocks = await this.$store.state.aeternity.getTxConfirmations(
-          this.transactionHash
-        );
-        console.log("Elapsed TX blocks: " + this.elapsedBlocks);
-        if (this.elapsedBlocks == WAIT_BLOCKS + 1) {
-          // Wait +1 block  to show 100% for a moment on screen ... ;)
-          await this.$store.dispatch("resetState");
-          this.$router.replace("ShutdownDone");
-        } else {
-          setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
-        }
-      } catch (e) {
-        this.displayError(e);
+      this.elapsedBlocks = await this.$store.state.aeternity.getTxConfirmations(
+        this.transactionHash
+      );
+      console.log("Elapsed TX blocks: " + this.elapsedBlocks);
+      if (this.elapsedBlocks == WAIT_BLOCKS + 1) {
+        // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
+        await this.navigateOut();
+      } else {
+        setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
       }
     },
-    displayError(e) {
-      this.$swal.fire({
-        heightAuto: false,
-        type: "error",
-        title: "Oops!",
-        text:
-          "We could not submit your " +
-          this.txKind +
-          " transaction. " +
-          "Reason: " +
-          e.toString()
-      });
-    },
+    async navigateOut() {
+      switch (this.txKind) {
+        case "deposit":
+          await this.$swal.fire({
+            type: "success",
+            title: "Success",
+            text: "Your deposit transaction has been successfully confirmed. ",
+            onClose: () => {
+              this.$router.replace("main-menu");
+            }
+          });
+          break;
 
+        case "withdraw":
+          await this.$swal.fire({
+            type: "success",
+            title: "Success",
+            text: "Your withdraw transaction has been successfully confirmed. ",
+            onClose: () => {
+              this.$router.replace("main-menu");
+            }
+          });
+          break;
+
+        case "close":
+          await this.$swal.fire({
+            type: "success",
+            title: "Thanks for operating with our service",
+            text:
+              "If you want to operate with our Payment service again, you will need to redo the onboarding steps.",
+            onClose: async () => {
+              await this.$store.dispatch("resetState");
+              await this.$router.replace({
+                name: "scanqr",
+                params: { subview: "onboarding" }
+              });
+            }
+          });
+          break;
+
+        default:
+          throw new Error("Transaction type is unknown");
+      }
+    },
     setStatusTrackProgress(tx) {
       this.transaction = tx;
       this.viewStatus = STATUS_TRACK_TX_PROGRESS;
@@ -96,7 +121,7 @@ export default {
       let r = await this.$store.state.aeternity.deposit(
         this.$store.state.channel,
         parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
-        async function(tx) {
+        async tx => {
           console.log("posted DEPOSIT Onchain TX: ", tx);
           this.setStatusTrackProgress(tx);
         }
@@ -113,7 +138,7 @@ export default {
       let accepted = await this.$store.state.aeternity.withdraw(
         this.$store.state.channel,
         parseInt(this.txParams.amountAettos),
-        async function(tx) {
+        async tx => {
           console.log("posted withdraw Onchain TX: ", tx);
           this.setStatusTrackProgress(tx);
         }
@@ -158,7 +183,14 @@ export default {
     try {
       await this.commitTransaction();
     } catch (e) {
-      this.displayError(e);
+      this.$displayError(
+        "Oops!",
+        "We could not submit your " +
+          this.txKind +
+          " transaction. " +
+          "Reason: " +
+          e.toString()
+      );
       this.$router.replace("main-menu");
     }
   }

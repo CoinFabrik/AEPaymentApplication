@@ -12,7 +12,6 @@ import History from './views/History.vue'
 import ChannelOpen from './views/ChannelOpen.vue'
 import RegisterUser from './views/RegisterUser.vue'
 import Withdraw from './views/Withdraw.vue'
-import ShutdownDone from './views/ShutdownDone.vue'
 import EnterPurchase from './views/EnterPurchase.vue'
 import ShowPaymentQr from './views/ShowPaymentQr.vue'
 
@@ -82,11 +81,11 @@ export default new Router({
       component: Success,
       props: true
     },
-    {
-      path: '/shutdowndone',
-      name: 'shutdowndone',
-      component: ShutdownDone
-    },
+    // {
+    //   path: '/shutdowndone',
+    //   name: 'shutdowndone',
+    //   component: ShutdownDone
+    // },
     {
       path: '/channelopen',
       name: 'channelopen',
