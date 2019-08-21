@@ -34,7 +34,6 @@
           <AeText weight="bold">
             Authorize access of this application to your account?
           </AeText>
-        </div>
         <br>
         <b-row>
           <b-col>
@@ -56,6 +55,7 @@
             </AeButton>
           </b-col>
         </b-row>
+				</div>
       </b-modal>
     </b-container>
   </div>

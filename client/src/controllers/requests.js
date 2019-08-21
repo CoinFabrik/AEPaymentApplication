@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {getShortDate, getLongDate} from '../util/tools'
+import aeternity from './aeternity';
 
 export default async function getTxHistory(from) {
 	let res;
@@ -7,13 +8,13 @@ export default async function getTxHistory(from) {
 		res = await axios.get(
 			"http://" + "10.10.0.24:3000" +
 			"/client/history/" +
-			"ak_9k9FzYxNbwrXYLVB8EDjhjspZbKzG9zWDTydqHVkDRR8To5Hs"
+			+ await aeternity.getAddress() + "/"
 		);
 	else
 		res = await axios.get(
 			"http://" + "10.10.0.24:3000" +
 			"/client/history/" +
-			"ak_9k9FzYxNbwrXYLVB8EDjhjspZbKzG9zWDTydqHVkDRR8To5Hs/" + from
+			+ await aeternity.getAddress() + "/" + from
 		);
 	const dataWithDate = res.data.map(element => { element.shortDate = getShortDate(element.timestamp); element.longDate = getLongDate(element.timestamp); return element; });
 	return dataWithDate.map(element => {element.item = JSON.parse(element.item); return element;})
