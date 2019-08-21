@@ -156,8 +156,6 @@ async function transfer_all(from_ac, to_ac_publicKey, amount) {
 
     for (let account_idx in accounts) {
         let idx = Number.parseInt(account_idx);
-        if (idx<50)
-            continue;
         let account = accounts[account_idx];
         let balance;
 

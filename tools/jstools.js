@@ -185,11 +185,14 @@ function validateKeyObj (obj) {
   return true
 }
 
+function voidf() {}
+
 
 module.exports = {
   get_account,
   get_public,
   getEnv,
   getArgv,
-  genUUID
+  genUUID,
+    voidf
 }

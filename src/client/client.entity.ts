@@ -43,8 +43,6 @@ export class InvalidCustomer extends InvalidRequest{
 }
 
 
-
-
 @Entity()
 @Index(["address", "kind"], { unique: true })
 export class CClient {

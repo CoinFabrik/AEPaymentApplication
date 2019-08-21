@@ -15,9 +15,14 @@ let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
 
 //const HUBHOST = "localhost";
 const HUBPORT = 3000;
-const API_URL = "http://" + URL + ":"+port;
-const WS_URL = "ws://" + URL+ ":"+port;  // http is ok too
-const INTERNAL_API_URL = API_URL+ ":"+port;
+
+if(-1===URL.indexOf(":")) {
+    URL = URL + ":"+port;
+}
+
+const API_URL = "http://" + URL;
+const WS_URL = "ws://" + URL;  // http is ok too
+const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
 
@@ -69,7 +74,7 @@ class MyChannel extends events.EventEmitter {
                 url = url + "/" + encodeURIComponent(name);
             }
             data = await get(url);
-            console.log("data:", data)
+            //console.log("data:", data)
             return JSON.parse(data);
         } catch (err) {
             console.log("server returned:", data);
@@ -114,11 +119,11 @@ class MyChannel extends events.EventEmitter {
             lockPeriod: 1,
             role: this.role,
         };
-        console.log("options:", options);
+        //console.log("options:", options);
         options["initiatorId"] = this.initiator;
         options["responderId"] = this.responder;
-        console.log(1,this.initiator);
-        console.log(1,this.responder);
+        //console.log(1,this.initiator);
+        //console.log(1,this.responder);
         return options;
     }
 
@@ -131,15 +136,15 @@ class MyChannel extends events.EventEmitter {
             compilerUrl: compilerURL
         });
 
-        let balance = await this.nodeuser.balance(this.pubkey);
-        //console.log(" we: ", this.pubkey);
-        let bal = new BigNumber(balance);
-        if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
-            console.log("balance:  ", balance);
-            console.log("required: ", INITIATOR_MIN_BALANCE);
-            console.log("less balance than expected!");
-            process.abort();
-        }
+        // let balance = await this.nodeuser.balance(this.pubkey);
+        // //console.log(" we: ", this.pubkey);
+        // let bal = new BigNumber(balance);
+        // if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
+        //     console.log("balance:  ", balance);
+        //     console.log("required: ", INITIATOR_MIN_BALANCE);
+        //     console.log("less balance than expected!");
+        //     process.abort();
+        // }
     }
 
     async wait_state(expected) {
@@ -169,7 +174,6 @@ class MyChannel extends events.EventEmitter {
         this.channel.on('statusChanged', (status) => {
             this.STATUS = status.toUpperCase();
             console.log(`[${this.STATUS}]`);
-            console.log();
             if (this.STATUS === "OPEN") {
                 this.launch_hb();
             }
