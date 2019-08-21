@@ -58,12 +58,22 @@ function show_balance(address, balance, height) {
     console.log(address, " balance at ", height, " is: ", balance);
 }
 
+async function load() {
+    let accounts=[];
+    try {
+        let buf = fs.readFileSync("accounts_idx.json");
+        accounts = JSON.parse(buf.toString("ascii"));
+    } catch (err) {
+    }
+    return accounts;
+}
 
 
 (async function () {
+    let accounts=[];
     let _from = process.argv[2];
     let from_ac;
-    let to_ac;
+    let try_file = false;
 
     if (_from==="init") {
         from_ac = {
@@ -74,7 +84,11 @@ function show_balance(address, balance, height) {
             from_ac =  {publicKey: _from};
         } else {
             console.log("opening:", _from);
-            from_ac = await jstools.get_account(_from, "1234");
+            try {
+                from_ac = await jstools.get_account(_from, "1234");
+            } catch (err) {
+                try_file = true;
+            }
         }
     }
 
@@ -84,15 +98,20 @@ function show_balance(address, balance, height) {
         internalUrl: INTERNAL_API_URL,
     });
 
-
-    let height = await nodeuser.height();
-    let balance;
-    try {
-        balance = new BigNumber(await nodeuser.balance(from_ac.publicKey));
-    } catch(err) {
-        balance = "no balance."
+    if (try_file) {
+        accounts = await load();
+    } else {
+        accounts = [from_ac];
     }
 
-    console.log("balance("+from_ac.publicKey+")=", balance.toString(10))
+    for (let from_ac of accounts) {
+        let balance;
+        try {
+            balance = new BigNumber(await nodeuser.balance(from_ac.publicKey));
+        } catch(err) {
+            balance = "no balance."
+        }
+        console.log("balance("+from_ac.publicKey+")=", balance.toString(10))
+    }
 
 })();

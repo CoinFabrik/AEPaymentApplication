@@ -5,11 +5,8 @@ import * as fs from "fs";
 import BigNumber from "bignumber.js";
 const {
     Crypto,
+    Universal
 } = require('@aeternity/aepp-sdk');
-
-
-//import * as Crypto from '@aeternity/aepp-sdk/es/utils/keystore'
-//const {keystore} = require('@aeternity/aepp-sdk/es/utils/keystore');
 
 
 async function save(an_array) {
@@ -27,10 +24,8 @@ async function load() {
     return accounts;
 }
 
-async function generateSecureWallet(name) {  //}, { output = '', password, overwrite }) {
-  //password = password || await prompt(PROMPT_TYPE.askPassword)
+async function generateSecureWallet(name) {
   const { secretKey, publicKey } = Crypto.generateKeyPair(true)
-    //console.log(await Crypto.dump(name, password, secretKey));
   return { secretKey: hexdump(secretKey), publicKey: buf2addr(publicKey) };
 }
 
@@ -91,10 +86,6 @@ private_key: "36595b50bf097cd19423c40ee66b117ed15fc5ec03d8676796bdf32bc8fe367d82
 ];
 
 
-const {
-    Universal
-} = require('@aeternity/aepp-sdk');
-
 
 
 async function get_node(keypair) {
@@ -117,16 +108,16 @@ async function get_balance(pubkey, node) {
     }
 }
 
-async function transfer_all(from_ac, to_ac_publicKey, amount) {
+async function transfer_all(from_ac, to_ac_publicKey, amount, idx) {
     let node = await get_node({publicKey:from_ac.public_key, secretKey: from_ac.private_key});
-    await node.spend(amount, to_ac_publicKey);
+    console.log(`(${idx}) transferring: ${amount.toString(10)} to: ${to_ac_publicKey}`);
+    return node.spend(amount, to_ac_publicKey);
 }
 
 
 (async function () {
     let accounts=await load();
     let max = Number.parseInt(process.argv[2]);
-    let pub = '{"type":"Buffer","data":[9,205,70,242,76,57,243,70,88,65,56,223,54,26,108,60,192,144,202,144,30,122,31,35,211,168,130,103,37,85,66,77]}';
     console.log("Accounts: ", max.toString());
     console.log("Loaded Accounts: ", accounts.length);
 
@@ -144,48 +135,23 @@ async function transfer_all(from_ac, to_ac_publicKey, amount) {
         console.log(user.public_key, "->", balance===null?null:balance.toString(10), "(",typeof balance,")");
         if ((user===Users[0]) || (balance==null) || balance.isLessThan(min_fee))
             continue;
-        await transfer_all(user, Users[0].public_key, balance.minus(min_fee));
+        await transfer_all(user, Users[0].public_key, balance.minus(min_fee), "-");
     }
+
+    // distribute
     let full = await get_balance(Users[0].public_key, node);
     console.log( "->", full.toString(10));
+    let each = full.dividedBy(3*max).minus(min_fee);
+    console.log("will transfer each -> ", each.toString(10))
 
-    // 167774497400943500440000.018
-    // 123456789012345678901234
-    let each = full.dividedBy(3*500).minus(min_fee);
-    console.log(" -> ", each.toString(10))
-
-    for (let account_idx in accounts) {
-        let idx = Number.parseInt(account_idx);
-        let account = accounts[account_idx];
-        let balance;
-
-        await transfer_all(Users[0], account.publicKey, each);
-        balance = await get_balance(account.publicKey, node);
-        if (balance==null) {
-            balance="error"
-        } else {
-            balance = balance.toString(10);
-        }
-        console.log(account_idx, " -> ", account.publicKey, balance);
+    let all_p = [];
+    for (let idx=0;idx<accounts.length;idx++) {
+        let account = accounts[idx.toString()];
+        //all_p.push(transfer_all(Users[0], account.publicKey, each, idx));
+        await transfer_all(Users[0], account.publicKey, each, idx);
+        // if (idx%5===0) {
+        //     Promise.all(all_p).then(console.log).catch(console.error);
+        //     all_p = [];
+        // }
     }
-
-
-//    let node = await Node();
-    // for(let idx=0; idx<max; idx++ ) {
-    //    try {
-    //        let ac = accounts[idx];
-    //
-    //    } catch (err) {
-    //
-    //    }
-    // }
-
-    // let account = await jstools.get_account(
-    //     jstools.getArgv(2,
-    //         jstools.getEnv("CUSTOMER",
-    //             jstools.getEnv("ACCOUNT"))
-    //         ), "1234");
-    //
-
-    //await main();
 })();
