@@ -1,7 +1,7 @@
 # Tools
 
 ## wallet creation
- *  default pass is  `1234`
+ *  default pass we use (atm) in our wallets/scripts is: `1234`
 ```bash
 aecli account create  <wallet-file_name>  
 ```
