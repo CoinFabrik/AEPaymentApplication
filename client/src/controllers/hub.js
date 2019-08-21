@@ -53,7 +53,7 @@ class HubConnection {
       try {
         let output = await axios.get('http://' + this.hubIp + '/' + role + '/' + this.address + '/' + amount + '/' + name);
         // console.log(JSON.stringify(output));
-        return { success: true, address: output.data.address };
+        return { success: true, address: output.data.address, node: output.data.node };
       } catch (error) {
         return this.handleError(error);
       }

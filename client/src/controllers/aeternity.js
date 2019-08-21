@@ -77,21 +77,10 @@ aeternity.connectToBaseApp = async function () {
 
       // TODO : getNodeInfo DOES NOT WORK. All hardcoded for testnet.
 
-      // aeternity.apiServerAddress = "sdk-testnet.aepps.com";
-      // aeternity.apiServerPort = "3001";
-      // aeternity.apiServerProtocol = "https";
   
       // aeternity.stateChannelApiProtocol = "wss";
-      // aeternity.stateChannelApiHost = "sdk-testnet.aepps.com";
+      // aeternity.stateChannelApiHost = "aehub.coinfabrik.com";
       // aeternity.stateChannelApiPort = "";
-
-      aeternity.apiServerAddress = "165.22.18.138";
-      aeternity.apiServerPort = "3001";
-      aeternity.apiServerProtocol = "http";
-  
-      aeternity.stateChannelApiProtocol = "ws";
-      aeternity.stateChannelApiHost = "165.22.18.138";
-      aeternity.stateChannelApiPort = "3000";
 
       return { status: true, error: null };
     } catch (err) {

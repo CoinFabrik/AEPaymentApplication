@@ -18,6 +18,7 @@ export default new Vuex.Store({
     hubBalance: null,
     hubUrl: null,
     hubAddress: null,
+    hubNode: null,
     userName: null
   },
   getters: {
@@ -50,6 +51,9 @@ export default new Vuex.Store({
     loadHubAddress(state, addr) {
       state.hubAddress = addr;
     },
+    loadHubNode(state, node) {
+      state.hubNode = node;
+    },
     setInitialDeposit(state, amount) {
       if (state.channelParams !== null) {
         state.channelParams.initiatorAmount = amount;
@@ -60,6 +64,9 @@ export default new Vuex.Store({
     },
     setChannel(state, channel) {
       state.channel = channel;
+    },
+    setChannelApiUrl(state, apiUrl) {
+      state.channelParams.url = apiUrl;
     },
     updateInitiatorBalance(state, amount) {
       state.initiatorBalance = amount;
@@ -154,7 +161,7 @@ export default new Vuex.Store({
         host: process.env.VUE_APP_RESPONDER_HOST,
         port: process.env.VUE_APP_RESPONDER_PORT,
         role: "initiator",
-        url: state.aeternity.getStateChannelApiUrl(),
+        url: null, // known after connection with Hub
         sign: state.aeternity.signFunction
       };
 

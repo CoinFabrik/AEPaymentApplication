@@ -98,6 +98,45 @@ export default {
       });
     }
   },
+  mounted: async function() {
+    try {
+      let res = await this.notifyHub();
+      console.log("res: ", res);
+
+      if (!res.success) {
+        this.$displayError(
+          "Oops! There is some problem",
+          "We could not communicate with the payment hub. Please try again later. Reason: " +
+            res.error.toString()
+        );
+        this.$router.replace({
+          name: "deposit",
+          params: { initialDeposit: true }
+        });
+      } else {
+        const channelApiUrl =  'ws' + res.node + '/channel';
+        console.log("Hub Wallet Address: " + res.address);
+        console.log("Hub Node: " + res.node);
+        console.log("Assumed WS API at " + channelApiUrl);
+        this.$store.commit("loadHubAddress", res.address);
+        this.$store.commit("loadHubNode", res.node);
+        this.$store.commit("setChannelApiUrl", channelApiUrl);
+        this.$store.commit("setResponderId", res.address);
+
+        await this.createChannel();
+      }
+    } catch (e) {
+      this.$displayError(
+        "Oops! There is some problem",
+        "We could not communicate with the payment hub. Please try again later. Reason: " +
+          e.toString()
+      );
+      this.$router.replace({
+        name: "deposit",
+        params: { initialDeposit: true }
+      });
+    }
+  },
   methods: {
     onChannelStatusChange(status) {
       console.log("Channel status change [" + status + "]");

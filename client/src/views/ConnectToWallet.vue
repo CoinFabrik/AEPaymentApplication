@@ -34,28 +34,28 @@
           <AeText weight="bold">
             Authorize access of this application to your account?
           </AeText>
-        <br>
-        <b-row>
-          <b-col>
-            <AeButton
-              face="round"
-              fill="neutral"
-              @click="$bvModal.hide('authorize-modal')"
-            >
-              Deny
-            </AeButton>
-          </b-col>
-          <b-col>
-            <AeButton
-              face="round"
-              fill="primary"
-              @click="connectToBaseApp(); $bvModal.hide('authorize-modal')"
-            >
-              Allow
-            </AeButton>
-          </b-col>
-        </b-row>
-				</div>
+          <br>
+          <b-row>
+            <b-col>
+              <AeButton
+                face="round"
+                fill="neutral"
+                @click="$bvModal.hide('authorize-modal')"
+              >
+                Deny
+              </AeButton>
+            </b-col>
+            <b-col>
+              <AeButton
+                face="round"
+                fill="primary"
+                @click="connectToBaseApp(); $bvModal.hide('authorize-modal')"
+              >
+                Allow
+              </AeButton>
+            </b-col>
+          </b-row>
+        </div>
       </b-modal>
     </b-container>
   </div>
