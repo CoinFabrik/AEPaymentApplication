@@ -1,27 +1,26 @@
 <template>
-	<div class="scanqrview">
-		<b-container>
-			<b-row align-h="center">
-				<!-- <div v-if="this.subview === 'onboarding'">
+  <div class="scanqrview">
+    <b-container>
+      <b-row align-h="center">
+        <!-- <div v-if="this.subview === 'onboarding'">
 					<AeText face="sans-s">
 						To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
 						Stand
 					</AeText>
-				</div> -->
-				<!-- <br> -->
-				<div v-if="this.subview === 'pay-with-qr'">
-					<AeText>Scan a QR Code for your desired transaction</AeText>
-				</div>
+        </div>-->
+        <!-- <br> -->
+        <div v-if="this.subview === 'pay-with-qr'">
+          <AeText>Scan a QR Code for your desired transaction</AeText>
+        </div>
 
-				<div id="scan_qr_container" @click="onQrClick">
-					<div id="scan_qr_subcontainer" @click="onQrClick">
-						<QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
-					</div>
-				</div>
-			</b-row>
-		</b-container>
-	</div>
-
+        <div id="scan_qr_container" @click="onQrClick">
+          <div id="scan_qr_subcontainer" @click="onQrClick">
+            <QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
+          </div>
+        </div>
+      </b-row>
+    </b-container>
+  </div>
 </template>
 
 <script>
@@ -130,13 +129,7 @@ export default {
       if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === "1") {
         if (this.subview === "onboarding") {
           this.qrData = {
-            hub: process.env.VUE_APP_TEST_HUB_IP_PORT,
-            node:
-              process.env.VUE_APP_TEST_API_SERVER_PROTO +
-              "//" +
-              process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
-              ":" +
-              process.env.VUE_APP_TEST_API_SERVER_PORT
+            hub: process.env.VUE_APP_TEST_HUB_IP_PORT
           };
 
           console.warn(
@@ -199,20 +192,20 @@ export default {
 </script>
 
 <style>
-	#scan_qr_subcontainer {
-		height: 150px;
-		width: 150px;
-		border-radius: 30px;
-		border:1px dashed red;
-		position: relative;
-		top: 50%;
-    left: 50%;
-		transform: translate(-50%, -50%)
-	}
-	#scan_qr_container {
-		height: 200px;
-		width: 200px;
-		border-radius: 30px;
-		border:1px solid #311B58;
-	}
+#scan_qr_subcontainer {
+  height: 150px;
+  width: 150px;
+  border-radius: 30px;
+  border: 1px dashed red;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#scan_qr_container {
+  height: 200px;
+  width: 200px;
+  border-radius: 30px;
+  border: 1px solid #311b58;
+}
 </style>

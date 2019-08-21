@@ -1,7 +1,11 @@
 <template>
   <b-container class="register-merch">
-    <AeText weight="bold" face="sans-s">Before we begin, you need to register a name to identify yourself or your business.</AeText>
-    <AeText face="sans-xs"
+    <AeText
+      weight="bold"
+      face="sans-s"
+    >Before we begin, you need to register a name to identify yourself or your business.</AeText>
+    <AeText
+      face="sans-xs"
     >Entering your name enables customers and merchants to track the transactions between them</AeText>
     <AeInput
       v-show="!fetchingName"
@@ -83,7 +87,13 @@ export default {
         "We could not connect to the payment hub to query your name. Please try again later. " +
           "Reason: " +
           e.toString()
-      );
+      , () => {
+        this.$router.replace({
+          name: "scanqr",
+          params: { subview: "onboarding" }
+        });
+      });
+
       this.fetchingName = false;
     }
   }

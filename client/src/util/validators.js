@@ -15,15 +15,15 @@ export function validateOnboardingQr(qrtext) {
 
     try {
         let obj = JSON.parse(qrtext);
-        if (obj.hub === undefined || obj.node === undefined) {
-            console.error("Onboarding QR:  Does not contain required fields");
+        if (obj.hub === undefined) {
+            console.error("Onboarding QR:  Does not contain required fields (hub) ");
             return false;
         }
 
         const ip_port_regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$";
 
         if ((!validator.matches(obj.hub, ip_port_regex)) || (!validator.matches(obj.node, ip_port_regex))) {
-            console.error("Onboarding QR: Requires hub and node  in IP:PORT format");
+            console.error("Onboarding QR: Requires hub  in IP:PORT format");
             return false;
         }
 

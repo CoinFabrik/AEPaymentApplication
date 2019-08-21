@@ -7,8 +7,7 @@
       :units="[
             { symbol: 'AE', name: 'æternity' }
           ]"
-      @input="onAmountInput"
-      v-bind:disabled="isInError || isQueryingBalance"
+      v-bind:disabled="isQueryingBalance"
     />
     <div v-if="isQueryingBalance">
       <AeText>Please wait while Checking your account balance</AeText>
@@ -25,12 +24,8 @@
       fill="primary"
       extend
       @click="withdraw()"
-      :disabled="withdrawInput.amount <= 0 || isInError || isQueryingBalance"
+      :disabled="withdrawInput.amount <= 0 || isQueryingBalance"
     >Withdraw</AeButton>
-
-    <ae-modal v-if="isInError" @close="setWaitingInputState" title>
-      <ErrorContent errorTitle="An error has occurred" v-bind:errorDescription="errorReason" />
-    </ae-modal>
   </div>
 </template>
 
@@ -38,8 +33,7 @@
 /* eslint-disable no-console */
 
 const STATUS_USER_INPUT = 0,
-  STATUS_QUERY_BALANCE = 1,
-  STATUS_ERROR = 2;
+  STATUS_QUERY_BALANCE = 1;
 
 import {
   AeModal,
@@ -49,26 +43,23 @@ import {
   AeButton
 } from "@aeternity/aepp-components";
 
-import ErrorContent from "../components/ErrorContent";
 import BigNumber from "bignumber.js";
 
 export default {
-  name: "Deposit",
+  name: "Withdraw",
   components: {
     AeModal,
     AeButton,
     AeText,
     AeLoader,
-    AeAmountInput,
-    ErrorContent
+    AeAmountInput
   },
   props: {},
   data() {
     return {
       viewState: STATUS_USER_INPUT,
-      errorReason: null,
       withdrawInput: {
-        amount: "1",
+        amount: "0.00",
         symbol: "AE"
       }
     };
@@ -82,9 +73,6 @@ export default {
     },
     isQueryingBalance() {
       return this.viewState == STATUS_QUERY_BALANCE;
-    },
-    isInError() {
-      return this.viewState == STATUS_ERROR;
     }
   },
   methods: {
@@ -103,10 +91,11 @@ export default {
         inputBN = inputBN.multipliedBy(10 ** 18);
 
         if (balanceBN.lt(inputBN)) {
-          console.log("XXX");
-          this.errorReason =
-            "You cannot withdraw an amount exceeding channel balance";
-          this.viewState = STATUS_ERROR;
+          this.$swal.fire({
+            heightAuto: false,
+            type: "info",
+            text: "You cannot withdraw an amount exceeding channel balance"
+          });
         } else {
           this.$router.push({
             name: "confirm-tx",
@@ -120,15 +109,8 @@ export default {
 
         this.viewState = STATUS_USER_INPUT;
       } catch (e) {
-        console.log(
-          "Setting status to STATUS_ERROR with Text: " + e.toString()
-        );
-        this.errorReason = e.toString();
-        this.viewState = STATUS_ERROR;
+        this.$displayError("Oops!", e.toString());
       }
-    },
-    onAmountInput(v) {
-      this.withdrawInput = v;
     }
   }
 };
