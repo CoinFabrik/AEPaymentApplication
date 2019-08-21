@@ -1,19 +1,21 @@
 <template>
   <div id="app">
     <ChannelNotify />
-		<AeBanner/>
-		<AeMain id="main">
-			<b-container>
-				<div id="content">
-					<transition name="slide" mode="out-in">
-						<router-view></router-view>
-					</transition>
-				</div>
-			</b-container>
-		</AeMain>
-		<LoadingScreen :isLoading="isLoading" />
-
-	</div>
+    <AeBanner />
+    <AeMain id="main">
+      <b-container>
+        <div id="content">
+          <transition
+            name="slide"
+            mode="out-in"
+          >
+            <router-view />
+          </transition>
+        </div>
+      </b-container>
+    </AeMain>
+    <LoadingScreen :is-loading="isLoading" />
+  </div>
 </template>
 
 <script>
@@ -56,5 +58,8 @@
 		margin-bottom: 10vh;
 		margin-left: 2vh;
 		margin-right: 2vh;
+	}
+	html, body {
+		overflow: hidden;
 	}
 </style>

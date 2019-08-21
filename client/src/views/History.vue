@@ -14,7 +14,7 @@
       </div>
       <div class="column">
         <AeText weight="bold">
-          To/From
+          Name
         </AeText>
       </div>
       <div class="column">
@@ -27,24 +27,105 @@
       <AeList>
         <div
           v-for="tx in history"
-          :key="tx.txid"
+          :key="tx.uuid"
         >
-          <AeListItem fill="neutral">
+          <AeListItem
+            fill="neutral"
+            @click="launchPopUp(tx)"
+          >
             <div class="column">
-              {{ tx.date }}
+              {{ tx.shortDate }}
             </div>
             <div class="column">
-              {{ tx.to }}
+              {{ tx.name }}
             </div>
             <div class="column">
               {{ tx.amount }}
             </div>
           </AeListItem>
         </div>
+        <b-modal
+          id="authorize-modal"
+          centered
+          hide-footer
+          hide-header
+        >
+          <div class="d-block text-center">
+            <AeText
+              weight="bold"
+              face="sans-l"
+            >
+              Summary
+            </AeText>
+            <br>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Place
+                </AeText>
+              </b-col>
+              <b-col>
+                <AeText>
+                  {{ modal.name }}
+                </AeText>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Items
+                </AeText>
+              </b-col>
+              <b-col>
+                <div
+                  v-for="item in modal.item"
+                  :key="item.what"
+                >
+                  <AeText>
+                    {{ item.amount }} - {{ item.what }}
+                  </AeText>
+                </div>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Date
+                </AeText>
+              </b-col>
+              <b-col>
+                <AeText>
+                  {{ modal.longDate }}
+                </AeText>
+              </b-col>
+            </b-row>
+            <br>
+            <b-row>
+              <b-col>
+                <AeButton
+                  face="round"
+                  fill="primary"
+                  @click="$bvModal.hide('authorize-modal')"
+                >
+                  Ok
+                </AeButton>
+              </b-col>
+            </b-row>
+          </div>
+        </b-modal>
         <AeButton
           face="round"
           fill="secondary"
-          @click="addMoreItems"
+          @click="addItems(history.length)"
         >
           +
         </AeButton>
@@ -71,6 +152,8 @@
 		AeButton
 	} from "@aeternity/aepp-components";
 
+	import getTxHistory from './../controllers/requests';
+
   export default {
     name: "History",
     components: {
@@ -83,21 +166,18 @@
 			return {
 				history: [
 				],
+				modal: {
+				}
 			}
 		},
-    computed: {
-      getAddress: function () { return "xxxxxx"; },
+		mounted() {
+			this.addItems();
 		},
     methods: {
-			addMoreItems: function() {
-				this.history.push(
-					{
-            txid: 'tx_2bbbbbbbbbbbbbbbbb913923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.999
-          }
-				)
+			addItems: function(to, from) {
+				getTxHistory(to, from).then((res) => {
+					this.history.push(...res);
+				});
 			},
       goBack: function() {
         this.$router.go(-1);
@@ -107,6 +187,10 @@
 					return true
 				}
 			},
+			launchPopUp: function(tx) {
+				this.modal = tx;
+				this.$bvModal.show('authorize-modal')
+			}
     }
   };
 </script>
