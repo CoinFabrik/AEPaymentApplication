@@ -39,12 +39,20 @@ export default {
       transactionHash: null
     };
   },
-  watch: {},
   computed: {
     confirmPercent: function() {
       return Math.round(
         Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100)
       );
+    }
+  },
+  watch: {},
+  mounted: async function() {
+    try {
+      await this.commitTransaction();
+    } catch (e) {
+      this.displayError(e);
+      this.$router.replace("main-menu");
     }
   },
   methods: {

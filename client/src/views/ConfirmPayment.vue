@@ -4,33 +4,70 @@
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText fill="secondary" face="sans-base">Merchant</AeText>
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Merchant
+          </AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="column">
-          <AeText fill="secondary" face="sans-base">Amount</AeText>
-        </div>
-        <div class="column">
-          <AeText face="mono-base">{{ amountAE }} AE</AeText>
+          <AeText face="mono-base">
+            {{ registeredMerchantName }}
+          </AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText fill="secondary" face="sans-base">Concept</AeText>
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Amount
+          </AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ paymentData.something }}</AeText>
+          <AeText face="mono-base">
+            {{ amountAE }} AE
+          </AeText>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="column">
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Concept
+          </AeText>
+        </div>
+        <div class="column">
+          <AeText face="mono-base">
+            {{ paymentData.something }}
+          </AeText>
         </div>
       </div>
     </div>
-    <AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-    <AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+    <AeButton
+      class="button"
+      face="round"
+      fill="primary"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
+    <AeButton
+      class="button"
+      face="round"
+      fill="secondary"
+      extend
+      @click="cancel()"
+    >
+      Cancel
+    </AeButton>
   </b-container>
 </template>
 
@@ -71,6 +108,17 @@ export default {
         .dividedBy(new BigNumber(10).exponentiatedBy(18))
         .toString(10);
       return BN.toString();
+    }
+  },
+  async mounted() {
+    await this.queryMerchantName();
+    if (this.registeredMerchantName === "N/A") {
+      this.$swal.fire({
+        type: "warning",
+        html:
+          "The merchant name for this payment could not be determined. <br>" +
+          "This may indicate network problems. Dismiss this payment if you are not sure of the payment origin"
+      });
     }
   },
   methods: {
@@ -243,17 +291,6 @@ export default {
       if (this.$store.state.channel.status() === "open") {
         await this.triggerPayment();
       }
-    }
-  },
-  async mounted() {
-    await this.queryMerchantName();
-    if (this.registeredMerchantName === "N/A") {
-      this.$swal.fire({
-        type: "warning",
-        html:
-          "The merchant name for this payment could not be determined. <br>" +
-          "This may indicate network problems. Dismiss this payment if you are not sure of the payment origin"
-      });
     }
   }
 };

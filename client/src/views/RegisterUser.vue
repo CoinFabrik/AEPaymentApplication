@@ -10,9 +10,9 @@
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
-      placeholder="Your personal or business identity name"
       v-model="nameInput"
-    ></AeInput>
+      placeholder="Your personal or business identity name"
+    />
     <AeLoader v-show="fetchingName" />
 
     <AeButton v-show="!fetchingName" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
@@ -50,17 +50,6 @@ export default {
       return this.nameInput.length > 0;
     }
   },
-  methods: {
-    confirm() {
-      this.$store.commit("setUserName", this.nameInput);
-      this.$router.replace({
-        name: "deposit",
-        params: {
-          initialDeposit: true
-        }
-      });
-    }
-  },
   async mounted() {
     try {
       this.fetchingName = true;
@@ -86,15 +75,27 @@ export default {
         "Oops!",
         "We could not connect to the payment hub to query your name. Please try again later. " +
           "Reason: " +
-          e.toString()
-      , () => {
-        this.$router.replace({
-          name: "scanqr",
-          params: { subview: "onboarding" }
-        });
-      });
+          e.toString(),
+        () => {
+          this.$router.replace({
+            name: "scanqr",
+            params: { subview: "onboarding" }
+          });
+        }
+      );
 
       this.fetchingName = false;
+    }
+  },
+  methods: {
+    confirm() {
+      this.$store.commit("setUserName", this.nameInput);
+      this.$router.replace({
+        name: "deposit",
+        params: {
+          initialDeposit: true
+        }
+      });
     }
   }
 };

@@ -1,26 +1,55 @@
 <template>
   <div class="success">
     <div v-if="txKind === 'initial-deposit'">
-      <AeText face="sans-l" fill="primary">Success</AeText>
+      <AeText
+        face="sans-l"
+        fill="primary"
+      >
+        Success
+      </AeText>
       <AeText>A state channel with our Point-of-Sale service has been successfully established.</AeText>
 
       <AeDivider />
-      <AeText face="sans-s">....Enjoy (more text here ... )</AeText>
+      <AeText face="sans-s">
+        ....Enjoy (more text here ... )
+      </AeText>
     </div>
 
     <div v-if="txKind === 'deposit'">
-      <AeText face="sans-xl" fill="primary">Success</AeText>
+      <AeText
+        face="sans-xl"
+        fill="primary"
+      >
+        Success
+      </AeText>
       <AeText>Your requested AE amount has been deposited in the channel.</AeText>
 
       <AeDivider />
-      <AeText face="sans-s">Enjoy (more text here ... )</AeText>
+      <AeText face="sans-s">
+        Enjoy (more text here ... )
+      </AeText>
     </div>
 
-    <ae-icon fill="secondary" face="round" name="check" />
-    <AeButton fill="primary" face="round" @click="dismiss()">Next</AeButton>
+    <ae-icon
+      fill="secondary"
+      face="round"
+      name="check"
+    />
+    <AeButton
+      fill="primary"
+      face="round"
+      @click="dismiss()"
+    >
+      Next
+    </AeButton>
 
     <div v-if="txKind === 'register-merchant'">
-      <AeText face="sans-xl" fill="primary">Thanks!</AeText>
+      <AeText
+        face="sans-xl"
+        fill="primary"
+      >
+        Thanks!
+      </AeText>
       <AeText>You have been successfully registered to the Point of Sale system.</AeText>
     </div>
   </div>
@@ -48,6 +77,7 @@ export default {
   data() {
     return {};
   },
+  mounted: function() {},
   methods: {
     dismiss: function() {
       switch (this.txKind) {
@@ -67,8 +97,7 @@ export default {
           this.$router.replace("main-menu");
       }
     }
-  },
-  mounted: function() {}
+  }
 };
 </script>
 

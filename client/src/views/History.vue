@@ -1,37 +1,147 @@
 <template>
   <b-container class="history-view">
-    <AeText fill="primary">Transaction History</AeText>
+    <AeText
+      class="title"
+      fill="primary"
+    >
+      Transaction History
+    </AeText>
     <b-row>
       <div class="column">
-        Date
+        <AeText weight="bold">
+          Date
+        </AeText>
       </div>
       <div class="column">
-        To/From
+        <AeText weight="bold">
+          Name
+        </AeText>
       </div>
       <div class="column">
-        Amount
+        <AeText weight="bold">
+          Amount
+        </AeText>
       </div>
     </b-row>
-    <AeView>
+    <div class="scroll">
       <AeList>
-        <div v-for="tx in getTxHistory" v-bind:key="tx.txid">
-          <AeListItem fill="neutral">
+        <div
+          v-for="tx in history"
+          :key="tx.uuid"
+        >
+          <AeListItem
+            fill="neutral"
+            @click="launchPopUp(tx)"
+          >
             <div class="column">
-              {{ tx.date }}
+              {{ tx.shortDate }}
             </div>
             <div class="column">
-              {{ tx.to }}
+              {{ tx.name }}
             </div>
             <div class="column">
               {{ tx.amount }}
             </div>
           </AeListItem>
         </div>
+        <b-modal
+          id="authorize-modal"
+          centered
+          hide-footer
+          hide-header
+        >
+          <div class="d-block text-center">
+            <AeText
+              weight="bold"
+              face="sans-l"
+            >
+              Summary
+            </AeText>
+            <br>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Place
+                </AeText>
+              </b-col>
+              <b-col>
+                <AeText>
+                  {{ modal.name }}
+                </AeText>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Items
+                </AeText>
+              </b-col>
+              <b-col>
+                <div
+                  v-for="item in modal.item"
+                  :key="item.what"
+                >
+                  <AeText>
+                    {{ item.amount }} - {{ item.what }}
+                  </AeText>
+                </div>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <AeText
+                  align="left"
+                  weight="500"
+                >
+                  Date
+                </AeText>
+              </b-col>
+              <b-col>
+                <AeText>
+                  {{ modal.longDate }}
+                </AeText>
+              </b-col>
+            </b-row>
+            <br>
+            <b-row>
+              <b-col>
+                <AeButton
+                  face="round"
+                  fill="primary"
+                  @click="$bvModal.hide('authorize-modal')"
+                >
+                  Ok
+                </AeButton>
+              </b-col>
+            </b-row>
+          </div>
+        </b-modal>
+        <AeButton
+          face="round"
+          fill="secondary"
+          @click="addItems(history.length)"
+        >
+          +
+        </AeButton>
       </AeList>
-    </AeView>
-		<AeButton v-if="isIOS()" class="backButton" face="round" fill="primary" extend v-on:click="goBack">←</AeButton>
+      <AeButton
+        v-if="isIOS()"
+        class="backButton"
+        face="round"
+        fill="primary"
+        extend
+        @click="goBack"
+      >
+        ←
+      </AeButton>
+    </div>
   </b-container>
-
 </template>
 
 <script>
@@ -39,9 +149,10 @@
     AeText,
     AeList,
     AeListItem,
-		AeView,
 		AeButton
 	} from "@aeternity/aepp-components";
+
+	import getTxHistory from './../controllers/requests';
 
   export default {
     name: "History",
@@ -49,10 +160,25 @@
       AeText,
       AeList,
       AeListItem,
-			AeView,
 			AeButton
-    },
+		},
+		data: () => {
+			return {
+				history: [
+				],
+				modal: {
+				}
+			}
+		},
+		mounted() {
+			this.addItems();
+		},
     methods: {
+			addItems: function(to, from) {
+				getTxHistory(to, from).then((res) => {
+					this.history.push(...res);
+				});
+			},
       goBack: function() {
         this.$router.go(-1);
 			},
@@ -61,96 +187,29 @@
 					return true
 				}
 			},
-    },
-    computed: {
-      getAddress: function () { return "xxxxxx"; },
-      getTxHistory: function () {
-        return [
-          {
-            txid: 'tx_2390230923098230892308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa098230892308923089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_2bbbbbbbbkkkk923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_2390230923yyyyy2308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa098230mmmmm089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_mmmmmmbbbbbbbbbbbbbb92308923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_23902309230982ssss30892308923089',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaxssss92308923089',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_2bbbbbbbbbbb3f0s092308923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          },
-          {
-            txid: 'tx_2390230923098230892308923089X',
-            date: '8/4/19 18:26',
-            to: 'ak_addr1',
-            amount: 0.3091
-          },
-          {
-            txid: 'tx_aaaaaaaaaa09823089230892Z',
-            date: '8/4/19 19:00',
-            to: 'ak_addr2',
-            amount: 10.3
-          },
-          {
-            txid: 'tx_2bbbbbbbbbbbbbbbbb913923089',
-            date: '9/4/19 10:30',
-            to: 'ak_addr3',
-            amount: 4.5
-          }
-        ]
-      }
+			launchPopUp: function(tx) {
+				this.modal = tx;
+				this.$bvModal.show('authorize-modal')
+			}
     }
   };
 </script>
 
 <style>
   .column {
-    flex: 50%;
+    flex: 1;
   }
 	.backButton {
-		position: absolute !important;
+		position: fixed !important;
 		left: 0px;
 		bottom:0px;
+	}
+	#progress-el {
+		background-color: #FF0D6A !important;
+	}
+	.scroll {
+		overflow: scroll;
+		max-height: 50vh;
+		padding-bottom: 20;
 	}
 </style>

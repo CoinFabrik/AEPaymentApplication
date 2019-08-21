@@ -2,8 +2,8 @@
   <div class="withdraw">
     <AeText>How many AE do you want to withdraw from your channel funds?</AeText>
     <ae-amount-input
-      placeholder="0.00"
       v-model="withdrawInput"
+      placeholder="0.00"
       :units="[
             { symbol: 'AE', name: 'æternity' }
           ]"

@@ -13,9 +13,18 @@
           <AeText>Scan a QR Code for your desired transaction</AeText>
         </div>
 
-        <div id="scan_qr_container" @click="onQrClick">
-          <div id="scan_qr_subcontainer" @click="onQrClick">
-            <QrCodeReader @hasData="onQrHasData" @error="onQrHasError" />
+        <div
+          id="scan_qr_container"
+          @click="onQrClick"
+        >
+          <div
+            id="scan_qr_subcontainer"
+            @click="onQrClick"
+          >
+            <QrCodeReader
+              @hasData="onQrHasData"
+              @error="onQrHasError"
+            />
           </div>
         </div>
       </b-row>
@@ -39,13 +48,13 @@ export default {
     AeText,
     QrCodeReader
   },
+  props: {
+    subview: String
+  },
   data() {
     return {
       qrData: null
     };
-  },
-  props: {
-    subview: String
   },
   computed: {},
   mounted: function() {

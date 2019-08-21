@@ -3,10 +3,6 @@
     <div v-if="browserReader" v-show="cameraAllowed" class="video-wrapper">
       <video ref="qrCodeVideo" />
     </div>
-    <div v-if="!cameraAllowed" class="permission-denied">
-      Please enable access to your camera for the mobile browser
-      that you are using to open the Base æpp Wallet.
-    </div>
   </div>
 </template>
 
@@ -57,7 +53,10 @@ export default {
     } catch (e) {
       console.log("getUserMedia method failed: " + e.toString());
       this.cameraAllowed = false;
-    }
+		}
+		if(!this.cameraAllowed) {
+			this.$swal("Oops!", "We don't have permission to access your camera!", "error").then(this.$router.back());
+		}
   },
   beforeDestroy() {
     this.stopReading();
