@@ -2,17 +2,18 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import HubConnection from './controllers/hub'
-// import createPersistedState from 'vuex-persistedstate'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  // plugins: [createPersistedState()],
+  //plugins: [createPersistedState()],
   state: {
     balance: 0,
     aeternity: null,
     channelParams: null,
     channel: null,
+    channelReconnectInfo: { offChainTx: null, channelId: null },
     initiatorBalance: null,
     responderBalance: null,
     hubBalance: null,
@@ -68,6 +69,10 @@ export default new Vuex.Store({
     setChannelApiUrl(state, apiUrl) {
       state.channelParams.url = apiUrl;
     },
+    setChannelReconnectInfo(state, offChainTx, channelId) {
+      state.channelReconnectInfo.offChainTx = offChainTx;
+      state.channelReconnectInfo.channelId = channelId;
+    },
     updateInitiatorBalance(state, amount) {
       state.initiatorBalance = amount;
     },
@@ -87,6 +92,7 @@ export default new Vuex.Store({
       commit('updateInitiatorBalance', null);
       commit('updateResponderBalance', null);
       commit('updateInHubBalance', null);
+      commit('setChannelReconnectInfo', null, null);
     },
     updateOnchainBalance({ commit, state }) {
       return state.aeternity.getAccountBalance().then(
@@ -117,22 +123,24 @@ export default new Vuex.Store({
       commit('updateInHubBalance', res.balance);
     },
     async createChannel({ commit, state }) {
-      return new Promise((resolve,reject) => {
+      return new Promise((resolve, reject) => {
         state.aeternity.createChannel(state.channelParams).then(
-        function (channel) {
-          commit('setChannel', channel);
-          resolve(channel);
-        }
-      ).catch(err => reject(err));
+          function (channel) {
+            commit('setChannel', channel);
+            resolve(channel);
+          }
+        ).catch(err => reject(err));
       });
     },
-    // async createChannel({ commit, state }) {
-    //   state.aeternity.createChannel(state.channelParams).then(
-    //     function (channel) {
-    //       commit('setChannel', channel);
-    //     }
-    //   )
-    // },
+    async reconnectChannel({ commit, state }) {
+      state.channelParams.offChainTx = state.channelReconnectInfo.offChainTx;
+      state.channelParams.existingChannelId = state.channelReconnectInfo.channelId; 
+      state.aeternity.createChannel(state.channelParams).then(
+        function (channel) {
+          commit('setChannel', channel);
+        }
+      )
+    },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
       state.aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(

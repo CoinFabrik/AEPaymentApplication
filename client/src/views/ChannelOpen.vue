@@ -69,6 +69,7 @@ export default {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
       if (status === "open") {
+
         // We can ask the global Channel notification component
         // to suscribe now.
 

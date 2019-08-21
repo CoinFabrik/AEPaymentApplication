@@ -1,7 +1,6 @@
 <template>
   <b-container class="confirm-payment">
     <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
-		<AeDivider/>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
@@ -30,9 +29,8 @@
         </div>
       </div>
     </div>
-		<AeDivider/>
-		<AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-		<AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+    <AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -50,7 +48,7 @@ let paymentRejectInfo;
 import { AeText, AeButton } from "@aeternity/aepp-components";
 import { EventBus } from "../event/eventbus";
 import BigNumber from "bignumber.js";
-import { clearInterval } from "timers";
+import { clearInterval, setInterval } from "timers";
 import HubConnection from "../controllers/hub";
 
 export default {
@@ -132,7 +130,6 @@ export default {
       }
     },
     async triggerPayment() {
-      let timerInterval;
       this.$swal
         .fire({
           heightAuto: false,
@@ -140,7 +137,7 @@ export default {
           type: "info",
           title: "Please wait",
           html: "While we process your payment...",
-          timer: 10000, //process.env.CUSTOMER_PAYMENT_TIMEOUT,
+          timer: process.env.CUSTOMER_PAYMENT_TIMEOUT,
           onBeforeOpen: () => {
             this.$swal.showLoading();
           },
@@ -150,9 +147,6 @@ export default {
             //
             EventBus.$once("payment-request-ack", this.onPaymentRequestAck);
             await this.sendPaymentRequest();
-          },
-          onClose: () => {
-            clearInterval(timerInterval);
           }
         })
         .then(result => {
@@ -203,7 +197,52 @@ export default {
       this.$router.replace("main-menu");
     },
     async confirm() {
-      await this.triggerPayment();
+      console.log("X");
+      // are we connected ?
+      let timerInterval;
+
+      if (this.$store.state.channel.status() === "disconnected") {
+        console.warn(
+          "We are offline (state is DISCONNECTED), trying to reconnect... "
+        );
+        this.$swal
+          .fire({
+            type: "warning",
+            title: "You are offline",
+            text: "Please wait while reconnecting...",
+            heightAuto: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            timer: process.env.CHANNEL_RECONNECT_TIMEOUT,
+            onBeforeOpen: () => {
+              //this.$store.dispatch("reconnectChannel");
+              this.$swal.showLoading();
+              timerInterval = setInterval(() => {
+                if (this.$store.state.channel.status === "open") {
+                  this.$swal.close();
+                }
+              }, 500);
+            },
+            onClose: () => {
+              clearInterval(timerInterval);
+            }
+          })
+          .then(result => {
+            if (result.dismiss === "timer") {
+              this.$swal.fire({
+                heightAuto: false,
+                type: "error",
+                html:
+                  "We could not go online mode. This may indicate connection problems. <br> <br>" +
+                  "<ul><li>Re-try again in a moment or,</li>" +
+                  "<li>Ask the merchant to process the offline payment for you instead</li></ul>"
+              });
+            }
+          });
+      }
+      if (this.$store.state.channel.status() === "open") {
+        await this.triggerPayment();
+      }
     }
   },
   async mounted() {

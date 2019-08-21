@@ -13,12 +13,14 @@ export default {
         }
     },
     methods: {
-        $displayError(title, text) {
+        async $displayError(title, text, onCloseCallback) {
             Vue.swal.fire({
+                allowOutsideClick: false,
                 heightAuto: false,
                 type: "error",
                 title,
-                text
+                text,
+                onClose: onCloseCallback
             });
         }
     }

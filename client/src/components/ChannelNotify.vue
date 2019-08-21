@@ -4,7 +4,7 @@
 
 <script>
 /* eslint-disable no-console */
-const POLL_INTERVAL_MS = 100;
+const POLL_INTERVAL_MS = 400;
 import "sweetalert2/dist/sweetalert2.min.css";
 import BigNumber from "bignumber.js";
 import { EventBus } from "../event/eventbus";
@@ -34,9 +34,8 @@ export default {
           "You received " +
           amount / 10 ** 18 +
           " AE from " +
-          customerName + ( (something !== "")
-            ? " in concept of " + something
-            : "") +
+          customerName +
+          (something !== "" ? " in concept of " + something : "") +
           ". This payment will be accredited in your In-hub balance"
       });
       await this.$store.dispatch("updateHubBalance");
@@ -58,9 +57,15 @@ export default {
       this.$store.state.channel.on("statusChanged", null);
       this.$store.state.channel.on("message", null);
     },
-    onChannelStatusChange() {},
+    onChannelStatusChange(status) {
+      // We suscribe to this after channel is successfully open
+      // (we won't get this at initial connect)
+      if (status === "disconnected") {
+        console.warn("Channel DISCONNECTED");
+      }
+    },
     onChannelMessage(msg) {
-      console.log("PoS Message received: ", msg);
+      console.log("Channel Message received: ", msg);
       this.messageQueue.push(msg);
     },
     async onAfterUpdateAckSign() {
@@ -74,11 +79,14 @@ export default {
         // Decode message
         const infoObj = JSON.parse(msg.info);
         if (infoObj.type === "heartbeat") {
-          console.warn("Heartbeat message received in channel");
-          this.$store.state.channel.sendMessage(
-            "heartbeat-ack",
-            this.$store.getters.responderAddress
-          );
+          console.warn("Heartbeat message received in channel - IGNORED");
+
+          // By SDK >= 4.4.0, Still-alive pinging mechanism is built-in.
+
+          // this.$store.state.channel.sendMessage(
+          //   "heartbeat-ack",
+          //   this.$store.getters.responderAddress
+          // );
         } else if (infoObj.type === "payment-request-accepted") {
           console.warn(
             "Payment-request ACCEPTED message received in channel: ",
