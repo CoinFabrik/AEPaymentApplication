@@ -38,7 +38,6 @@ will, in this order:
     public_key: "ak_zPoY7cSHy2wBKFsdWJGXM7LnSjVt6cn1TWBDdRBUMC7Tur2NQ",
 4. distribute:  [total / (3*MAX)] - min_fee  to each account created
 
-
 ## massive customer tool
 
 (in my case node is at localhost:3001)
@@ -46,8 +45,24 @@ will, in this order:
     AENODE=localhost HUB=localhost node customer_stest.js MAX ms
 
  * Assume you have `accounts_idx.json` in same path with `MAX` accounts created in there and each one have enough funds.
+ * Before running this script you must already have (for both things check README in parent dir):
+    * One hub running 
+    * One merchant running and connected to hub
  
 This script will, immediately, start `MAX` customer co-routines with `ms` milliseconds of delay among each of them, 
 which will perform a buy transaction of 1 aetto to one merchant (picked randomly from those connected). 
 
 At the moment, no stat is performed by this script.  But you can check merchants balance in its own console.
+
+## query balance tool
+(in my case node is at localhost:3001)
+
+    AENODE=localhost ts-node getbalance.ts [which]
+
+where `which` can be:
+
+ 1. "init" meaning you refer to the first hardcoded address 
+ 2. a simple ak_...  address
+ 3. a wallet filename
+ 4. a massive account file like `accounts_idx.json` is used above 
+

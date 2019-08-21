@@ -58,10 +58,13 @@ function show_balance(address, balance, height) {
     console.log(address, " balance at ", height, " is: ", balance);
 }
 
-async function load() {
+async function load(filename) {
+    if (filename==null) {
+        filename = "accounts_idx.json";
+    }
     let accounts=[];
     try {
-        let buf = fs.readFileSync("accounts_idx.json");
+        let buf = fs.readFileSync(filename);
         accounts = JSON.parse(buf.toString("ascii"));
     } catch (err) {
     }
@@ -99,7 +102,7 @@ async function load() {
     });
 
     if (try_file) {
-        accounts = await load();
+        accounts = await load(_from);
     } else {
         accounts = [from_ac];
     }
