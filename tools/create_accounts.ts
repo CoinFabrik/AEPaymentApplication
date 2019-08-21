@@ -132,7 +132,6 @@ async function transfer_all(from_ac, to_ac_publicKey, amount, idx) {
     let node = await get_node(null);
     for(let user of Users) {
         let balance = await get_balance(user.public_key, node);
-        console.log(user.public_key, "->", balance===null?null:balance.toString(10), "(",typeof balance,")");
         if ((user===Users[0]) || (balance==null) || balance.isLessThan(min_fee))
             continue;
         await transfer_all(user, Users[0].public_key, balance.minus(min_fee), "-");
