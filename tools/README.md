@@ -62,7 +62,7 @@ At the moment, no stat is performed by this script.  But you can check merchants
 ## query balance tool
 (in my case node is at localhost:3001)
 
-    AENODE=localhost ts-node getbalance.ts [which]
+    AENODE=localhost ts-node getbalance.ts which
 
 where `which` can be:
 
