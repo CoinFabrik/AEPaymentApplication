@@ -1,3 +1,10 @@
+const {API_URL, INTERNAL_API_URL, NETWORK_ID} = require("./myjschannel");
+const fs = require("fs");
+const {
+    Channel,
+    Crypto,
+    Universal
+} = require('@aeternity/aepp-sdk');
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI  :-)
 ---------------------------------------------------------------------------------- */
@@ -59,20 +66,6 @@ class Customer extends MyChannel {
     async sendPayment(pr) {
         await this.sendMessage(pr);
     }
-}
-
-function showDiff(init, final) {
-    console.log( "customer: \t \t \t hub:");
-    let cusdif = final.customer.total.minus(init.customer.total);
-    let hubdif = final.hub.total.minus(init.hub.total);
-
-    //check spending:
-    let open_fee = new BigNumber(  "17520000000000");
-    let close_fee1 = new BigNumber("10000000000000");
-    let close_fee2 = new BigNumber("10000000000000");
-    let result_full = cusdif.plus(open_fee).plus(close_fee1).plus(close_fee2).plus(hubdif);
-    console.log( `${cusdif.toString(10)} \t \t \t ${hubdif.toString(10)}`);
-    console.log( `${result_full.toString(10)} `);
 }
 
 function pick_random(arr) {
@@ -147,7 +140,7 @@ async function main(account) {
 
 
 // Write file to filesystem
-export function writeFile (name, data) {
+function writeFile (name, data) {
   try {
     fs.writeFileSync(name, data);
     return true
@@ -157,43 +150,76 @@ export function writeFile (name, data) {
 }
 
 
+// interface Account {
+//     secretKey: string;
+//     publicKey: string;
+// }
+
 // Generate `keypair` encrypt it using password and write to `ethereum` keystore file
-export async function generateSecureWallet (name, { output = '', password, overwrite }) {
-  if (!overwrite && !(await askForOverwrite(name, output))) process.exit(1)
-  password = password || await prompt(PROMPT_TYPE.askPassword)
+async function generateSecureWallet (name, { output = '', password, overwrite }) {
+  //if (!overwrite && !(await askForOverwrite(name, output))) process.exit(1)
+  //password = password || await prompt(PROMPT_TYPE.askPassword)
   const { secretKey, publicKey } = Crypto.generateKeyPair(true)
-
-  writeFile(path.join(output, name), JSON.stringify(await dump(name, password, secretKey)))
-
+    console.log(9, secretKey.toString())
+    console.log(8, publicKey.toString())
+    console.log(await dump(name, password, secretKey));
+  return { secretKey, publicKey };
+  //writeFile(path.join(output, name), JSON.stringify(await dump(name, password, secretKey)))
 }
 
+async function Node() {
+    return await Universal({
+            networkId: NETWORK_ID,
+            url: API_URL,
+            internalUrl: INTERNAL_API_URL,
+        });
+}
 
+async function save(an_array) {
+    console.log(JSON.stringify(an_array));
+    fs.writeFileSync("accounts_idx.json", JSON.stringify(an_array));
+}
 
-(async function () {
+async function load() {
     let accounts=[];
     try {
         accounts = JSON.parse(fs.readFileSync("accounts_idx.json"));
     } catch (err) {
     }
+    return accounts;
+}
 
+(async function () {
+    let accounts=await load();
     let max = Number.parseInt(process.argv[2]);
     console.log("Accounts: ", max.toString());
     console.log("Loaded Accounts: ", accounts.length);
 
-    for(var idx=0; idx<max; idx++ ) {
-       try {
-
-       } catch (err) {
-
-       }
+    while (accounts.length<max) {
+        let ac = await generateSecureWallet("nr_"+accounts.length.toString(), {password:"1234"});
+        console.log(JSON.stringify(ac))
+        console.log(2,JSON.stringify(accounts))
+        accounts = accounts.push(ac);
+        console.log(3,JSON.stringify(accounts))
+        await save(accounts);
     }
 
-    let account = await jstools.get_account(
-        jstools.getArgv(2,
-            jstools.getEnv("CUSTOMER",
-                jstools.getEnv("ACCOUNT"))
-            ), "1234");
+    let node = await Node();
+    // for(let idx=0; idx<max; idx++ ) {
+    //    try {
+    //        let ac = accounts[idx];
+    //
+    //    } catch (err) {
+    //
+    //    }
+    // }
 
+    // let account = await jstools.get_account(
+    //     jstools.getArgv(2,
+    //         jstools.getEnv("CUSTOMER",
+    //             jstools.getEnv("ACCOUNT"))
+    //         ), "1234");
+    //
 
-    await main();
+    //await main();
 })();

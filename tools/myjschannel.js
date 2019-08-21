@@ -262,5 +262,8 @@ module.exports = {
     MyChannel,
     get,
     sleep,
-    INITIATOR_MIN_BALANCE
+    INITIATOR_MIN_BALANCE,
+    NETWORK_ID,
+    API_URL,
+    INTERNAL_API_URL
 };

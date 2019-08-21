@@ -1,6 +1,9 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
+import BigNumber from "bignumber.js";
+//import {getEnv} from "../src/tools";
+
 const jstools = require('./jstools');
 const readline = require('readline');
 const {
@@ -11,11 +14,14 @@ const fs = require('fs');
 
 const port = 3001;
 
-let URL = 'localhost:' + port;
-URL = process.env["NODE"] ? process.env["NODE"] : URL;
-console.log("Node> ", URL);
-const API_URL = "http://" + URL;
-const WS_URL = "ws://" + URL;  // http is ok too
+let _URL: string = jstools.getEnv("AENODE", jstools.getEnv("NODE", 'localhost'));
+if (-1===_URL.indexOf(":")) {
+    _URL = _URL + ":" +port;
+}
+//_URL = process.env["NODE"] ? process.env["NODE"] : _URL;
+console.log("Node> ", _URL);
+const API_URL = "http://" + _URL;
+const WS_URL = "ws://" + _URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 let STATUS = "";
 const compilerURL = 'https://compiler.aepps.com';
@@ -53,37 +59,6 @@ function show_balance(address, balance, height) {
 }
 
 
-async function transfer(from_ac, to_ac_publicKey, amount) {
-    let nodeuser = await Universal({
-        networkId: NETWORK_ID,
-        url: API_URL,
-        internalUrl: INTERNAL_API_URL,
-        keypair: from_ac,
-        compilerUrl: compilerURL
-    });
-
-    let height = await nodeuser.height();
-    let balance = await nodeuser.balance(from_ac.publicKey);
-    show_balance(from_ac.publicKey, balance, height);
-
-    try {
-        balance = await nodeuser.balance(to_ac_publicKey);
-        show_balance(to_ac_publicKey, balance, height);
-    } catch (err) {
-        show_balance(to_ac_publicKey, 0, height);
-    }
-
-    await my_readline("last chance to cancel. shall we continue?");
-
-    await nodeuser.spend(amount, to_ac_publicKey);
-    await sleep(5000);
-
-    height = await nodeuser.height();
-    balance = await nodeuser.balance(to_ac_publicKey);
-    show_balance(to_ac_publicKey, balance, height);
-}
-
-
 
 (async function () {
     let _from = process.argv[2];
@@ -95,13 +70,29 @@ async function transfer(from_ac, to_ac_publicKey, amount) {
             publicKey: "ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU"
         }
     } else {
-        if ()
-        console.log("opening:", _from);
-        from_ac = await jstools.get_account(_from, "1234");
+        if (_from.startsWith("ak_")) {
+            from_ac =  {publicKey: _from};
+        } else {
+            console.log("opening:", _from);
+            from_ac = await jstools.get_account(_from, "1234");
+        }
     }
 
-    height = await nodeuser.height();
-    balance = await nodeuser.balance(to_ac_publicKey);
-    show_balance(to_ac_publicKey, balance, height);
+    let nodeuser = await Universal({
+        networkId: NETWORK_ID,
+        url: API_URL,
+        internalUrl: INTERNAL_API_URL,
+    });
+
+
+    let height = await nodeuser.height();
+    let balance;
+    try {
+        balance = new BigNumber(await nodeuser.balance(from_ac.publicKey));
+    } catch(err) {
+        balance = "no balance."
+    }
+
+    console.log("balance("+from_ac.publicKey+")=", balance.toString(10))
 
 })();
