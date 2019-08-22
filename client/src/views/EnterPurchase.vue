@@ -1,40 +1,47 @@
 <template>
-  <div class="enterpurchase">
-    <AeText face="sans-l">
+  <b-container class="enterpurchase">
+    <AeText
+      face="sans-l"
+      weight="bold"
+    >
       Generate Payment
     </AeText>
+    <br>
     <AeText>Please enter the payment information to generate a QR code for your customer</AeText>
+    <br>
     <AeInput
       v-model="amount"
       label="Amount"
       placeholder="0.00"
       units="AE"
     />
+    <br>
     <AeInput
       ref="desc"
       v-model="description"
       label="Concept (optional)"
       placeholder="Enter your Item description..."
     />
-    <ae-button-group>
-      <AeButton
-        face="round"
-        fill="primary"
-        extend
-        @click="confirm()"
-      >
-        Confirm
-      </AeButton>
-      <AeButton
-        face="round"
-        fill="secondary"
-        extend
-        @click="cancel()"
-      >
-        Cancel
-      </AeButton>
-    </ae-button-group>
-  </div>
+    <br>
+    <AeButton
+      face="round"
+      fill="primary"
+      class="button"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
+    <AeButton
+      face="round"
+      fill="secondary"
+      class="button"
+      extend
+      @click="cancel()"
+    >
+      Cancel
+    </AeButton>
+  </b-container>
 </template>
 
 <script>
@@ -42,7 +49,6 @@
 
 import {
   AeButton,
-  AeButtonGroup,
   AeText,
   AeInput
 } from "@aeternity/aepp-components";
@@ -54,7 +60,6 @@ export default {
   components: {
     AeButton,
     AeText,
-    AeButtonGroup,
     AeInput
   },
   props: {},
@@ -80,3 +85,9 @@ export default {
   }
 };
 </script>
+
+<style>
+	.button {
+		margin-top: 5px;
+	}
+</style>

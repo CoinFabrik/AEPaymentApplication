@@ -4,7 +4,16 @@
       <b-col>
         <div v-if="isAtInitialState">
           <AeText
-            weight="bold"
+            face="sans-l"
+            weight="600"
+          >
+            Authorization
+          </AeText>
+          <br>
+          <AeDivider />
+          <br>
+          <AeText
+            weight="500"
             face="sans-s"
           >
             We need access to your wallet. Please click the button below to authorize this application
@@ -64,7 +73,7 @@
 <script>
 /* eslint-disable no-console */
 import aeternity from "../controllers/aeternity.js";
-import { AeText, AeButton, AeLoader } from "@aeternity/aepp-components";
+import { AeText, AeButton, AeLoader, AeDivider } from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
@@ -73,11 +82,7 @@ const STATUS_OFFLINE = 0,
 
 export default {
   name: "ConnectToWallet",
-  components: {
-    AeButton,
-    AeLoader,
-    AeText
-  },
+  components: { AeButton, AeLoader, AeText, AeDivider },
   data() {
     return {
       status: STATUS_OFFLINE,

@@ -1,12 +1,17 @@
 <template>
   <b-container id="deposit">
     <div v-if="initialDeposit">
-      <AeText weight="bold">
+      <AeText
+        weight="bold"
+        face="sans-l"
+      >
         Initial Deposit
       </AeText>
-		
+      <br>
+      <AeDivider />
+      <br>
       <div v-if="$isClientAppRole">
-        <AeText>
+        <AeText face="sans-s">
           To open a channel with our Point of Sale services an acquire
           venue amenities, goods and services,
           please enter an amount of AE to deposit. This amount can be
@@ -18,11 +23,18 @@
       </div>
 
       <div v-if="$isMerchantAppRole">
-        <AeText>
+        <AeText
+          weight="500"
+          face="sans-s"
+        >
           To open a channel with our Point of Sale services you need
           to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
         </AeText>
-        <AeText face="sans-s">
+        <br>
+        <AeText
+          face="sans-s"
+          weight="700"
+        >
           This deposit will be returned to your wallet at channel close
         </AeText>
       </div>
@@ -55,7 +67,7 @@
         Estimated Fee: {{ estimatedFee / (10**18) }} AE
       </AeText>
     </div>
-
+    <br>
     <AeButton
       face="round"
       fill="primary"
@@ -74,23 +86,13 @@
 const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
 
-import {
-  AeText,
-  AeAmountInput,
-  AeLoader,
-  AeButton
-} from "@aeternity/aepp-components";
+import { AeText, AeAmountInput, AeLoader, AeButton, AeDivider } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
 
 export default {
   name: "Deposit",
-  components: {
-    AeButton,
-    AeText,
-    AeLoader,
-    AeAmountInput
-  },
+  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider},
   props: {
     initialDeposit: Boolean
   },

@@ -2,6 +2,15 @@
   <b-container class="register-merch">
     <AeText
       weight="bold"
+      face="sans-l"
+    >
+      Register
+    </AeText>
+    <br>
+    <AeDivider />
+    <br>
+    <AeText
+      weight="bold"
       face="sans-s"
     >
       Before we begin, you need to register a name to identify yourself or your business.
@@ -11,6 +20,7 @@
     >
       Entering your name enables customers and merchants to track the transactions between them
     </AeText>
+    <br>
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
@@ -18,7 +28,7 @@
       placeholder="Your personal or business identity name"
     />
     <AeLoader v-show="fetchingName" />
-
+    <br>
     <AeButton
       v-show="!fetchingName"
       face="round"
@@ -39,7 +49,8 @@ import {
   AeText,
   AeButton,
   AeInput,
-  AeLoader
+	AeLoader,
+	AeDivider
 } from "@aeternity/aepp-components";
 
 export default {
@@ -48,7 +59,8 @@ export default {
     AeButton,
     AeText,
     AeLoader,
-    AeInput
+		AeInput,
+		AeDivider
   },
   props: {},
   data() {

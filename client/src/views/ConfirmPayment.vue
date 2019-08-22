@@ -56,6 +56,7 @@
         </div>
       </div>
     </div>
+    <AeDivider />
     <AeButton
       class="button"
       face="round"
@@ -88,7 +89,7 @@ const PAYMENT_UNKNOWN = 0,
 let paymentProcessStatus = PAYMENT_UNKNOWN;
 let paymentRejectInfo;
 
-import { AeText, AeButton } from "@aeternity/aepp-components";
+import { AeText, AeButton, AeDivider } from "@aeternity/aepp-components";
 import { EventBus } from "../event/eventbus";
 import BigNumber from "bignumber.js";
 import { clearInterval, setInterval } from "timers";
@@ -97,7 +98,8 @@ import HubConnection from "../controllers/hub";
 export default {
   name: "ConfirmPayment",
   components: {
-    AeButton,
+		AeButton,
+		AeDivider,
     AeText
   },
   props: {

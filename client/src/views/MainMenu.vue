@@ -33,6 +33,7 @@
     <div v-show="$isMerchantAppRole">
       <AeText
         fill="secondary"
+        align="left"
         face="sans-s"
       >
         In Hub Funds
@@ -91,10 +92,13 @@
 
     <!-- Merchant Menu -->
 
-    <div v-if="$isMerchantAppRole">
+    <div
+      v-if="$isMerchantAppRole"
+    >
       <AeButton
         face="round"
         fill="primary"
+        class="button"
         extend
         @click="withdraw()"
       >
@@ -104,6 +108,7 @@
       <AeButton
         face="round"
         fill="primary"
+        class="button"
         extend
         @click="generatePaymentQr()"
       >
@@ -113,6 +118,7 @@
       <AeButton
         face="round"
         fill="primary"
+        class="button"
         extend
         @click="history()"
       >
@@ -120,7 +126,8 @@
       </AeButton>
       <AeButton
         face="round"
-        fill="primary"
+        fill="secondary"
+        class="button"
         extend
         @click="closeChannel()"
       >
@@ -238,7 +245,7 @@ export default {
   flex: 50%;
 }
 .button {
-	margin: 5px;
+	margin-top: 5px;
 }
 .amount {
 	font-weight: bold !important;
