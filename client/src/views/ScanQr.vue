@@ -13,15 +13,16 @@
           <AeText>Scan a QR Code for your desired transaction</AeText>
         </div>
 
-        <div
-          id="scan_qr_container"
-          @click="onQrClick"
-        >
-          <div
-            id="scan_qr_subcontainer"
-            @click="onQrClick"
-          >
-            <QrCodeReader v-if="!isDisabledCodeReader" 
+        <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'">
+          Payment Code
+          <input type="text" id="payment-code-input" />
+          <button id="load-payment-code" text="Load" @click="loadPaymentCode">Load</button>
+        </div>
+
+        <div id="scan_qr_container" @click="onQrClick">
+          <div id="scan_qr_subcontainer" @click="onQrClick">
+            <QrCodeReader
+              v-if="!isDisabledCodeReader"
               @hasData="onQrHasData"
               @error="onQrHasError"
             />
@@ -40,6 +41,8 @@ import { AeText } from "@aeternity/aepp-components";
 //import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
+import { BrowserQRCodeReader } from "@zxing/library/esm5/browser/BrowserQRCodeReader";
+import HubConnection from "../controllers/hub";
 const uuidv4 = require("uuid/v4");
 
 export default {
@@ -58,7 +61,7 @@ export default {
   },
   computed: {
     isDisabledCodeReader() {
-      return parseInt(process.env.VUE_APP_SIMULATE_QRSCAN_CLICK) != 0;
+      return parseInt(process.env.VUE_APP_DISABLE_QRCODES) != 0;
     }
   },
   mounted: function() {
@@ -73,6 +76,45 @@ export default {
     }
   },
   methods: {
+    async loadPaymentCode() {
+      const paymentCode = document.getElementById("payment-code-input").value;
+      try {
+        let hubConnection = new HubConnection(
+          this.$store.state.hubUrl,
+          this.$store.getters.initiatorAddress
+        );
+
+        let res = await hubConnection.fetchProductData(paymentCode);
+
+        if (!res.success) {
+          throw new Error(res.error);
+        }
+
+        console.log("Got data from payment hub:  " + res.data);
+        if (!validatePurchaseQr(res.data)) {
+          this.$swal.fire({
+            heightAuto: false,
+            type: "info",
+            title: "Oops...",
+            text:
+              "This payment Code does not seem to contain valid information."
+          });
+        } else {
+          this.qrData = JSON.parse(res.data);
+          this.navigateOut();
+        }
+      } catch (e) {
+        this.$displayError(
+          "Oops!",
+          "We could not connect to the payment hub to fetch code" +
+            "Reason: " +
+            e.toString(),
+          () => {
+            this.$router.replace("main-menu");
+          }
+        );
+      }
+    },
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
 
@@ -139,14 +181,14 @@ export default {
       // A click on the QR element box will trigger out a simulated
       // QR scan if its enabled in the environment settings
       //
-      if (process.env.VUE_APP_SIMULATE_QRSCAN_CLICK === "1") {
+      if (process.env.VUE_APP_DISABLE_QRCODES === "1") {
         if (this.subview === "onboarding") {
           this.qrData = {
             hub: process.env.VUE_APP_TEST_HUB_IP_PORT
           };
 
           console.warn(
-            "VUE_APP_SIMULATE_QRSCAN_CLICK active. Setup simulated onboarding QR data: " +
+            "VUE_APP_DISABLE_QRCODES active. Setup simulated onboarding QR data: " +
               this.qrData
           );
           this.$store
@@ -169,7 +211,7 @@ export default {
             type: "payment-request"
           };
           console.warn(
-            "VUE_APP_SIMULATE_QRSCAN_CLICK active. Setup simulated payment QR data: " +
+            "VUE_APP_DISABLE_QRCODES active. Setup simulated payment QR data: " +
               this.qrData
           );
           this.navigateOut();

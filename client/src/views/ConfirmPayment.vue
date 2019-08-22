@@ -185,7 +185,7 @@ export default {
           type: "info",
           title: "Please wait",
           html: "While we process your payment...",
-          timer: process.env.CUSTOMER_PAYMENT_TIMEOUT,
+          timer: process.env.VUE_APP_CUSTOMER_PAYMENT_TIMEOUT,
           onBeforeOpen: () => {
             this.$swal.showLoading();
           },
@@ -226,6 +226,7 @@ export default {
                 html:
                   "The transfer of funds over the channel has been rejected <br> Please try again later"
               });
+              
             } else if (paymentProcessStatus === PAYMENT_COMPLETED) {
               this.$swal
                 .fire({

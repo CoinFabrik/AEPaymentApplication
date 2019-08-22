@@ -1,30 +1,22 @@
 <template>
   <div class="show-payment-qr">
     <AeText>Show this payment QR to your customer</AeText>
-    <AeText face="sans-xs">
-      Amount: {{ message.amount }} AE>
-    </AeText>
-    <AeText face="sans-xs">
-      Concept: {{ message.something }}
-    </AeText>
+    <AeText face="sans-xs">Amount: {{ message.amount / (10**18) }} AE</AeText>
+    <AeText face="sans-xs">Concept: {{ message.something }}</AeText>
+    <!--
+    If QR scan is disabled, this will store a temporary payment UUID
+     in the server from where the customer can obtain the same data using
+     the UUID instead of the QR. 
+    -->
+    <AeText v-if="isQrCodesDisabled">Payment Code: {{ this.paymentCode }}</AeText>
     <AeQRCode :value="messageString" />
-    <AeButton
-      face="round"
-      fill="primary"
-      extend
-      @click="done()"
-    >
-      Done
-    </AeButton>
+    <AeButton face="round" fill="primary" extend @click="done()">Done</AeButton>
   </div>
 </template>
 
 <script>
-import {
-  AeText,
-  AeQRCode,
-  AeButton
-} from "@aeternity/aepp-components";
+import { AeText, AeQRCode, AeButton } from "@aeternity/aepp-components";
+import HubConnection from "../controllers/hub";
 
 export default {
   name: "MainMenu",
@@ -33,17 +25,64 @@ export default {
     AeQRCode,
     AeButton
   },
+  data() {
+    return { paymentCode: "" };
+  },
   props: {
     message: Object
   },
   computed: {
     messageString: function() {
       return JSON.stringify(this.message);
+    },
+    isQrCodesDisabled() {
+      return parseInt(process.env.VUE_APP_DISABLE_QRCODES) != 0;
     }
   },
   methods: {
+    makeShortId(length) {
+      var result = "";
+      var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var charactersLength = characters.length;
+      for (var i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    },
     done() {
       this.$router.replace("main-menu");
+    }
+  },
+  async mounted() {
+    this.paymentCode = this.makeShortId(8);
+    try {
+      let hubConnection = new HubConnection(
+        this.$store.state.hubUrl,
+        this.$store.getters.initiatorAddress
+      );
+
+      let res = await hubConnection.storeProductData(
+        this.messageString,
+        this.paymentCode
+      );
+
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+
+      console.log("Stored ID " + this.paymentCode + "at payment hub");
+    } catch (e) {
+      this.$displayError(
+        "Oops!",
+        "We could not connect to the payment hub to store UID!" +
+          "Reason: " +
+          e.toString(),
+        () => {
+          this.$router.replace("main-menu");
+        }
+      );
     }
   }
 };
