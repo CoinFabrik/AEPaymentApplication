@@ -7,9 +7,9 @@ import {Response} from "express";
 const uuidlib = require('uuid');
 const qr = require('qr-image');
 
+
 @Controller('products')
 export class ProductsController {
-
   @Get("/new")
   async create(@Res() res: Response): Promise<any> {
       let html = '<form action="./store" method="POST">\n' +
@@ -28,7 +28,7 @@ export class ProductsController {
       res.send(html)
   }
 
-  @Post("store")
+  @Post("/store")
   async store(@Param() params, @Body("uuid") uuid: string, @Body("data") data: string): Promise<any> {
       let element = new Product();
       element.data = data;
@@ -74,7 +74,7 @@ export class ProductsController {
       let item = '<a href="/products/item/uuid">uuid</a><br/>' +
                  '<textarea rows="4" cols="50">data</textarea><br/>' +
                  '<img src="/products/png/uuid"/><br><hr>';
-      let result = '<iframe src="./new"></iframe> <hr/>';
+      let result = '<iframe src="/products/new"></iframe> <hr/>';
       for (let product of products) {
           result += ReplaceAll(ReplaceAll(item, "uuid", product.uuid), "data", product.data);
       }
