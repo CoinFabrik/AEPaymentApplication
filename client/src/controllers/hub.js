@@ -29,7 +29,7 @@ class HubConnection {
   async getRegisteredName(role) {
     if (role === "client" || role === "merchant") {
       try {
-        let res = await axios.get('http://' + this.hubIp + '/' + role + '/' + this.address);
+        let res = await axios.get(this.hubIp + '/' + role + '/' + this.address);
         return { success: true, name: res.data.name };
       } catch (error) {
         return this.handleError(error);
@@ -41,7 +41,7 @@ class HubConnection {
 
   async getHubBalance() {
     try {
-      let res = await axios.get('http://' + this.hubIp + '/balance/' + this.address);
+      let res = await axios.get(this.hubIp + '/balance/' + this.address);
       return { success: true, balance: res.data.balance };
     } catch (error) {
       return this.handleError(error);
@@ -51,7 +51,7 @@ class HubConnection {
   async notifyUserOnboarding(amount, name, role) {
     if (role === "client" || role === "merchant") {
       try {
-        let output = await axios.get('http://' + this.hubIp + '/' + role + '/' + this.address + '/' + amount + '/' + name);
+        let output = await axios.get(this.hubIp + '/' + role + '/' + this.address + '/' + amount + '/' + name);
         // console.log(JSON.stringify(output));
         return { success: true, address: output.data.address, node: output.data.node };
       } catch (error) {
