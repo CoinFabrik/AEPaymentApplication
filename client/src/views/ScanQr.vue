@@ -21,7 +21,8 @@
             id="scan_qr_subcontainer"
             @click="onQrClick"
           >
-            <QrCodeReader v-if="!isDisabledCodeReader" 
+            <QrCodeReader
+              v-if="!isDisabledCodeReader" 
               @hasData="onQrHasData"
               @error="onQrHasError"
             />

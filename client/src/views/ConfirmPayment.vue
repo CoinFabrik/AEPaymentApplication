@@ -1,6 +1,12 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
+    <AeText
+      weight="bold"
+      align="center"
+      face="sans-l"
+    >
+      Check your payment
+    </AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">

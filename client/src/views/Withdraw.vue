@@ -5,15 +5,15 @@
       v-model="withdrawInput"
       placeholder="0.00"
       :units="[
-            { symbol: 'AE', name: 'æternity' }
-          ]"
-      v-bind:disabled="isQueryingBalance"
+        { symbol: 'AE', name: 'æternity' }
+      ]"
+      :disabled="isQueryingBalance"
     />
     <div v-if="isQueryingBalance">
       <AeText>Please wait while Checking your account balance</AeText>
       <AeLoader />
     </div>
-    <!-- 
+    <!--
     <div v-else>
       <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
     </div>
@@ -23,9 +23,11 @@
       face="round"
       fill="primary"
       extend
-      @click="withdraw()"
       :disabled="withdrawInput.amount <= 0 || isQueryingBalance"
-    >Withdraw</AeButton>
+      @click="withdraw()"
+    >
+      Withdraw
+    </AeButton>
   </div>
 </template>
 
@@ -36,7 +38,6 @@ const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
 
 import {
-  AeModal,
   AeText,
   AeAmountInput,
   AeLoader,
@@ -48,7 +49,6 @@ import BigNumber from "bignumber.js";
 export default {
   name: "Withdraw",
   components: {
-    AeModal,
     AeButton,
     AeText,
     AeLoader,

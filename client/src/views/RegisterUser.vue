@@ -3,10 +3,14 @@
     <AeText
       weight="bold"
       face="sans-s"
-    >Before we begin, you need to register a name to identify yourself or your business.</AeText>
+    >
+      Before we begin, you need to register a name to identify yourself or your business.
+    </AeText>
     <AeText
       face="sans-xs"
-    >Entering your name enables customers and merchants to track the transactions between them</AeText>
+    >
+      Entering your name enables customers and merchants to track the transactions between them
+    </AeText>
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
@@ -15,7 +19,15 @@
     />
     <AeLoader v-show="fetchingName" />
 
-    <AeButton v-show="!fetchingName" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton
+      v-show="!fetchingName"
+      face="round"
+      fill="primary"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
   </b-container>
 </template>
 

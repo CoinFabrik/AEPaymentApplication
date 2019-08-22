@@ -2,7 +2,12 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
+    <AeText
+      face="sans-l"
+      fill="primary"
+    >
+      {{ confirmPercent === NaN ? 0 : confirmPercent }}%
+    </AeText>
     <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
@@ -52,6 +57,21 @@ export default {
       await this.commitTransaction();
     } catch (e) {
       this.displayError(e);
+      this.$router.replace("main-menu");
+    }
+  },
+  mounted: async function() {
+    try {
+      await this.commitTransaction();
+    } catch (e) {
+      this.$displayError(
+        "Oops!",
+        "We could not submit your " +
+          this.txKind +
+          " transaction. " +
+          "Reason: " +
+          e.toString()
+      );
       this.$router.replace("main-menu");
     }
   },
@@ -185,21 +205,6 @@ export default {
         default:
           throw new Error("Transaction type is unknown");
       }
-    }
-  },
-  mounted: async function() {
-    try {
-      await this.commitTransaction();
-    } catch (e) {
-      this.$displayError(
-        "Oops!",
-        "We could not submit your " +
-          this.txKind +
-          " transaction. " +
-          "Reason: " +
-          e.toString()
-      );
-      this.$router.replace("main-menu");
     }
   }
 };
