@@ -124,7 +124,7 @@ export default {
           console.log("Aepp connect status Success");
           this.$store.commit("setAeObject", aeternity);
           this.status = STATUS_CONNECTED;
-          this.$router.replace({
+          this.$router.push({
             name: "scanqr",
             params: { subview: "onboarding" }
           });
