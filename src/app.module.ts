@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import {getEnv} from "./tools";
 import {CustomerController, MerchantController} from './client/client.controller';
+import { ProductsController } from './products/products.controller';
 
 let Entities = [CClient, MerchantCustomerAccepted];
 
@@ -19,7 +20,7 @@ let Entities = [CClient, MerchantCustomerAccepted];
       synchronize: true,
     }),
   ],
-  controllers: [AppController, MerchantController, CustomerController ],
+  controllers: [AppController, MerchantController, CustomerController, ProductsController ],
   providers: [AppService, ClientService],
 })
 export class AppModule {}
