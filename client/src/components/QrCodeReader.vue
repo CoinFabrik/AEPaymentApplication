@@ -53,10 +53,16 @@ export default {
     } catch (e) {
       console.log("getUserMedia method failed: " + e.toString());
       this.cameraAllowed = false;
-		}
-		if(!this.cameraAllowed) {
-			this.$swal("Oops!", "We don't have permission to access your camera!", "error").then(this.$router.back());
-		}
+    }
+    if (!this.cameraAllowed) {
+      this.$displayError(
+        "Oops!",
+        "We don't have permission to access your camera. Please review your security settings and try again.",
+        () => {
+          this.$router.back();
+        }
+      );
+    }
   },
   beforeDestroy() {
     this.stopReading();
