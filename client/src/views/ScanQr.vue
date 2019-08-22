@@ -21,7 +21,7 @@
             id="scan_qr_subcontainer"
             @click="onQrClick"
           >
-            <QrCodeReader
+            <QrCodeReader v-if="!isDisabledCodeReader" 
               @hasData="onQrHasData"
               @error="onQrHasError"
             />
@@ -56,7 +56,11 @@ export default {
       qrData: null
     };
   },
-  computed: {},
+  computed: {
+    isDisabledCodeReader() {
+      return parseInt(process.env.VUE_APP_SIMULATE_QRSCAN_CLICK) != 0;
+    }
+  },
   mounted: function() {
     if (
       this.subview !== "onboarding" &&
