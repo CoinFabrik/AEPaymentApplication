@@ -20,6 +20,8 @@ export class MoreConfig {
     static external_ip = null;
 
     static async Init() {
+        if (this.external_ip!=undefined)
+            return;
         try {
             this.external_ip = getEnv("EXTERNAL_IP");
             if (this.external_ip==undefined) {
