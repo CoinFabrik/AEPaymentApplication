@@ -1,5 +1,5 @@
 import {Column, Entity, getRepository, Index, PrimaryGeneratedColumn, Repository} from "typeorm";
-
+import {StringDecoder} from "string_decoder";
 
 @Entity()
 export class Product {
@@ -12,11 +12,4 @@ export class Product {
 
   @Column()
   data: string;
-
-  @Column({nullable: true})
-  qr1: string;
-
-  @Column({nullable: true})
-  qr2: string;
-
 }

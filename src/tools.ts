@@ -267,3 +267,10 @@ export async function Get(host, url, port=80): Promise<string> {
         });
     });
 }
+
+export function ReplaceAll(where: string, what: string, dst: string): string {
+    while(-1!==where.indexOf(what)) {
+        where = where.replace(what, dst);
+    }
+    return where;
+}
