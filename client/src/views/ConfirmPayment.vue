@@ -1,80 +1,37 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText
-      weight="bold"
-      align="center"
-      face="sans-l"
-    >
-      Check your payment
-    </AeText>
+    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Merchant
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Merchant</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ registeredMerchantName }}
-          </AeText>
+          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Amount
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Amount</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ amountAE }} AE
-          </AeText>
+          <AeText face="mono-base">{{ amountAE }} AE</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Concept
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ paymentData.something }}
-          </AeText>
+          <AeText face="mono-base">{{ paymentData.something }}</AeText>
         </div>
       </div>
     </div>
     <AeDivider />
-    <AeButton
-      class="button"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      class="button"
-      face="round"
-      fill="secondary"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+    <AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -83,9 +40,10 @@
 const PAYMENT_UNKNOWN = 0,
   PAYMENT_ACK_REJECTED = 1,
   PAYMENT_ACK_ACCEPTED = 2,
-  PAYMENT_UPDATE_REJECTED = 3,
-  PAYMENT_UPDATE_ACCEPTED = 4,
-  PAYMENT_COMPLETED = 5;
+  PAYMENT_ACK_CANCELLED = 3,
+  PAYMENT_UPDATE_REJECTED = 4,
+  PAYMENT_UPDATE_ACCEPTED = 5,
+  PAYMENT_COMPLETED = 6;
 let paymentProcessStatus = PAYMENT_UNKNOWN;
 let paymentRejectInfo;
 
@@ -98,8 +56,8 @@ import HubConnection from "../controllers/hub";
 export default {
   name: "ConfirmPayment",
   components: {
-		AeButton,
-		AeDivider,
+    AeButton,
+    AeDivider,
     AeText
   },
   props: {
@@ -125,7 +83,7 @@ export default {
         type: "warning",
         html:
           "The merchant name for this payment could not be determined. <br>" +
-          "This may indicate network problems. Dismiss this payment if you are not sure of the payment origin"
+          "This may indicate network problems. Dismiss this payment if you are not sure of its origin"
       });
     }
   },
@@ -155,6 +113,7 @@ export default {
     },
     async onPaymentRequestAck(eventdata) {
       console.log("Received Payment_ack event: ", eventdata);
+
       if (eventdata.st === "accepted") {
         paymentProcessStatus = PAYMENT_ACK_ACCEPTED;
         //
@@ -171,6 +130,7 @@ export default {
           // Wait for completion now.
           EventBus.$once("payment-request-completed", this.onPaymentComplete);
         } catch (e) {
+          console.error("Exception during Payment-Update dispatch: " + e.toString());
           paymentProcessStatus = PAYMENT_UPDATE_REJECTED;
           paymentRejectInfo = e.toString();
           this.$swal.close();
@@ -179,11 +139,12 @@ export default {
         paymentProcessStatus = PAYMENT_ACK_REJECTED;
         paymentRejectInfo = eventdata.rejectMsg;
         this.$swal.close();
-      } else {
-        console.error(
-          "The eventdata of payment-request-ack is unknown: " + eventdata.st
-        );
+      } else if (eventdata.st === "cancelled") {
+        paymentProcessStatus = PAYMENT_ACK_CANCELLED;
+        paymentRejectInfo = eventdata.rejectMsg;
+        this.$swal.close();
       }
+
     },
     async triggerPayment() {
       this.$swal
@@ -201,7 +162,8 @@ export default {
             //
             // Setup wait-once for accepted or rejected message from hub.
             //
-            EventBus.$once("payment-request-ack", this.onPaymentRequestAck);
+            console.log("SENDING PAYMENT REQUEST");
+            EventBus.$on("payment-request-ack", this.onPaymentRequestAck);
             await this.sendPaymentRequest();
           }
         })
@@ -234,7 +196,14 @@ export default {
                 html:
                   "The transfer of funds over the channel has been rejected <br> Please try again later"
               });
-              
+            } else if (paymentProcessStatus === PAYMENT_ACK_CANCELLED) {
+              this.$swal.fire({
+                heightAuto: false,
+                type: "error",
+                title: "Oops!",
+                html:
+                  "The Payment Hub timed out your payment request <br> Please try again later"
+              });
             } else if (paymentProcessStatus === PAYMENT_COMPLETED) {
               this.$swal
                 .fire({
@@ -254,7 +223,6 @@ export default {
       this.$router.replace("main-menu");
     },
     async confirm() {
-      console.log("X");
       // are we connected ?
       let timerInterval;
 

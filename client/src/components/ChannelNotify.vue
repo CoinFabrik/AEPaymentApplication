@@ -9,6 +9,7 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import BigNumber from "bignumber.js";
 import { EventBus } from "../event/eventbus";
 import HubConnection from "../controllers/hub";
+import aeternity from "../controllers/aeternity";
 
 export default {
   name: "ChannelNotify",
@@ -42,18 +43,16 @@ export default {
     },
     onSuscribeToChannel() {
       console.warn("ChannelNotify: Received request to suscribe to Channel");
-      this.$store.state.aeternity.setUpdateHandler(this.onChannelUpdateAck);
-      this.$store.state.aeternity.setAfterUpdateAckSignHandler(
-        this.onAfterUpdateAckSign
-      );
+      aeternity.setUpdateHandler(this.onChannelUpdateAck);
+      aeternity.setAfterUpdateAckSignHandler(this.onAfterUpdateAckSign);
       this.$store.state.channel.on("statusChanged", this.onChannelStatusChange);
       this.$store.state.channel.on("message", this.onChannelMessage);
       setTimeout(this.checkMessageQueue, POLL_INTERVAL_MS);
     },
     onDesuscribeToChannel() {
       console.warn("ChannelNotify: Received request to desuscribe to Channel");
-      this.$store.state.aeternity.setUpdateHandler(null);
-      this.$store.state.aeternity.setAfterUpdateAckSignHandler(null);
+      aeternity.setUpdateHandler(null);
+      aeternity.setAfterUpdateAckSignHandler(null);
       this.$store.state.channel.on("statusChanged", null);
       this.$store.state.channel.on("message", null);
     },
@@ -106,6 +105,15 @@ export default {
             st: "rejected",
             rejectMsg: infoObj.msg
           });
+        } else if (infoObj.type === "payment-request-canceled") {
+          console.warn(
+            "Payment-request CANCELED message received in channel: ",
+            msg
+          );
+          EventBus.$emit("payment-request-canceled", {
+            st: "cancelled",
+            rejectMsg: infoObj.msg
+          });
         } else if (infoObj.type === "payment-request-completed") {
           console.warn(
             "Payment-request COMPLETE message received in channel: ",
@@ -131,6 +139,9 @@ export default {
     EventBus.$on("suscribe-channel", this.onSuscribeToChannel);
     EventBus.$on("desuscribe-channel", this.onSuscribeToChannel);
   },
-  destroyed() {}
+  destroyed() {
+    //EventBus.$off("suscribe-channel", this.onSuscribeToChannel);
+    //EventBus.$off("desuscribe-channel", this.onSuscribeToChannel);
+  }
 };
 </script>
