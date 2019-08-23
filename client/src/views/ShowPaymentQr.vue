@@ -1,6 +1,11 @@
 <template>
-  <div class="show-payment-qr">
-    <AeText>Show this payment QR to your customer</AeText>
+  <b-container class="show-payment-qr">
+    <AeText weight="bold">
+      Show this payment QR to your customer
+    </AeText>
+    <br>
+    <AeDivider />
+    <br>
     <AeText face="sans-xs">
       Amount: {{ message.amount }} AE>
     </AeText>
@@ -11,18 +16,20 @@
     <AeButton
       face="round"
       fill="primary"
+      class="button"
       extend
       @click="done()"
     >
       Done
     </AeButton>
-  </div>
+  </b-container>
 </template>
 
 <script>
 import {
   AeText,
-  AeQRCode,
+	AeQRCode,
+	AeDivider,
   AeButton
 } from "@aeternity/aepp-components";
 
@@ -30,7 +37,8 @@ export default {
   name: "MainMenu",
   components: {
     AeText,
-    AeQRCode,
+		AeQRCode,
+		AeDivider,
     AeButton
   },
   props: {
@@ -48,3 +56,9 @@ export default {
   }
 };
 </script>
+
+<style>
+	.button {
+		margin-top: 5px;
+	}
+</style>

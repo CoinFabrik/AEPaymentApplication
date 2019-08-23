@@ -1,6 +1,12 @@
 <template>
-  <b-container id="deposit">
-    <div v-if="initialDeposit">
+  <b-container
+    id="deposit"
+    class="content"
+  >
+    <div
+      v-if="initialDeposit"
+      class="content"
+    >
       <AeText
         weight="bold"
         face="sans-l"
@@ -27,15 +33,14 @@
           weight="500"
           face="sans-s"
         >
-          To open a channel with our Point of Sale services you need
-          to deposit {{ merchantInitialDepositAE }} AE plus a fee of {{ estimatedFeeAE }} AE as guarantee.
+          To open a channel, you have to place a {{ merchantInitialDepositAE }} guarantee deposit. (*)
         </AeText>
         <br>
         <AeText
           face="sans-s"
           weight="700"
         >
-          This deposit will be returned to your wallet at channel close
+          This deposit will be reimbursed once you close this channel.
         </AeText>
       </div>
     </div>
@@ -56,7 +61,9 @@
       @input="onAmountInput"
     />
     <div v-if="isQueryingBalance">
-      <AeText>Please wait while Checking your account balance</AeText>
+      <AeText face="mono-s">
+        Please wait while Checking your account balance
+      </AeText>
       <AeLoader />
     </div>
     <div v-else>
@@ -77,6 +84,12 @@
     >
       Deposit
     </AeButton>
+    <AeText
+      face="mono-xs"
+      weight="500"
+    >
+      (*) Transaction fee: {{ estimatedFeeAE }}
+    </AeText>
   </b-container>
 </template>
 
@@ -134,7 +147,7 @@ export default {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
       try {
-        await this.$store.dispatch("updateOnchainBalance");
+				await this.$store.dispatch("updateOnchainBalance");
         console.log("balance: " + this.$store.state.balance);
 
         const balanceBN = new BigNumber(this.$store.state.balance);
@@ -182,3 +195,15 @@ export default {
   }
 };
 </script>
+
+<style>
+	.content {
+		position: relative;
+		height: 80%
+	}
+	.button {
+		position: absolute;
+		bottom: 0px;
+		align-self: center;
+	}
+</style>

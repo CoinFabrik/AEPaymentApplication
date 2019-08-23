@@ -13,19 +13,19 @@
       weight="bold"
       face="sans-s"
     >
-      Before we begin, you need to register a name to identify yourself or your business.
+      {{ this.$isMerchantAppRole ? "What is the name of your store?" : "What is your name?" }}
     </AeText>
     <AeText
       face="sans-xs"
     >
-      Entering your name enables customers and merchants to track the transactions between them
+      This name will allow others to identify your payments or payment requests.
     </AeText>
     <br>
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
       v-model="nameInput"
-      placeholder="Your personal or business identity name"
+      placeholder="Name..."
     />
     <AeLoader v-show="fetchingName" />
     <br>

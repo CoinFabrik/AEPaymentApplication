@@ -1,73 +1,52 @@
 <template>
-  <div class="connectToWallet">
-    <b-container>
-      <b-col>
-        <div v-if="isAtInitialState">
-          <AeText
-            face="sans-l"
-            weight="600"
-          >
-            Authorization
-          </AeText>
-          <br>
-          <AeDivider />
-          <br>
-          <AeText
-            weight="500"
-            face="sans-s"
-          >
-            We need access to your wallet. Please click the button below to authorize this application
-          </AeText>
-          <br>
-          <AeButton
-            face="round"
-            fill="primary"
-            @click="$bvModal.show('authorize-modal')"
-          >
-            Connect your wallet
-          </AeButton>
-        </div>
-        <div v-if="isConnecting">
-          <AeText>Please wait...</AeText>
-          <AeLoader />
-        </div>
-      </b-col>
-
-      <b-modal
-        id="authorize-modal"
-        centered
-        hide-footer
-        hide-header
+  <b-container class="connectToWallet">
+    <div
+      v-if="isAtInitialState"
+      class="content"
+    >
+      <AeText
+        face="sans-l"
+        weight="600"
       >
-        <div class="d-block text-center">
-          <AeText weight="bold">
-            Authorize access of this application to your account?
-          </AeText>
-          <br>
-          <b-row>
-            <b-col>
-              <AeButton
-                face="round"
-                fill="neutral"
-                @click="$bvModal.hide('authorize-modal')"
-              >
-                Deny
-              </AeButton>
-            </b-col>
-            <b-col>
-              <AeButton
-                face="round"
-                fill="primary"
-                @click="connectToBaseApp(); $bvModal.hide('authorize-modal')"
-              >
-                Allow
-              </AeButton>
-            </b-col>
-          </b-row>
-        </div>
-      </b-modal>
-    </b-container>
-  </div>
+        Authorization
+      </AeText>
+      <br>
+      <AeDivider />
+      <br>
+      <AeText
+        weight="500"
+        face="sans-s"
+      >
+        This payments application must be connected to your wallet.
+      </AeText>
+      <AeText
+        weight="400"
+        face="sans-xs"
+      >
+        You will be able to withdraw the AEs you receive and pay fees when needed.
+      </AeText>
+      <AeText
+        weight="400"
+        face="sans-xs"
+      >
+        You will be asked to confirm every transaction.
+      </AeText>
+      <br>
+      <AeButton
+        face="round"
+        fill="primary"
+        class="button"
+        extend
+        @click="connectToBaseApp()"
+      >
+        Connect your wallet
+      </AeButton>
+    </div>
+    <div v-if="isConnecting">
+      <AeText>Please wait...</AeText>
+      <AeLoader />
+    </div>
+  </b-container>
 </template>
 
 <script>
@@ -151,3 +130,18 @@ export default {
   }
 };
 </script>
+
+<style>
+	.connectToWallet {
+		height: 100%;
+	}
+	.content {
+		position: relative;
+		height: 80%;
+	}
+	.button {
+		position: absolute !important;
+		bottom: 0px !important;
+		left: 0px !important;
+	}
+</style>

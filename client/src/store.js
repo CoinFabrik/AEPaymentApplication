@@ -95,11 +95,17 @@ export default new Vuex.Store({
       commit('setChannelReconnectInfo', null, null);
     },
     updateOnchainBalance({ commit, state }) {
-      return state.aeternity.getAccountBalance().then(
-        function (balance) {
-          commit('updateBalance', balance);
-        }
-      )
+			return state.aeternity.getAccountBalance()
+							.then(
+								function (balance) {
+          				commit('updateBalance', balance);
+        				}
+							)
+							.catch(
+								function (err) {
+									console.error(err);
+								}
+							)
     },
     updateChannelBalances({ commit, state, getters }) {
       const iAddr = getters.initiatorAddress;
@@ -134,7 +140,7 @@ export default new Vuex.Store({
     },
     async reconnectChannel({ commit, state }) {
       state.channelParams.offChainTx = state.channelReconnectInfo.offChainTx;
-      state.channelParams.existingChannelId = state.channelReconnectInfo.channelId; 
+      state.channelParams.existingChannelId = state.channelReconnectInfo.channelId;
       state.aeternity.createChannel(state.channelParams).then(
         function (channel) {
           commit('setChannel', channel);

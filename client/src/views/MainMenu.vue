@@ -5,7 +5,7 @@
       align="left"
       face="sans-s"
     >
-      Wallet Funds
+      Wallet Balance
     </AeText>
     <ae-amount
       class="amount"
@@ -21,30 +21,15 @@
       align="left"
       face="sans-s"
     >
-      Channel Funds
+      Channel Balance
     </AeText>
     <ae-amount
       class="amount"
-      :value="getMyChannelBalance"
+      :value="$isMerchantAppRole ? getMyChannelBalance + getMyPendingHubBalance : getMyChannelBalance"
       unit="Æ"
       size="small"
     />
 
-    <div v-show="$isMerchantAppRole">
-      <AeText
-        fill="secondary"
-        align="left"
-        face="sans-s"
-      >
-        In Hub Funds
-      </AeText>
-      <ae-amount
-        class="amount"
-        :value="getMyPendingHubBalance"
-        unit="Æ"
-        size="small"
-      />
-    </div>
     <AeDivider />
     <!-- Client Menu -->
 
@@ -164,10 +149,10 @@ export default {
       return this.$store.state.initiatorBalance / 10 ** 18;
     },
     getMyWalletBalance: function() {
-      return this.$store.state.balance / 10 ** 18;
+      return ((this.$store.state.balance / 10 ** 18) * 1.0).toFixed(2);
     },
     getMyPendingHubBalance: function() {
-      return this.$store.state.hubBalance / 10 ** 18;
+      return ((this.$store.state.hubBalance / 10 ** 18) * 1.0).toFixed(2);
     }
   },
   async mounted() {
