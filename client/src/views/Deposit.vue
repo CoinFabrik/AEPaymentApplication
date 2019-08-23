@@ -12,10 +12,7 @@
       <br>
       <div v-if="$isClientAppRole">
         <AeText face="sans-s">
-          To open a channel with our Point of Sale services an acquire
-          venue amenities, goods and services,
-          please enter an amount of AE to deposit. This amount can be
-          used immediately. Unspent tokens will be returned to your wallet when the channel closes.
+          Please enter an amount of AE to deposit for channel open.
         </AeText>
         <AeText face="sans-s">
           You can add more tokens later
@@ -89,6 +86,7 @@ const STATUS_USER_INPUT = 0,
 import { AeText, AeAmountInput, AeLoader, AeButton, AeDivider } from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
+import aeternity from '../controllers/aeternity'
 
 export default {
   name: "Deposit",
@@ -120,7 +118,7 @@ export default {
       return this.viewState == STATUS_QUERY_BALANCE;
     },
     estimatedFee() {
-      return this.$store.state.aeternity.estimateDepositFee(500000);
+      return aeternity.estimateDepositFee(500000);
     },
     estimatedFeeAE() {
       return this.estimatedFee / 10 ** 18;
