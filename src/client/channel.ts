@@ -66,6 +66,9 @@ export abstract class ServerChannel extends EventEmitter {
 
     protected my_pending = null;
     pending_mcs: MerchantCustomer[] = [];
+    channel_state = null;
+    channel_id = null;
+
 
     pendingPayment(mc: MerchantCustomer) {
         this.pending_mcs.push(mc);
@@ -192,7 +195,6 @@ export abstract class ServerChannel extends EventEmitter {
             lockPeriod: 1,
             role: this.role,
         };
-        this.log("opts:" + JSON.stringify(options));
         this.log("init:" + this.initiator);
         this.log("resp:" + this.responder);
         options["initiatorId"] = this.initiator;
@@ -208,6 +210,14 @@ export abstract class ServerChannel extends EventEmitter {
     async _initChannel() {
         const self = this;
         let options = this.get_options();
+
+        if (this.channel_state!==null) {
+            options["offchainTx"] = this.channel_state;
+            options["existingChannelId"] = this.channel_id;
+            this.channel_state = null;
+        }
+
+        this.log("opts:" + JSON.stringify(options));
 
         options["sign"] = async (tag, tx, { updates = {} } = {}) => {
             // tag: update_ack tx:
@@ -261,10 +271,14 @@ export abstract class ServerChannel extends EventEmitter {
                 this.log("TX (shutdown): " + (tx.toString()))
             }
             this.log("");
-            return await self.nodeuser.signTransaction(tx)
+            let x = await self.nodeuser.signTransaction(tx)
+            setTimeout(() => {self.saveState();}, 300)
+            return x;
         };
 
         this.channel = await Channel(options);
+        this.channel_id = this.channel.id();
+
         this.channel.on('statusChanged', (status) => {
             self.onStatusChange(status.toUpperCase());
         });
@@ -278,6 +292,21 @@ export abstract class ServerChannel extends EventEmitter {
         return this.channel;
     }
 
+    saveState() {
+        const self = this;
+        this.channel.state()
+            .then((s)=> {
+                let state = s["signedTx"];
+                if (state===self.channel_state) {
+                    setTimeout(() => {self.saveState();}, 300)
+                } else {
+                    console.log("STATE:", JSON.stringify(s))
+                    self.channel_state = state;
+                }
+            })
+            .catch(err => console.error("cant get state:"+err));
+    }
+
     onStatusChange(status) {
         this.status = status;
         this.log(`[${this.status}]`);
@@ -287,7 +316,8 @@ export abstract class ServerChannel extends EventEmitter {
             ServiceBase.addClient(this.client, this.Name);
         }
         if (this.status.startsWith("DISCONNECT")) {
-            ServiceBase.rmClient(this.client, this.Name);
+            //ServiceBase.rmClient(this.client, this.Name);
+            this._initChannel().then(voidf).catch(err=>console.error("Cannot re init channel:"+err))
         }
     }
 

@@ -138,7 +138,7 @@ export class Hub extends EventEmitter {
             this.emit("wait-payment", mc, pre_balance);
             return mc;
         } catch (err) {
-            this.log("payment-request ignored: " + mystringify(err));
+            this.log("payment-request ignored: " + JSON.stringify(err));
             throw err;
         }
     }

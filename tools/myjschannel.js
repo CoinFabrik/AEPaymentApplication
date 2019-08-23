@@ -124,6 +124,22 @@ class MyChannel extends events.EventEmitter {
         options["responderId"] = this.responder;
         //console.log(1,this.initiator);
         //console.log(1,this.responder);
+
+        const self = this;
+        options["sign"] = async (tag, tx) => {
+            console.log(tag, tx);
+            try {
+                const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
+                console.log(JSON.stringify(txData));
+            } catch (err) {
+                //console.log(err);
+            }
+            if (tag === "shutdown_sign_ack") {
+                console.log("TX:", tx)
+            }
+            return self.nodeuser.signTransaction(tx)
+        };
+
         return options;
     }
 
@@ -153,22 +169,7 @@ class MyChannel extends events.EventEmitter {
     }
 
     async initChannel() {
-        const self = this;
         let options = this.get_options();
-
-        options["sign"] = async (tag, tx) => {
-            console.log(tag, tx);
-            try {
-                const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
-                console.log(JSON.stringify(txData));
-            } catch (err) {
-                //console.log(err);
-            }
-            if (tag === "shutdown_sign_ack") {
-                console.log("TX:", tx)
-            }
-            return self.nodeuser.signTransaction(tx)
-        };
 
         this.channel = await Channel(options);
         this.channel.on('statusChanged', (status) => {
