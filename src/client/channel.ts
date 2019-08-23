@@ -268,7 +268,7 @@ export abstract class ServerChannel extends EventEmitter {
         this.status = status;
         this.log(`[${this.status}]`);
         if (this.status == "OPEN") {
-            this.hb().then(console.log).catch(console.error);
+            //this.hb().then(console.log).catch(console.error);
             this.client.setChannel(this);
             ServiceBase.addClient(this.client, this.Name);
         }
