@@ -1,6 +1,7 @@
 import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest, MerchantCustomerAccepted} from "./client.entity";
-import {clone, voidf} from "../tools";
-import {ClientService} from "./client.service";
+import {clone, sleep, voidf} from "../tools";
+import {ClientService, RepoService} from "./client.service";
+import {Hub} from "./hub";
 
 export class Guid {
   static generate() {
@@ -12,12 +13,18 @@ export class Guid {
   }
 }
 
+enum PaymentState {
+    Waiting,
+    Received,
+    Canceled
+}
 
 export class MerchantCustomer {
     readonly id: string;
     static all: { [key: string]: MerchantCustomer } = {};
     readonly original_msg: object;
     readonly _base: object;
+    state: PaymentState = PaymentState.Waiting;
 
     static register(mc: MerchantCustomer) {
         this.all[mc.id] = mc;
@@ -150,4 +157,35 @@ export class MerchantCustomer {
         }
         return new MerchantCustomer(merchant, customer, msg, msg["id"]);
     }
+
+    paymentReceived() {
+        if (this.state!==PaymentState.Waiting) {
+            return;
+        }
+        this.paymentAccepted().then(voidf).catch(console.error);
+    }
+
+    paymentTimedout() {
+        if (this.state!==PaymentState.Waiting) {
+            return;
+        }
+        this.state = PaymentState.Canceled;
+        Hub.Get().emit("payment-request-canceled", this);
+    }
+
+    async paymentAccepted() {
+        this.state = PaymentState.Received;
+        Hub.Get().emit("payment-request-completed", this);
+        while (1) {
+            try {
+                const mca = this.getEntity();
+                await RepoService.save(mca);
+                return
+            } catch (err) {
+                console.log(err);
+                await sleep(300);
+            }
+        }
+    }
+
 }

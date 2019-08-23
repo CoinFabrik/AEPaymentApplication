@@ -13,6 +13,7 @@ const WAIT_PAYMENT_TIMEOUT = 60;
 export class Hub extends EventEmitter {
     private static hub: Hub;
     private logger: Logger;
+    readonly polling = true;
 
     private constructor(public service: ClientService) {
         super();
@@ -75,13 +76,23 @@ export class Hub extends EventEmitter {
         });
         this.on("wait-payment", (mc, pre_balance) => {
             this.log_mc_state(mc, "waiting");
-            this.wait_payment(mc, pre_balance)
-                .then(() => {
-                    this.emit("payment-request-completed", mc)
-                })
-                .catch(() => {
-                    this.emit("payment-request-canceled", mc)
-                });
+
+            if (this.polling) {
+                this.wait_payment_polling(mc, pre_balance)
+                    .then(() => {
+                        this.emit("payment-request-completed", mc)
+                    })
+                    .catch(() => {
+                        this.emit("payment-request-canceled", mc)
+                    });
+            } else {
+                setTimeout(()=>{
+                    mc.paymentTimedout();
+                }, WAIT_PAYMENT_TIMEOUT * 1000);
+                this.wait_payment_non_polling(mc, pre_balance)
+                    .then(voidf)
+                    .catch(console.error);
+            }
         });
         this.on("payment-request-completed", (mc) => {
             this.log_mc_state(mc, "completed");
@@ -95,7 +106,11 @@ export class Hub extends EventEmitter {
 
     }
 
-    async wait_payment(mc: MerchantCustomer, pre_balance) {
+    async wait_payment_non_polling(mc: MerchantCustomer, pre_balance) {
+        return mc.cclient.channel.pendingPayment(mc);
+    }
+
+    async wait_payment_polling(mc: MerchantCustomer, pre_balance) {
         const start = Date.now();
         const timeout = WAIT_PAYMENT_TIMEOUT * 1000;
         while (Date.now() - start < timeout) {

@@ -1,12 +1,13 @@
 import {ServiceBase} from "./client.service";
 import {Actor, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
-import {Account, sleep, voidf, wait_for} from "../tools";
+import {Account, array_rm, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
 import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
 import BigNumber from "bignumber.js";
 import {stringify} from "querystring";
+import {MerchantCustomer} from "./merchantcustomer";
 
 
 const {
@@ -64,7 +65,20 @@ export abstract class ServerChannel extends EventEmitter {
     private opposite: string;
 
     protected my_pending = null;
+    pending_mcs: MerchantCustomer[] = [];
 
+    pendingPayment(mc: MerchantCustomer) {
+        this.pending_mcs.push(mc);
+    }
+
+    checkPayment(amount: BigNumber) {
+        this.pending_mcs.forEach((mc)=> {
+           if (amount.isEqualTo(new BigNumber(mc.amount))) {
+                mc.paymentReceived();
+                array_rm(this.pending_mcs, mc);
+           }
+        });
+    }
 
     log(msg: string) {
         if (this.logger==undefined) {
