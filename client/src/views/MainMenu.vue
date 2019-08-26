@@ -10,7 +10,7 @@
     <ae-amount
       class="amount"
       align="left"
-      :value="getMyWalletBalance"
+      :value="getMyWalletBalance.toFixed(2)"
       unit="Æ"
       size="small"
       clear="right"
@@ -25,7 +25,7 @@
     </AeText>
     <ae-amount
       class="amount"
-      :value="$isMerchantAppRole ? getMyChannelBalance + getMyPendingHubBalance : getMyChannelBalance"
+      :value="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
       unit="Æ"
       size="small"
     />
@@ -38,7 +38,7 @@
       class="button-group"
     >
       <AeButton
-        class="button"
+        class="margin"
         face="round"
         fill="primary"
         extend
@@ -47,7 +47,7 @@
         Deposit Funds
       </AeButton>
       <AeButton
-        class="button"
+        class="margin"
         face="round"
         fill="primary"
         extend
@@ -56,7 +56,7 @@
         Pay With Qr Code
       </AeButton>
       <AeButton
-        class="button"
+        class="margin"
         face="round"
         fill="primary"
         extend
@@ -65,7 +65,7 @@
         History
       </AeButton>
       <AeButton
-        class="button"
+        class="margin"
         face="round"
         fill="secondary"
         extend
@@ -79,11 +79,12 @@
 
     <div
       v-if="$isMerchantAppRole"
+      class="button-group"
     >
       <AeButton
         face="round"
         fill="primary"
-        class="button"
+        class="margin"
         extend
         @click="withdraw()"
       >
@@ -93,7 +94,7 @@
       <AeButton
         face="round"
         fill="primary"
-        class="button"
+        class="margin"
         extend
         @click="generatePaymentQr()"
       >
@@ -103,7 +104,7 @@
       <AeButton
         face="round"
         fill="primary"
-        class="button"
+        class="margin"
         extend
         @click="history()"
       >
@@ -112,7 +113,7 @@
       <AeButton
         face="round"
         fill="secondary"
-        class="button"
+        class="margin"
         extend
         @click="closeChannel()"
       >
@@ -149,10 +150,10 @@ export default {
       return this.$store.state.initiatorBalance / 10 ** 18;
     },
     getMyWalletBalance: function() {
-      return ((this.$store.state.balance / 10 ** 18) * 1.0).toFixed(2);
+      return ((this.$store.state.balance / 10 ** 18) * 1.0);
     },
     getMyPendingHubBalance: function() {
-      return ((this.$store.state.hubBalance / 10 ** 18) * 1.0).toFixed(2);
+      return ((this.$store.state.hubBalance / 10 ** 18) * 1.0);
     }
   },
   async mounted() {
@@ -225,12 +226,14 @@ export default {
   display: flex;
   padding-bottom: 20px;
 }
-
+.button-group {
+	margin-top:30px;
+}
 .column {
   flex: 50%;
 }
-.button {
-	margin-top: 5px;
+.margin {
+	margin-top: 10px;
 }
 .amount {
 	font-weight: bold !important;

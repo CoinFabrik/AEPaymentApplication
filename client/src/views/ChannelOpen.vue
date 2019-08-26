@@ -149,7 +149,7 @@ export default {
         this.$swal({
 					type: "success",
 					title: "Success",
-          text:"Every time you receive will affect your channel balance. Once you close it, all the funds will be withdrawn to your wallet."
+          text:"Every time you get paid, the money will be addressed to your channel. \n Once you close it, all the funds will be withdrawn to your wallet."
 				}).then(this.$router.replace("main-menu"));
 
       } else if (status === "disconnected") {

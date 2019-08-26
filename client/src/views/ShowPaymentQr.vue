@@ -16,7 +16,7 @@
     <AeButton
       face="round"
       fill="primary"
-      class="button"
+      class="margin"
       extend
       @click="done()"
     >
@@ -58,7 +58,7 @@ export default {
 </script>
 
 <style>
-	.button {
-		margin-top: 5px;
+	.margin {
+		margin-top: 10px;
 	}
 </style>

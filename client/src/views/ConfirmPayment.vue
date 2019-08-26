@@ -58,7 +58,7 @@
     </div>
     <AeDivider />
     <AeButton
-      class="button"
+      class="margin"
       face="round"
       fill="primary"
       extend
@@ -67,7 +67,7 @@
       Confirm
     </AeButton>
     <AeButton
-      class="button"
+      class="margin"
       face="round"
       fill="secondary"
       extend

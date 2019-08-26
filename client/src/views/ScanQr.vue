@@ -1,36 +1,36 @@
 <template>
-  <div class="scanqrview">
-    <b-container>
-      <b-row align-h="center">
-        <!-- <div v-if="this.subview === 'onboarding'">
-					<AeText face="sans-s">
-						To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
-						Stand
-					</AeText>
-        </div>-->
-        <!-- <br> -->
-        <div v-if="this.subview === 'pay-with-qr'">
-          <AeText>Scan a QR Code for your desired transaction</AeText>
-        </div>
+  <b-container class="scanqrview">
+    <b-row align-h="center">
+      <!-- <div v-if="this.subview === 'onboarding'">
+				<AeText face="sans-s">
+					To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
+					Stand
+				</AeText>
+			</div>-->
+      <!-- <br> -->
+      <div v-if="this.subview === 'pay-with-qr'">
+        <AeText weight="500">
+          Scan a QR Code for your desired transaction
+        </AeText>
+      </div>
 
+      <div
+        id="scan_qr_container"
+        @click="onQrClick"
+      >
         <div
-          id="scan_qr_container"
+          id="scan_qr_subcontainer"
           @click="onQrClick"
         >
-          <div
-            id="scan_qr_subcontainer"
-            @click="onQrClick"
-          >
-            <QrCodeReader
-              v-if="!isDisabledCodeReader" 
-              @hasData="onQrHasData"
-              @error="onQrHasError"
-            />
-          </div>
+          <QrCodeReader
+            v-if="!isDisabledCodeReader"
+            @hasData="onQrHasData"
+            @error="onQrHasError"
+          />
         </div>
-      </b-row>
-    </b-container>
-  </div>
+      </div>
+    </b-row>
+  </b-container>
 </template>
 
 <script>

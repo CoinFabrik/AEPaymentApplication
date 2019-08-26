@@ -137,7 +137,7 @@ export default {
 	}
 	.content {
 		position: relative;
-		height: 80%;
+		height: 90%;
 	}
 	.button {
 		position: absolute !important;

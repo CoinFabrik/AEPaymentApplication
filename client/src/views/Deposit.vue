@@ -3,19 +3,16 @@
     id="deposit"
     class="content"
   >
+    <AeText
+      weight="bold"
+      face="sans-l"
+    >
+      Deposit
+    </AeText>
+    <AeDivider style="margin-top:20px; margin-bottom:20px;" />
     <div
       v-if="initialDeposit"
-      class="content"
     >
-      <AeText
-        weight="bold"
-        face="sans-l"
-      >
-        Initial Deposit
-      </AeText>
-      <br>
-      <AeDivider />
-      <br>
       <div v-if="$isClientAppRole">
         <AeText face="sans-s">
           To open a channel with our Point of Sale services an acquire
@@ -54,6 +51,7 @@
       v-show="$isClientAppRole"
       v-model="depositInput"
       placeholder="0.00"
+      style="margin-bottom:2px !important;"
       :units="[
         { symbol: 'AE', name: 'æternity' }
       ]"
@@ -61,7 +59,7 @@
       @input="onAmountInput"
     />
     <div v-if="isQueryingBalance">
-      <AeText face="mono-s">
+      <AeText face="mono-xs">
         Please wait while Checking your account balance
       </AeText>
       <AeLoader />
@@ -69,27 +67,36 @@
     <div v-else>
       <AeText
         v-show="$isClientAppRole"
-        face="sans-xs"
+        face="mono-xs"
       >
         Estimated Fee: {{ estimatedFee / (10**18) }} AE
+        (*) Transaction fee: {{ estimatedFeeAE }}
       </AeText>
     </div>
     <br>
     <AeButton
       face="round"
       fill="primary"
+      class="margin"
       extend
       :disabled="depositInput.amount <= 0 || isQueryingBalance"
       @click="deposit()"
     >
       Deposit
     </AeButton>
+    <AeButton
+      face="round"
+      fill="secondary"
+      class="margin"
+      extend
+      @click="() => this.$router.back()"
+    >
+      Cancel
+    </AeButton>
     <AeText
       face="mono-xs"
       weight="500"
-    >
-      (*) Transaction fee: {{ estimatedFeeAE }}
-    </AeText>
+    />
   </b-container>
 </template>
 
