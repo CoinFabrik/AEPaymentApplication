@@ -124,21 +124,22 @@
         </b-modal>
         <AeButton
           face="round"
-          fill="secondary"
+          fill="primary"
           @click="addItems(history.length)"
         >
           +
         </AeButton>
       </AeList>
+    </div>
+    <div class="footer">
       <AeButton
         v-if="isIOS()"
-        class="backButton"
         face="round"
-        fill="primary"
+        fill="secondary"
         extend
         @click="goBack"
       >
-        ←
+        Cancel
       </AeButton>
     </div>
   </b-container>
@@ -174,8 +175,8 @@
 			this.addItems();
 		},
     methods: {
-			addItems: function(to, from) {
-				getTxHistory(to, from).then((res) => {
+			addItems: function(to) {
+				getTxHistory(to).then((res) => {
 					this.history.push(...res);
 				});
 			},
@@ -199,11 +200,6 @@
   .column {
     flex: 1;
   }
-	.backButton {
-		position: fixed !important;
-		left: 0px;
-		bottom:0px;
-	}
 	#progress-el {
 		background-color: #FF0D6A !important;
 	}
@@ -211,5 +207,12 @@
 		overflow: scroll;
 		max-height: 50vh;
 		padding-bottom: 20;
+	}
+	.footer {
+    width: 300px;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    margin-left: -150px;
 	}
 </style>

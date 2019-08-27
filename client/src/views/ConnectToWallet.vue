@@ -10,9 +10,7 @@
       >
         Authorization
       </AeText>
-      <br>
-      <AeDivider />
-      <br>
+      <AeDivider style="margin-top:20px; margin-bottom:20px;" />
       <AeText
         weight="500"
         face="sans-s"
@@ -137,11 +135,15 @@ export default {
 	}
 	.content {
 		position: relative;
-		height: 90%;
+		height: 80%;
 	}
 	.button {
 		position: absolute !important;
 		bottom: 0px !important;
 		left: 0px !important;
+	}
+	.divider {
+		margin-top: 20px;
+		margin-bottom: 20px;
 	}
 </style>

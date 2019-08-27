@@ -8,7 +8,6 @@ import Globals from './globals'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import { LayoutPlugin, ModalPlugin, ButtonPlugin } from 'bootstrap-vue'
-
 Vue.use(ButtonPlugin)
 Vue.use(LayoutPlugin)
 Vue.use(ModalPlugin)

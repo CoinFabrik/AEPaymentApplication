@@ -115,7 +115,7 @@
         fill="secondary"
         class="margin"
         extend
-        @click="closeChannel()"
+        @click="closeChannelConfirmation()"
       >
         Close Channel
       </AeButton>
@@ -193,13 +193,7 @@ export default {
       });
 		},
 		closeChannelConfirmation: function() {
-			this.$swal.mixin({
-				customClass: {
-					confirmButton: 'ae-button button extend primary round',
-					cancelButton: 'ae-button'
-				},
-				buttonsStyling: false
-			}).fire({
+			this.$swal.fire({
 				heightAuto: false,
 				type: "question",
 				title: "Are you sure you want to close this channel?",
