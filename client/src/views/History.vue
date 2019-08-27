@@ -152,7 +152,8 @@
 		AeButton
 	} from "@aeternity/aepp-components";
 
-	import getTxHistory from './../controllers/requests';
+  import getTxHistory from './../controllers/requests';
+  import BigNumber from 'bignumber.js';
 
   export default {
     name: "History",
@@ -176,6 +177,9 @@
     methods: {
 			addItems: function(to, from) {
 				getTxHistory(to, from).then((res) => {
+          res.map( function(val, index) { 
+            res[index].amount = (new BigNumber(res[index].amount).dividedBy(BigNumber(10**18))).toFixed(2);
+          })
 					this.history.push(...res);
 				});
 			},
