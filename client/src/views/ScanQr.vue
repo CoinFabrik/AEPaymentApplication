@@ -85,24 +85,12 @@ export default {
         );
 
         let res = await hubConnection.fetchProductData(paymentCode);
-
         if (!res.success) {
           throw new Error(res.error);
         }
 
         console.log("Got data from payment hub:  " + res.data);
-        if (!validatePurchaseQr(res.data)) {
-          this.$swal.fire({
-            heightAuto: false,
-            type: "info",
-            title: "Oops...",
-            text:
-              "This payment Code does not seem to contain valid information."
-          });
-        } else {
-          this.qrData = JSON.parse(res.data);
-          this.navigateOut();
-        }
+        this.processPaymentData(res.data, false, true);
       } catch (e) {
         this.$displayError(
           "Oops!",
@@ -115,56 +103,79 @@ export default {
         );
       }
     },
+    processPaymentData(data, isFromQr, generateNewUuid) {
+      if (!validatePurchaseQr(data)) {
+        this.$swal.fire({
+          heightAuto: false,
+          type: "info",
+          title: "Oops...",
+          text:
+            "This " + isFromQr
+              ? "QR Code"
+              : "Payment Code" +
+                " does not seem to contain payment information. Please try with another one."
+        });
+      } else {
+        this.qrData = JSON.parse(data);
+        if (
+          BigNumber(data.amount).gt(
+            BigNumber(this.$store.state.initiatorBalance)
+          )
+        ) {
+          this.$swal.fire({
+            heightAuto: false,
+            type: "warning",
+            title: "Insufficient balance",
+            text:
+              "You don't have enough channel balance to pay for this product. You may deposit funds and purchase this item again later. "
+          });
+        } else {
+          // generate a new UUID
+
+          if (generateNewUuid) this.qrData.id = uuidv4();
+          this.navigateOut();
+        }
+      }
+    },
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
 
-      if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
-        this.qrData.hub = process.env.VUE_APP_TEST_HUB_IP_PORT;
-        this.qrData.node =
-          process.env.VUE_APP_TEST_API_SERVER_PROTO +
-          "//" +
-          process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
-          ":" +
-          process.env.VUE_APP_TEST_API_SERVER_PORT;
+      // if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
+      //   this.qrData.hub = process.env.VUE_APP_TEST_HUB_IP_PORT;
+      //   this.qrData.node =
+      //     process.env.VUE_APP_TEST_API_SERVER_PROTO +
+      //     "//" +
+      //     process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
+      //     ":" +
+      //     process.env.VUE_APP_TEST_API_SERVER_PORT;
 
-        console.warn(
-          "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
-            this.qrData
-        );
-        this.$store
-          .dispatch("storeNetChannelParameters", this.qrData.hub)
-          .then(() => {
-            this.navigateOut();
+      //   console.warn(
+      //     "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
+      //       this.qrData
+      //   );
+      //   this.$store
+      //     .dispatch("storeNetChannelParameters", this.qrData.hub)
+      //     .then(() => {
+      //       this.navigateOut();
+      //     });
+      // } else {
+
+      if (this.subview === "pay-with-qr") {
+        this.processPaymentData(scanData, true, false);
+      } else if (this.subview === "onboarding") {
+        if (!validateOnboardingQr(scanData)) {
+          this.$swal.fire({
+            heightAuto: false,
+            type: "info",
+            title: "Oops...",
+            text:
+              "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
           });
-      } else {
-        if (this.subview === "pay-with-qr") {
-          if (!validatePurchaseQr(scanData)) {
-            this.$swal.fire({
-              heightAuto: false,
-              type: "info",
-              title: "Oops...",
-              text:
-                "This QR Code does not seem to contain payment information. Please re-scan a new one."
-            });
-          } else {
-            this.qrData = JSON.parse(scanData);
-            this.navigateOut();
-          }
-        } else if (this.subview === "onboarding") {
-          if (!validateOnboardingQr(scanData)) {
-            this.$swal.fire({
-              heightAuto: false,
-              type: "info",
-              title: "Oops...",
-              text:
-                "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
-            });
-          } else {
-            this.qrData = JSON.parse(scanData);
-            this.$store
-              .dispatch("storeNetChannelParameters", this.qrData.hub)
-              .then(() => this.navigateOut());
-          }
+        } else {
+          this.qrData = JSON.parse(scanData);
+          this.$store
+            .dispatch("storeNetChannelParameters", this.qrData.hub)
+            .then(() => this.navigateOut());
         }
       }
     },
@@ -198,23 +209,23 @@ export default {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
           this.navigateOut();
         } else if (this.subview === "pay-with-qr") {
-          this.qrData = {
-            //
-            // Mock payment data
-            //
-            amount: new BigNumber(0.001234)
-              .multipliedBy(new BigNumber(10).exponentiatedBy(18))
-              .toString(10),
-            merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
-            something: "3 BEERS",
-            id: uuidv4(),
-            type: "payment-request"
-          };
-          console.warn(
-            "VUE_APP_DISABLE_QRCODES active. Setup simulated payment QR data: " +
-              this.qrData
-          );
-          this.navigateOut();
+          // this.qrData = {
+          //   //
+          //   // Mock payment data
+          //   //
+          //   amount: new BigNumber(0.001234)
+          //     .multipliedBy(new BigNumber(10).exponentiatedBy(18))
+          //     .toString(10),
+          //   merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
+          //   something: "3 BEERS",
+          //   id: uuidv4(),
+          //   type: "payment-request"
+          // };
+          // console.warn(
+          //   "VUE_APP_DISABLE_QRCODES active. Setup simulated payment QR data: " +
+          //     this.qrData
+          // );
+          // this.navigateOut();
         }
       }
     },

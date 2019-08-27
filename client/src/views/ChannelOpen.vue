@@ -10,10 +10,10 @@
 
 const STATUS_ACK_HUB = 1,
   STATUS_WORKING = 2,
-  STATUS_STOPPED = 3
+  STATUS_STOPPED = 3;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
-import { EventBus } from "../event/eventbus.js";
+//import { window.eventBus } from "../event/eventbus.js";
 import HubConnection from "../controllers/hub";
 
 export default {
@@ -99,6 +99,8 @@ export default {
     }
   },
   mounted: async function() {
+    window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
+
     try {
       let res = await this.notifyHub();
       console.log("res: ", res);
@@ -114,7 +116,7 @@ export default {
           params: { initialDeposit: true }
         });
       } else {
-        const channelApiUrl =  'ws' + res.node + '/channel';
+        const channelApiUrl = "ws" + res.node + "/channel";
         console.log("Hub Wallet Address: " + res.address);
         console.log("Hub Node: " + res.node);
         console.log("Assumed WS API at " + channelApiUrl);
@@ -137,16 +139,16 @@ export default {
       });
     }
   },
+  beforeDestroy() {
+    window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
+  },
   methods: {
     onChannelStatusChange(status) {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
       if (status === "open") {
-
-        // We can ask the global Channel notification component
-        // to suscribe now.
-
-        EventBus.$emit("suscribe-channel");
+        this.$store.commit("setOnboardingDone", true);
+        //window.eventBus.$emit("suscribe-channel");
 
         this.$router.replace({
           name: "success",
@@ -174,12 +176,8 @@ export default {
       try {
         if (this.$store.state.channel == null) {
           await this.$store.dispatch("createChannel");
-          this.$store.state.channel.on(
-            "statusChanged",
-            this.onChannelStatusChange
-          );
         } else {
-          console.log("mounted(): Channel already created!");
+          console.error("createChannel: Channel already created!");
         }
       } catch (e) {
         this.$displayError(

@@ -3,29 +3,20 @@
     <b-container>
       <b-col>
         <div v-if="isAtInitialState">
-          <AeText
-            face="sans-l"
-            weight="600"
-          >
-            Authorization
-          </AeText>
-          <br>
+          <AeText face="sans-l" weight="600">Authorization</AeText>
+          <br />
           <AeDivider />
-          <br>
+          <br />
           <AeText
             weight="500"
             face="sans-s"
-          >
-            We need access to your wallet. Please click the button below to authorize this application
-          </AeText>
-          <br>
+          >We need access to your wallet. Please click the button below to authorize this application</AeText>
+          <br />
           <AeButton
             face="round"
             fill="primary"
             @click="$bvModal.show('authorize-modal')"
-          >
-            Connect your wallet
-          </AeButton>
+          >Connect your wallet</AeButton>
         </div>
         <div v-if="isConnecting">
           <AeText>Please wait...</AeText>
@@ -33,35 +24,20 @@
         </div>
       </b-col>
 
-      <b-modal
-        id="authorize-modal"
-        centered
-        hide-footer
-        hide-header
-      >
+      <b-modal id="authorize-modal" centered hide-footer hide-header>
         <div class="d-block text-center">
-          <AeText weight="bold">
-            Authorize access of this application to your account?
-          </AeText>
-          <br>
+          <AeText weight="bold">Authorize access of this application to your account?</AeText>
+          <br />
           <b-row>
             <b-col>
-              <AeButton
-                face="round"
-                fill="neutral"
-                @click="$bvModal.hide('authorize-modal')"
-              >
-                Deny
-              </AeButton>
+              <AeButton face="round" fill="neutral" @click="$bvModal.hide('authorize-modal')">Deny</AeButton>
             </b-col>
             <b-col>
               <AeButton
                 face="round"
                 fill="primary"
                 @click="connectToBaseApp(); $bvModal.hide('authorize-modal')"
-              >
-                Allow
-              </AeButton>
+              >Allow</AeButton>
             </b-col>
           </b-row>
         </div>
@@ -73,7 +49,12 @@
 <script>
 /* eslint-disable no-console */
 import aeternity from "../controllers/aeternity.js";
-import { AeText, AeButton, AeLoader, AeDivider } from "@aeternity/aepp-components";
+import {
+  AeText,
+  AeButton,
+  AeLoader,
+  AeDivider
+} from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
@@ -104,21 +85,43 @@ export default {
     }
   },
   mounted() {
-    // Clear any state
-    this.$store.dispatch("resetState").then(() => {
-      // Preflight checks
-      if (process.env.VUE_APP_ROLE === "merchant") {
-        console.warn("Booting application with role:  MERCHANT");
-      } else if (process.env.VUE_APP_ROLE === "client") {
-        console.warn("Booting application with role:  CLIENT");
-      } else {
-        console.error("Cannot find application role in VUE_APP_ROLE variable");
-        this.$displayError(
-          "Unexpected error",
-          "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+    // Preflight checks
+    if (process.env.VUE_APP_ROLE === "merchant") {
+      console.warn("Booting application with role:  MERCHANT");
+    } else if (process.env.VUE_APP_ROLE === "client") {
+      console.warn("Booting application with role:  CLIENT");
+    } else {
+      console.error("Cannot find application role in VUE_APP_ROLE variable");
+      this.$displayError(
+        "Unexpected error",
+        "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+      );
+    }
+    // Let's check if we were previously onboarded on refresh cases.
+
+    if (this.$store.state.onboardingDone) {
+      if (
+        this.$store.state.channelReconnectInfo === null ||
+        this.$store.state.channelReconnectInfo.channelId === null ||
+        this.$store.state.channelReconnectInfo.offchainTx === null
+      ) {
+        console.warn(
+          "Reconnect-on-refresh: Onboarding done, but no channel reconnection information was available."
         );
+      } else {
+        console.log(
+          "Reconnect-on-refresh: Onboarding already done. Reconnecting to Channel Id" +
+            this.$store.state.channeReconnectInfo.channelId
+        );
+        this.$store.dispatch("reconnectChannel").then(channel => {
+          "statusChanged", this.onChannelStatusChange;
+          this.$router.replace("main-menu");
+        });
       }
-    });
+    }
+
+    // Clear any previous state
+    this.$store.dispatch("resetState");
   },
   methods: {
     async connectToBaseApp() {
@@ -127,7 +130,7 @@ export default {
         const connectStatus = await aeternity.connectToBaseApp();
         if (connectStatus.status) {
           console.log("Aepp connect status Success");
-          this.$store.commit("setAeObject", aeternity);
+          this.$store.commit("setAeClient", aeternity.client);
           this.status = STATUS_CONNECTED;
           this.$router.push({
             name: "scanqr",

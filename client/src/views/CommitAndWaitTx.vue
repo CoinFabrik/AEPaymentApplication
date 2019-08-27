@@ -18,12 +18,10 @@ const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
 const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
   STATUS_TRACK_TX_PROGRESS = 1;
-
+import aeternity from "../controllers/aeternity"
 import { AeText, AeLoader } from "@aeternity/aepp-components";
-
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
-import { EventBus } from "../event/eventbus.js";
 
 export default {
   name: "CommitAndWaitTx",
@@ -82,7 +80,7 @@ export default {
         console.log("Obtained TX Hash: ", this.transactionHash);
       }
 
-      this.elapsedBlocks = await this.$store.state.aeternity.getTxConfirmations(
+      this.elapsedBlocks = await aeternity.getTxConfirmations(
         this.transactionHash
       );
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
@@ -146,7 +144,7 @@ export default {
     async commitDepositTransaction() {
       console.log("Committing DEPOSIT transaction ... ");
 
-      let r = await this.$store.state.aeternity.deposit(
+      let r = await aeternity.deposit(
         this.$store.state.channel,
         parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
         async tx => {
@@ -163,7 +161,7 @@ export default {
     async commitWithdrawTransaction() {
       console.log("Committing WITHDRAW transaction ... ");
 
-      let accepted = await this.$store.state.aeternity.withdraw(
+      let accepted = await aeternity.withdraw(
         this.$store.state.channel,
         parseInt(this.txParams.amountAettos),
         async tx => {
@@ -180,13 +178,12 @@ export default {
     async commitCloseTransaction() {
       console.log("Committing CLOSE transaction ... ");
 
-      let tx = await this.$store.state.aeternity.closeChannel(
+      let tx = await aeternity.closeChannel(
         this.$store.state.channel
       );
       console.log("posted CLOSE Onchain TX: ", tx);
       this.setStatusTrackProgress(tx);
 
-      EventBus.$emit("desuscribe-channel");
     },
     async commitTransaction() {
       switch (this.txKind) {
