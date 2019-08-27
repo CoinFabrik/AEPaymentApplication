@@ -7,7 +7,9 @@
       Generate Payment
     </AeText>
     <br>
-    <AeText>Please enter the payment information to generate a QR code for your customer</AeText>
+    <AeText face="mono-s">
+      Please set the amount of the payment. A new QR code will be generated.
+    </AeText>
     <br>
     <AeInput
       v-model="amount"
@@ -19,14 +21,16 @@
     <AeInput
       ref="desc"
       v-model="description"
+      monospace="true"
+      class="small-input"
       label="Concept (optional)"
-      placeholder="Enter your Item description..."
+      placeholder="Description..."
     />
     <br>
     <AeButton
       face="round"
       fill="primary"
-      class="button"
+      class="margin"
       extend
       @click="confirm()"
     >
@@ -35,7 +39,7 @@
     <AeButton
       face="round"
       fill="secondary"
-      class="button"
+      class="margin"
       extend
       @click="cancel()"
     >
@@ -87,7 +91,12 @@ export default {
 </script>
 
 <style>
-	.button {
+	.small-input {
+		min-height: 0px;
+		height: 40px;
+
+	}
+	.margin {
 		margin-top: 5px;
 	}
 </style>

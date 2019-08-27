@@ -1,28 +1,52 @@
 <template>
-  <div class="show-payment-qr">
-    <AeText>Show this payment QR to your customer</AeText>
-    <AeText face="sans-xs">Amount: {{ message.amount / (10**18) }} AE</AeText>
-    <AeText face="sans-xs">Concept: {{ message.something }}</AeText>
-    <!--
+  <b-container class="show-payment-qr">
+    <AeText weight="bold">
+      Show this payment QR to your customer
+    </AeText>
+    <br>
+    <AeDivider />
+    <br>
+    <AeText face="sans-xs">
+      Amount: {{  message.amount / (10**18) }} AE>
+    </AeText>
+    <AeText face="sans-xs">
+      Concept: {{ message.something }}
+    </AeText>
+        <!--
     If QR scan is disabled, this will store a temporary payment UUID
      in the server from where the customer can obtain the same data using
      the UUID instead of the QR. 
     -->
     <AeText v-if="isQrCodesDisabled">Payment Code: {{ this.paymentCode }}</AeText>
     <AeQRCode :value="messageString" />
-    <AeButton face="round" fill="primary" extend @click="done()">Done</AeButton>
-  </div>
+    <AeButton
+      face="round"
+      fill="primary"
+      class="margin"
+      extend
+      @click="done()"
+    >
+      Done
+    </AeButton>
+  </b-container>
 </template>
 
 <script>
-import { AeText, AeQRCode, AeButton } from "@aeternity/aepp-components";
 import HubConnection from "../controllers/hub";
+
+import {
+  AeText,
+	AeQRCode,
+	AeDivider,
+  AeButton
+} from "@aeternity/aepp-components";
 
 export default {
   name: "MainMenu",
   components: {
     AeText,
-    AeQRCode,
+		AeQRCode,
+		AeDivider,
     AeButton
   },
   data() {
@@ -87,3 +111,9 @@ export default {
   }
 };
 </script>
+
+<style>
+	.margin {
+		margin-top: 10px;
+	}
+</style>

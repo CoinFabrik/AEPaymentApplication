@@ -8,9 +8,7 @@
 <script>
 /* eslint-disable no-console */
 
-const STATUS_ACK_HUB = 1,
-  STATUS_WORKING = 2,
-  STATUS_STOPPED = 3;
+const STATUS_ACK_HUB = 1, STATUS_WORKING = 2, STATUS_STOPPED = 3;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
 //import { window.eventBus } from "../event/eventbus.js";
@@ -39,7 +37,7 @@ export default {
           case "accepted":
             return "Channel connection accepted";
           case "half-signed":
-            return "Channel opening transaction half-signed";
+            return "Please wait while the transaction is signed by the server...";
           case "signed":
             return "Channel opening transaction signed by both parties";
           case "open":
@@ -150,10 +148,12 @@ export default {
         this.$store.commit("setOnboardingDone", true);
         //window.eventBus.$emit("suscribe-channel");
 
-        this.$router.replace({
-          name: "success",
-          params: { txKind: "initial-deposit" }
-        });
+        this.$swal({
+					type: "success",
+					title: "Success",
+          text:"Every time you get paid, the money will be addressed to your channel. \n Once you close it, all the funds will be withdrawn to your wallet."
+				}).then(this.$router.replace("main-menu"));
+
       } else if (status === "disconnected") {
         this.viewStatus = STATUS_STOPPED;
       }
@@ -170,7 +170,7 @@ export default {
         this.$store.state.userName,
         this.$isClientAppRole ? "client" : "merchant"
       );
-    },
+		},
     async createChannel() {
       this.viewStatus = STATUS_WORKING;
       try {

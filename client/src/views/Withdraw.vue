@@ -1,6 +1,18 @@
 <template>
-  <div class="withdraw">
-    <AeText>How many AE do you want to withdraw from your channel funds?</AeText>
+  <b-container class="withdraw">
+    <AeText
+      face="sans-l"
+      weight="600"
+    >
+      Withdraw
+    </AeText>
+    <AeDivider style="margin-top:20px; margin-bottom:20px;" />
+    <AeText
+      face="sans-s"
+      weight="500"
+    >
+      How many AE do you want to withdraw from your channel funds?
+    </AeText>
     <ae-amount-input
       v-model="withdrawInput"
       placeholder="0.00"
@@ -19,16 +31,29 @@
     </div>
     -->
 
-    <AeButton
-      face="round"
-      fill="primary"
-      extend
-      :disabled="withdrawInput.amount <= 0 || isQueryingBalance"
-      @click="withdraw()"
-    >
-      Withdraw
-    </AeButton>
-  </div>
+    <div class="button-group">
+      <AeButton
+        face="round"
+        fill="primary"
+        class="margin"
+        extend
+        :disabled="withdrawInput.amount <= 0 || isQueryingBalance"
+        @click="withdraw()"
+      >
+        Withdraw
+      </AeButton>
+
+      <AeButton
+        face="round"
+        fill="secondary"
+        class="margin"
+        extend
+        @click="() => this.$router.back()"
+      >
+        Cancel
+      </AeButton>
+    </div>
+  </b-container>
 </template>
 
 <script>
@@ -40,7 +65,8 @@ const STATUS_USER_INPUT = 0,
 import {
   AeText,
   AeAmountInput,
-  AeLoader,
+	AeLoader,
+	AeDivider,
   AeButton
 } from "@aeternity/aepp-components";
 
@@ -51,7 +77,8 @@ export default {
   components: {
     AeButton,
     AeText,
-    AeLoader,
+		AeLoader,
+		AeDivider,
     AeAmountInput
   },
   props: {},
@@ -115,3 +142,9 @@ export default {
   }
 };
 </script>
+
+<style>
+	.button-group {
+		margin-top: 40px;
+	}
+</style>

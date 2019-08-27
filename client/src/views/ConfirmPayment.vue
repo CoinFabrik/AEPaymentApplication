@@ -30,8 +30,24 @@
       </div>
     </div>
     <AeDivider />
-    <AeButton class="button" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-    <AeButton class="button" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+    <AeButton
+      class="margin"
+      face="round"
+      fill="primary"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
+    <AeButton
+      class="margin"
+      face="round"
+      fill="secondary"
+      extend
+      @click="cancel()"
+    >
+      Cancel
+    </AeButton>
   </b-container>
 </template>
 

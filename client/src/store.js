@@ -101,11 +101,17 @@ export default new Vuex.Store({
       commit('setOnboardingDone', false);
     },
     updateOnchainBalance({ commit, state }) {
-      return aeternity.getAccountBalance().then(
-        function (balance) {
-          commit('updateBalance', balance);
-        }
-      )
+			return aeternity.getAccountBalance()
+							.then(
+								function (balance) {
+          				commit('updateBalance', balance);
+        				}
+							)
+							.catch(
+								function (err) {
+									console.error(err);
+								}
+							)
     },
     updateChannelBalances({ commit, state, getters }) {
       const iAddr = getters.initiatorAddress;

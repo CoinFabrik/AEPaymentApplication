@@ -2,8 +2,8 @@
   <div id="app">
     <AeBanner />
     <AeMain id="main">
-      <b-container>
-        <div id="content">
+      <b-container class="container">
+        <div class="container" id="content">
           <transition
             name="slide"
             mode="out-in"
@@ -36,6 +36,15 @@
 </script>
 
 <style>
+	.container {
+		height: 80%;
+	}
+	#content {
+		height: 100%;
+		margin-top: 10%;
+		margin-bottom: 10%;
+		border-collapse: collapse;
+	}
 	#app {
 		overflow: hidden;
 		height: 100vh;
@@ -50,12 +59,6 @@
 		min-height: 0vh;
 		width: 100vw;
 		border-radius:30px 30px 0px 0px;
-	}
-	#content {
-		margin-top: 10vh;
-		margin-bottom: 10vh;
-		margin-left: 2vh;
-		margin-right: 2vh;
 	}
 	html, body {
 		overflow: hidden;
