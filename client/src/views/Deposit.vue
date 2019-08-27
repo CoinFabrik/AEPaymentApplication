@@ -10,15 +10,10 @@
       Deposit
     </AeText>
     <AeDivider style="margin-top:20px; margin-bottom:20px;" />
-    <div
-      v-if="initialDeposit"
-    >
+    <div v-if="initialDeposit">
       <div v-if="$isClientAppRole">
         <AeText face="sans-s">
-          To open a channel with our Point of Sale services an acquire
-          venue amenities, goods and services,
-          please enter an amount of AE to deposit. This amount can be
-          used immediately. Unspent tokens will be returned to your wallet when the channel closes.
+          Please enter an amount of AE to deposit for channel open.
         </AeText>
         <AeText face="sans-s">
           You can add more tokens later
@@ -69,7 +64,6 @@
         v-show="$isClientAppRole"
         face="mono-xs"
       >
-        Estimated Fee: {{ estimatedFee / (10**18) }} AE
         (*) Transaction fee: {{ estimatedFeeAE }}
       </AeText>
     </div>
@@ -89,7 +83,7 @@
       fill="secondary"
       class="margin"
       extend
-      @click="() => this.$router.back()"
+      @click="cancel()"
     >
       Cancel
     </AeButton>
@@ -106,13 +100,20 @@
 const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
 
-import { AeText, AeAmountInput, AeLoader, AeButton, AeDivider } from "@aeternity/aepp-components";
+import {
+  AeText,
+  AeAmountInput,
+  AeLoader,
+  AeButton,
+  AeDivider
+} from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
+import aeternity from "../controllers/aeternity";
 
 export default {
   name: "Deposit",
-  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider},
+  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider },
   props: {
     initialDeposit: Boolean
   },
@@ -140,13 +141,16 @@ export default {
       return this.viewState == STATUS_QUERY_BALANCE;
     },
     estimatedFee() {
-      return this.$store.state.aeternity.estimateDepositFee(500000);
+      return aeternity.estimateDepositFee(500000);
     },
     estimatedFeeAE() {
       return this.estimatedFee / 10 ** 18;
     }
   },
   methods: {
+    cancel() {
+      this.$router.back();
+    },
     setWaitingInputState() {
       this.viewState = STATUS_USER_INPUT;
     },
@@ -154,7 +158,7 @@ export default {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
       try {
-				await this.$store.dispatch("updateOnchainBalance");
+        await this.$store.dispatch("updateOnchainBalance");
         console.log("balance: " + this.$store.state.balance);
 
         const balanceBN = new BigNumber(this.$store.state.balance);
@@ -204,13 +208,13 @@ export default {
 </script>
 
 <style>
-	.content {
-		position: relative;
-		height: 80%
-	}
-	.button {
-		position: absolute;
-		bottom: 0px;
-		align-self: center;
-	}
+.content {
+  position: relative;
+  height: 80%;
+}
+.button {
+  position: absolute;
+  bottom: 0px;
+  align-self: center;
+}
 </style>

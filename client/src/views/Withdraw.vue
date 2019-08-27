@@ -48,7 +48,7 @@
         fill="secondary"
         class="margin"
         extend
-        @click="() => this.$router.back()"
+        @click="cancel()"
       >
         Cancel
       </AeButton>
@@ -103,6 +103,9 @@ export default {
     }
   },
   methods: {
+    cancel() {
+      this.$router.back();
+    },
     setWaitingInputState() {
       this.viewState = STATUS_USER_INPUT;
     },

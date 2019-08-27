@@ -28,74 +28,76 @@ const aeternity = {
 
 aeternity.connectToBaseApp = async function () {
 
-  if (process.env.VUE_APP_USE_TEST_ENV === "1") {
-    //
-    // Forgae Testing Nodes Setup
-    //
-    aeternity.apiServerAddress = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
-    aeternity.apiServerPort = process.env.VUE_APP_TEST_API_SERVER_PORT;
-    aeternity.apiServerProtocol = process.env.VUE_APP_TEST_API_SERVER_PROTO;
+  // if (process.env.VUE_APP_USE_TEST_ENV === "1") {
+  //   //
+  //   // Forgae Testing Nodes Setup
+  //   //
+  //   aeternity.apiServerAddress = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
+  //   aeternity.apiServerPort = process.env.VUE_APP_TEST_API_SERVER_PORT;
+  //   aeternity.apiServerProtocol = process.env.VUE_APP_TEST_API_SERVER_PROTO;
 
-    aeternity.stateChannelApiProtocol = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
-    aeternity.stateChannelApiHost = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
-    aeternity.stateChannelApiPort = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
+  //   aeternity.stateChannelApiProtocol = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
+  //   aeternity.stateChannelApiHost = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
+  //   aeternity.stateChannelApiPort = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
 
-    const params = {
-      networkId: 'ae_devnet',
-      url: aeternity.getApiServerUrl(),
-      internalUrl: aeternity.getApiServerUrl(),
-      keypair: {
-        publicKey: process.env.VUE_APP_TEST_WALLET_ADDRESS,
-        secretKey: process.env.VUE_APP_TEST_WALLET_PK
-      },
-      compilerUrl: null
+  //   const params = {
+  //     networkId: 'ae_devnet',
+  //     url: aeternity.getApiServerUrl(),
+  //     internalUrl: aeternity.getApiServerUrl(),
+  //     keypair: {
+  //       publicKey: process.env.VUE_APP_TEST_WALLET_ADDRESS,
+  //       secretKey: process.env.VUE_APP_TEST_WALLET_PK
+  //     },
+  //     compilerUrl: null
+  //   }
+
+  //   aeternity.address = process.env.VUE_APP_TEST_WALLET_ADDRESS;
+
+  //   try {
+  //     console.log("Initiating test Universal object with params:");
+  //     console.log(params);
+
+  //     aeternity.client = await Universal(params);
+  //     return { status: true, error: null };
+  //   } catch (err) {
+  //     console.log(err);
+  //     return { status: false, error: err }
+  //   }
+  // } else {
+  //
+  // Connect through the Base Aepp Object 
+  //
+  try {
+    if (aeternity.client != null) {
+      console.log("ConnectToBaseApp() : Already connected.");
+      return;
     }
 
-    aeternity.address = process.env.VUE_APP_TEST_WALLET_ADDRESS;
+    aeternity.client = await Aepp();
 
-    try {
-      console.log("Initiating test Universal object with params:");
-      console.log(params);
+    console.log("Connected to Base-Aepp Object. Chain height: " + await aeternity.client.height());
+    console.log("Your address: " + await aeternity.client.address());
 
-      aeternity.client = await Universal(params);
-      return { status: true, error: null };
-    } catch (err) {
-      console.log(err);
-      return { status: false, error: err }
-    }
-  } else {
-    //
-    // Connect through the Base Aepp Object 
-    //
-    try {
-      aeternity.client = await Aepp();
+    // console.log("Node Address: " + await aeternity.client.getNodeInfo());
 
-      console.log("Connected to Base-Aepp Object. Chain height: " + await aeternity.client.height());
-      console.log("Your address: " +  await aeternity.client.address());
+    // TODO : getNodeInfo DOES NOT WORK. All hardcoded for testnet.
 
-      // console.log("Node Address: " + await aeternity.client.getNodeInfo());
 
-      // TODO : getNodeInfo DOES NOT WORK. All hardcoded for testnet.
+    // aeternity.stateChannelApiProtocol = "wss";
+    // aeternity.stateChannelApiHost = "aehub.coinfabrik.com";
+    // aeternity.stateChannelApiPort = "";
 
-  
-      // aeternity.stateChannelApiProtocol = "wss";
-      // aeternity.stateChannelApiHost = "aehub.coinfabrik.com";
-      // aeternity.stateChannelApiPort = "";
-
-      return { status: true, error: null };
-    } catch (err) {
-      console.log(err);
-      return { status: false, error: err };
-    }
+    return { status: true, error: null };
+  } catch (err) {
+    console.log(err);
+    return { status: false, error: err };
   }
+
 }
 
 aeternity.getAddress = async function () {
+  await aeternity.connectToBaseApp();
   return aeternity.client.address();
-}
-
-aeternity.getPk = function () {
-  return aeternity.client.pk;
 }
 
 aeternity.getApiServerUrl = function () {
@@ -105,6 +107,7 @@ aeternity.getStateChannelApiUrl = function () {
   return aeternity.stateChannelApiProtocol + '://' + aeternity.stateChannelApiHost + ':' + aeternity.stateChannelApiPort + '/channel';
 }
 aeternity.getAccountBalance = async function () {
+  await aeternity.connectToBaseApp();
   return await aeternity.client.balance(await aeternity.getAddress());
 }
 
@@ -119,6 +122,7 @@ aeternity.createChannel = async function (params) {
 }
 
 aeternity.signFunction = async function (tag, tx, { updates } = {}) {
+  await aeternity.connectToBaseApp();
 
   console.log('signFunction with tag: ' + tag);
 
@@ -165,6 +169,10 @@ aeternity.estimateDepositFee = function (gasAmount) {
 }
 
 aeternity.deposit = async function (channel, amount, onChainTxCallback) {
+  if (!aeternity.client) {
+    await aeternity.connectToBaseApp();
+  }
+
   console.log("Deposit: ", amount);
   return channel.deposit(amount, async (tx) => aeternity.client.signTransaction(tx),
     {
@@ -197,6 +205,7 @@ aeternity.sendMessage = async function (channel, message, address) {
 }
 
 aeternity.getTxConfirmations = async function (tx) {
+  await aeternity.connectToBaseApp();
   const txData = await aeternity.client.tx(tx);
   const txHeight = txData.blockHeight;
   if (txHeight > 0) {

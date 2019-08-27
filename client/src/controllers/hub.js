@@ -48,6 +48,24 @@ class HubConnection {
     }
   }
 
+  async storeProductData(data, uuid) {
+    try {
+      await axios.post(this.hubIp + '/products/store', { uuid, data });
+      return { success: true };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async fetchProductData(uuid) {
+    try {
+      let res = await axios.get(this.hubIp + '/products/' + uuid);
+      return { success: true, data: res.data.data };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
   async notifyUserOnboarding(amount, name, role) {
     if (role === "client" || role === "merchant") {
       try {

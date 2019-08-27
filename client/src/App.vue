@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <ChannelNotify />
     <AeBanner />
     <AeMain id="main">
       <b-container class="container">
@@ -20,7 +19,6 @@
 
 <script>
 	import { AeMain } from "@aeternity/aepp-components";
-	import ChannelNotify from "./components/ChannelNotify";
 
 	import "@aeternity/aepp-components/dist/aepp.global.css";
 	import "@aeternity/aepp-components/dist/aepp.components.css";
@@ -30,7 +28,7 @@
 
 	export default {
 		name: "App",
-		components: { AeMain, ChannelNotify, LoadingScreen, AeBanner },
+		components: { AeMain, LoadingScreen, AeBanner },
 		data() {
 			return { isLoading: false };
 		},

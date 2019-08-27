@@ -50,7 +50,12 @@
 <script>
 /* eslint-disable no-console */
 import aeternity from "../controllers/aeternity.js";
-import { AeText, AeButton, AeLoader, AeDivider } from "@aeternity/aepp-components";
+import {
+  AeText,
+  AeButton,
+  AeLoader,
+  AeDivider
+} from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
@@ -81,21 +86,43 @@ export default {
     }
   },
   mounted() {
-    // Clear any state
-    this.$store.dispatch("resetState").then(() => {
-      // Preflight checks
-      if (process.env.VUE_APP_ROLE === "merchant") {
-        console.warn("Booting application with role:  MERCHANT");
-      } else if (process.env.VUE_APP_ROLE === "client") {
-        console.warn("Booting application with role:  CLIENT");
-      } else {
-        console.error("Cannot find application role in VUE_APP_ROLE variable");
-        this.$displayError(
-          "Unexpected error",
-          "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+    // Preflight checks
+    if (process.env.VUE_APP_ROLE === "merchant") {
+      console.warn("Booting application with role:  MERCHANT");
+    } else if (process.env.VUE_APP_ROLE === "client") {
+      console.warn("Booting application with role:  CLIENT");
+    } else {
+      console.error("Cannot find application role in VUE_APP_ROLE variable");
+      this.$displayError(
+        "Unexpected error",
+        "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
+      );
+    }
+    // Let's check if we were previously onboarded on refresh cases.
+
+    if (this.$store.state.onboardingDone) {
+      if (
+        this.$store.state.channelReconnectInfo === null ||
+        this.$store.state.channelReconnectInfo.channelId === null ||
+        this.$store.state.channelReconnectInfo.offchainTx === null
+      ) {
+        console.warn(
+          "Reconnect-on-refresh: Onboarding done, but no channel reconnection information was available."
         );
+      } else {
+        console.log(
+          "Reconnect-on-refresh: Onboarding already done. Reconnecting to Channel Id" +
+            this.$store.state.channeReconnectInfo.channelId
+        );
+        this.$store.dispatch("reconnectChannel").then(channel => {
+          "statusChanged", this.onChannelStatusChange;
+          this.$router.replace("main-menu");
+        });
       }
-    });
+    }
+
+    // Clear any previous state
+    this.$store.dispatch("resetState");
   },
   methods: {
     async connectToBaseApp() {
@@ -104,7 +131,7 @@ export default {
         const connectStatus = await aeternity.connectToBaseApp();
         if (connectStatus.status) {
           console.log("Aepp connect status Success");
-          this.$store.commit("setAeObject", aeternity);
+          this.$store.commit("setAeClient", aeternity.client);
           this.status = STATUS_CONNECTED;
           this.$router.push({
             name: "scanqr",
