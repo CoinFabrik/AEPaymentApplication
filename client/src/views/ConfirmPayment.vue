@@ -55,7 +55,6 @@
 /* eslint-disable no-console */
 
 import { AeText, AeButton, AeDivider } from "@aeternity/aepp-components";
-//import { window.eventBus } from "../event/eventbus";
 import BigNumber from "bignumber.js";
 import { clearInterval, setInterval } from "timers";
 import HubConnection from "../controllers/hub";

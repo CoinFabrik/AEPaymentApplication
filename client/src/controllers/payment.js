@@ -1,6 +1,5 @@
 
 /* eslint-disable no-console */
-//import { window.eventBus } from "../event/eventbus";
 import aeternity from "../controllers/aeternity"
 const EventEmitter = require('events');
 const PAYMENT_STATE_INITIAL = 0,

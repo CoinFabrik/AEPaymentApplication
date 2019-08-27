@@ -4,7 +4,6 @@ import Vuex from 'vuex'
 import HubConnection from './controllers/hub'
 import createPersistedState from 'vuex-persistedstate'
 import aeternity from './controllers/aeternity';
-//import { window.eventBus } from './event/eventbus'
 Vue.use(Vuex)
 
 export default new Vuex.Store({

@@ -11,7 +11,6 @@
 const STATUS_ACK_HUB = 1, STATUS_WORKING = 2, STATUS_STOPPED = 3;
 
 import { AeText, AeLoader } from "@aeternity/aepp-components";
-//import { window.eventBus } from "../event/eventbus.js";
 import HubConnection from "../controllers/hub";
 
 export default {
