@@ -30,24 +30,8 @@
       </div>
     </div>
     <AeDivider />
-    <AeButton
-      class="margin"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      class="margin"
-      face="round"
-      fill="secondary"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+    <AeButton class="margin" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="margin" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -109,14 +93,16 @@ export default {
     },
     async triggerPayment() {
       this.paymentData.id = uuidv4();
-      console.warn("REMEMBER TO NOT OVERWRITE UUID -- this is only for testing!");
+      console.warn(
+        "REMEMBER TO NOT OVERWRITE UUID -- this is only for testing!"
+      );
       paymentProcessor = new PaymentProcessor(
         this.$store.getters.initiatorAddress,
         this.$store.getters.responderAddress,
         this.paymentData,
         this.$store.state.channel
       );
-      
+
       this.$swal
         .fire({
           heightAuto: false,
@@ -248,10 +234,35 @@ export default {
       }
     },
     async confirm() {
-      // are we connected ?
-      this.ensureConnection();
-      if (this.$store.state.channel.status() === "open") {
-        await this.triggerPayment();
+      var that = this;
+      // do we have enough funds ?
+      if (
+        BigNumber(this.$store.state.initiatorBalance).lt(
+          BigNumber(this.paymentData.amount)
+        )
+      ) {
+        this.$swal
+          .fire({
+            heightAuto: false,
+            allowOutsideClick: false,
+            type: "warning",
+            title: "Insufficient balance",
+            text:
+              "You don't have enough funds in your channel to purchase this item." +
+              "You may deposit funds in your channel and try again."
+          })
+          .then(function() {
+            that.$router.push({
+              name: "scanqr",
+              params: { subview: "pay-with-qr" }
+            });
+          });
+      } else {
+        // are we connected ?
+        this.ensureConnection();
+        if (this.$store.state.channel.status() === "open") {
+          await this.triggerPayment();
+        }
       }
     }
   }
