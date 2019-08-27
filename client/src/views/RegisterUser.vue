@@ -114,7 +114,7 @@ export default {
   methods: {
     confirm() {
       this.$store.commit("setUserName", this.nameInput);
-      this.$router.replace({
+      this.$router.push({
         name: "deposit",
         params: {
           initialDeposit: true

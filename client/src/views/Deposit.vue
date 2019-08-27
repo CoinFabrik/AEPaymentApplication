@@ -1,41 +1,23 @@
 <template>
-  <b-container
-    id="deposit"
-    class="content"
-  >
-    <AeText
-      weight="bold"
-      face="sans-l"
-    >
-      Deposit
-    </AeText>
+  <b-container id="deposit" class="content">
+    <AeText weight="bold" face="sans-l">Deposit</AeText>
     <AeDivider style="margin-top:20px; margin-bottom:20px;" />
-    <div
-      v-if="initialDeposit"
-    >
+    <div v-if="initialDeposit">
       <div v-if="$isClientAppRole">
-        <AeText face="sans-s">
-          Please enter an amount of AE to deposit for channel open.
-        </AeText>
-        <AeText face="sans-s">
-          You can add more tokens later
-        </AeText>
+        <AeText face="sans-s">Please enter an amount of AE to deposit for channel open.</AeText>
+        <AeText face="sans-s">You can add more tokens later</AeText>
       </div>
 
       <div v-if="$isMerchantAppRole">
         <AeText
           weight="500"
           face="sans-s"
-        >
-          To open a channel, you have to place a {{ merchantInitialDepositAE }} guarantee deposit. (*)
-        </AeText>
-        <br>
+        >To open a channel, you have to place a {{ merchantInitialDepositAE }} guarantee deposit. (*)</AeText>
+        <br />
         <AeText
           face="sans-s"
           weight="700"
-        >
-          This deposit will be reimbursed once you close this channel.
-        </AeText>
+        >This deposit will be reimbursed once you close this channel.</AeText>
       </div>
     </div>
     <div v-else>
@@ -56,21 +38,13 @@
       @input="onAmountInput"
     />
     <div v-if="isQueryingBalance">
-      <AeText face="mono-xs">
-        Please wait while Checking your account balance
-      </AeText>
+      <AeText face="mono-xs">Please wait while Checking your account balance</AeText>
       <AeLoader />
     </div>
     <div v-else>
-      <AeText
-        v-show="$isClientAppRole"
-        face="mono-xs"
-      >
-        Estimated Fee: {{ estimatedFee / (10**18) }} AE
-        (*) Transaction fee: {{ estimatedFeeAE }}
-      </AeText>
+      <AeText v-show="$isClientAppRole" face="mono-xs">(*) Transaction fee: {{ estimatedFeeAE }}</AeText>
     </div>
-    <br>
+    <br />
     <AeButton
       face="round"
       fill="primary"
@@ -78,22 +52,9 @@
       extend
       :disabled="depositInput.amount <= 0 || isQueryingBalance"
       @click="deposit()"
-    >
-      Deposit
-    </AeButton>
-    <AeButton
-      face="round"
-      fill="secondary"
-      class="margin"
-      extend
-      @click="() => this.$router.back()"
-    >
-      Cancel
-    </AeButton>
-    <AeText
-      face="mono-xs"
-      weight="500"
-    />
+    >Deposit</AeButton>
+    <AeButton face="round" fill="secondary" class="margin" extend @click="cancel()">Cancel</AeButton>
+    <AeText face="mono-xs" weight="500" />
   </b-container>
 </template>
 
@@ -103,14 +64,20 @@
 const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
 
-import { AeText, AeAmountInput, AeLoader, AeButton, AeDivider } from "@aeternity/aepp-components";
+import {
+  AeText,
+  AeAmountInput,
+  AeLoader,
+  AeButton,
+  AeDivider
+} from "@aeternity/aepp-components";
 
 import BigNumber from "bignumber.js";
-import aeternity from '../controllers/aeternity'
+import aeternity from "../controllers/aeternity";
 
 export default {
   name: "Deposit",
-  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider},
+  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider },
   props: {
     initialDeposit: Boolean
   },
@@ -145,6 +112,9 @@ export default {
     }
   },
   methods: {
+    cancel() {
+      this.$router.back();
+    },
     setWaitingInputState() {
       this.viewState = STATUS_USER_INPUT;
     },
@@ -152,7 +122,7 @@ export default {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
       try {
-				await this.$store.dispatch("updateOnchainBalance");
+        await this.$store.dispatch("updateOnchainBalance");
         console.log("balance: " + this.$store.state.balance);
 
         const balanceBN = new BigNumber(this.$store.state.balance);
@@ -202,13 +172,13 @@ export default {
 </script>
 
 <style>
-	.content {
-		position: relative;
-		height: 80%
-	}
-	.button {
-		position: absolute;
-		bottom: 0px;
-		align-self: center;
-	}
+.content {
+  position: relative;
+  height: 80%;
+}
+.button {
+  position: absolute;
+  bottom: 0px;
+  align-self: center;
+}
 </style>
