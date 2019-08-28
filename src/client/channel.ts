@@ -119,7 +119,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     static GetInfo(client?: CClient) {
         let options = this.base_options();
-        if (client!=null) {
+        if (client!=undefined) {
             options["initiatorId"] = client.address;
             options["initiatorAmount"] = client.amount;
             options["url"] = "ws"+MoreConfig.USER_NODE;
