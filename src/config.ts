@@ -19,6 +19,10 @@ export const NETWORK_ID = 'ae_devnet';
 export class MoreConfig {
     static external_ip = null;
 
+    static get QR_HUB_URL(): string {
+        return getEnv("QR_HUB_URL");
+    }
+
     static async Init() {
         if (this.external_ip!=undefined)
             return;

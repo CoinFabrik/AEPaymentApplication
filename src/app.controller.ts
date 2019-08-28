@@ -23,7 +23,7 @@ export class AppController {
     await MoreConfig.Init();
 
     if (data==null) {
-      data = JSON.stringify({hub: MoreConfig.ExternalIP});
+      data = JSON.stringify({hub: MoreConfig.QR_HUB_URL});
     } else {
       data = data.toString();
     }
