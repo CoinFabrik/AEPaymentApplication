@@ -71,8 +71,11 @@ export class Hub extends EventEmitter {
             emitter_channel.sendMessage(err_msg).then(voidf).catch(console.error);
         });
         this.on("payment-request-accepted", (mc) => {
-            this.log_mc_state(mc, "accepted");
-            mc.sendCustomer(mc.msgPaymentAccepted());
+	       this.log_mc_state(mc, "pre-accepted");
+            setTimeout( () => {
+	       this.log_mc_state(mc, "accepted");
+               mc.sendCustomer(mc.msgPaymentAccepted());
+	    }, 4000);
         });
         this.on("wait-payment", (mc, pre_balance) => {
             this.log_mc_state(mc, "waiting");
