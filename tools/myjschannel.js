@@ -84,8 +84,9 @@ class MyChannel extends events.EventEmitter {
         }
     }
 
-    constructor(pubkey, privkey, opposite_addr, init_amount) {
+    constructor(pubkey, privkey, opposite_addr, init_amount, options) {
         super();
+        this.options = options;
         if (init_amount===undefined) {
             init_amount = INITIATOR_MIN_BALANCE;
         }
@@ -106,42 +107,6 @@ class MyChannel extends events.EventEmitter {
     }
     get role() {
         return this.is_initiator? "initiator" : "responder";
-    }
-
-    get_options() {
-        let options = {
-            url:  WS_URL+'/channel',
-            pushAmount: 0,
-            initiatorAmount: this.init_amount,
-            responderAmount: 1,
-            channelReserve: 1,
-            host: "localhost",
-            port: 3001,
-            lockPeriod: 1,
-            role: this.role,
-        };
-        console.log("options:", options);
-        options["initiatorId"] = this.initiator;
-        options["responderId"] = this.responder;
-        //console.log(1,this.initiator);
-        //console.log(1,this.responder);
-
-        const self = this;
-        options["sign"] = async (tag, tx) => {
-            console.log(tag, tx);
-            try {
-                const txData = Crypto.deserialize(Crypto.decodeTx(tx), { prettyTags: true })
-                console.log(JSON.stringify(txData));
-            } catch (err) {
-                //console.log(err);
-            }
-            if (tag === "shutdown_sign_ack") {
-                console.log("TX:", tx)
-            }
-            return self.nodeuser.signTransaction(tx)
-        };
-
-        return options;
     }
 
     async init() {
@@ -170,7 +135,23 @@ class MyChannel extends events.EventEmitter {
     }
 
     async initChannel() {
-        let options = this.get_options();
+        //     url:  WS_URL+'/channel',
+        let options = jstools.clone(this.options);
+        options["sign"] = async (tag, tx) => {
+            console.log(tag, tx);
+            try {
+                const txData = Crypto.deserialize(Crypto.decodeTx(tx),
+                                                { prettyTags: true })
+                console.log(JSON.stringify(txData));
+            } catch (err) {
+                //console.log(err);
+            }
+            if (tag === "shutdown_sign_ack") {
+                console.log("TX:", tx)
+            }
+            return self.nodeuser.signTransaction(tx)
+        };
+
 
         this.channel = await Channel(options);
         this.channel.on('statusChanged', (status) => {

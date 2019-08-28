@@ -27,7 +27,7 @@ class Customer extends MyChannel {
         let serverdata = await Customer.register("client", account.publicKey,
                                                         INIT, (Date.now().toString()));
         let address = serverdata["address"];
-        return new Customer(account.publicKey, account.secretKey, address, INIT);
+        return new Customer(account.publicKey, account.secretKey, address, INIT, serverdata["options"]);
     }
 
     async showBalances(msg) {

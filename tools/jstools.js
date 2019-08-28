@@ -187,6 +187,14 @@ function validateKeyObj (obj) {
 
 function voidf() {}
 
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    let copy = obj.constructor();
+    for (let attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
 
 module.exports = {
   get_account,
@@ -194,5 +202,6 @@ module.exports = {
   getEnv,
   getArgv,
   genUUID,
-    voidf
+    voidf,
+    clone
 }

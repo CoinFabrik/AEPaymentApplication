@@ -47,6 +47,10 @@ export class InvalidUpdateNegativeAmount extends Error {
     }
 }
 
+const PING = "beep beep";
+const PINGACK = "heartbeat_ack";
+const info = "info";
+
 
 export abstract class ServerChannel extends EventEmitter {
     readonly RECONNECT = false;
@@ -182,7 +186,7 @@ export abstract class ServerChannel extends EventEmitter {
             if ((msg[info]==PING)||(msg[info]==PINGACK)) {
             } else {
                 try {
-                    msg[info] = JSON.parse(msg[info])
+                    msg[info] = JSON.parse(msg[info]);
                     this.hub.emit("user-"+msg[info]["type"], msg, self);
                 } catch(err) {
                     console.log(err);
@@ -199,10 +203,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     static base_options() {
         return clone({
-            // initiatorId: "",
-            // url: WS_URL + '/channel',
-            // initiatorAmount: null,
-            // role: this.role,
+            // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
             responderAmount: 1,
@@ -218,10 +219,9 @@ export abstract class ServerChannel extends EventEmitter {
         options["url"] = WS_URL + '/channel';
         options["initiatorAmount"] = this.client.amount;
         options["role"] = this.role;
+        options["initiatorId"] = this.initiator;
         this.log("init:" + this.initiator);
         this.log("resp:" + this.responder);
-        options["initiatorId"] = this.initiator;
-        options["responderId"] = this.responder;
         return options;
     }
 
@@ -305,7 +305,7 @@ export abstract class ServerChannel extends EventEmitter {
             self.onStatusChange(status.toUpperCase());
         });
         this.channel.on('error', (error) => {
-            console.log("ERRRORRRRR:", error);
+            console.log("channel-error:", error);
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
@@ -322,7 +322,7 @@ export abstract class ServerChannel extends EventEmitter {
                 if (state===self.channel_state) {
                     setTimeout(() => {self.saveState();}, 300)
                 } else {
-                    console.log("STATE:", JSON.stringify(s))
+                    this.log("STATE: " + JSON.stringify(s));
                     self.channel_state = state;
                 }
             })
@@ -437,9 +437,6 @@ export class CustomerChannel extends ServerChannel {
     // }
 }
 
-const PING = "beep beep";
-const PINGACK = "heartbeat-ack";
-const info = "info";
 
 export class MerchantChannel extends ServerChannel {
     readonly Name: Actor = "merchant";
