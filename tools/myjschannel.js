@@ -149,7 +149,7 @@ class MyChannel extends events.EventEmitter {
             if (tag === "shutdown_sign_ack") {
                 console.log("TX:", tx)
             }
-            return self.nodeuser.signTransaction(tx)
+            return this.nodeuser.signTransaction(tx)
         };
 
 
