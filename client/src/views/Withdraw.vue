@@ -59,29 +59,11 @@
 <script>
 /* eslint-disable no-console */
 
-const STATUS_USER_INPUT = 0,
-  STATUS_QUERY_BALANCE = 1;
-
-import {
-  AeText,
-  AeAmountInput,
-	AeLoader,
-	AeDivider,
-  AeButton
-} from "@aeternity/aepp-components";
-
+const STATUS_USER_INPUT = 0, STATUS_QUERY_BALANCE = 1;
 import BigNumber from "bignumber.js";
 
 export default {
   name: "Withdraw",
-  components: {
-    AeButton,
-    AeText,
-		AeLoader,
-		AeDivider,
-    AeAmountInput
-  },
-  props: {},
   data() {
     return {
       viewState: STATUS_USER_INPUT,

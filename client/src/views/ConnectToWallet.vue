@@ -4,58 +4,25 @@
       v-if="isAtInitialState"
       class="content"
     >
-      <AeText
-        face="sans-l"
-        weight="600"
-      >
-        Authorization
-      </AeText>
-      <AeDivider style="margin-top:20px; margin-bottom:20px;" />
-      <AeText
-        weight="500"
-        face="sans-s"
-      >
-        This payments application must be connected to your wallet.
-      </AeText>
-      <AeText
-        weight="400"
-        face="sans-xs"
-      >
-        You will be able to withdraw the AEs you receive and pay fees when needed.
-      </AeText>
-      <AeText
-        weight="400"
-        face="sans-xs"
-      >
-        You will be asked to confirm every transaction.
-      </AeText>
-      <br>
-      <AeButton
-        face="round"
-        fill="primary"
-        class="button"
-        extend
-        @click="connectToBaseApp()"
-      >
-        Connect your wallet
-      </AeButton>
+      <ViewTitle
+        title="Connect your wallet"
+      />
+      <ViewDescription
+        first="This payments application must be connected to your wallet."
+        customer="You will be able to fund the channel and then make payments. You will be asked to confirm every transaction."
+        merchant="You will be able to withdraw the AEs you receive and pay fees when needed. You will be asked to confirm every transaction."
+      />
+      <ViewButtonSection
+        :buttons="[{name: 'Sure!', action: connectToBaseApp}]"
+      />
     </div>
-    <div v-if="isConnecting">
-      <AeText>Please wait...</AeText>
-      <AeLoader />
-    </div>
+    <LoadingModal />
   </b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
 import aeternity from "../controllers/aeternity.js";
-import {
-  AeText,
-  AeButton,
-  AeLoader,
-  AeDivider
-} from "@aeternity/aepp-components";
 
 const STATUS_OFFLINE = 0,
   STATUS_INIT = 0,
@@ -64,7 +31,6 @@ const STATUS_OFFLINE = 0,
 
 export default {
   name: "ConnectToWallet",
-  components: { AeButton, AeLoader, AeText, AeDivider },
   data() {
     return {
       status: STATUS_OFFLINE,
@@ -126,13 +92,15 @@ export default {
   },
   methods: {
     async connectToBaseApp() {
-      this.status = STATUS_CONNECTING;
+			this.status = STATUS_CONNECTING;
+			this.$bvModal.show('loadingModal')
       try {
         const connectStatus = await aeternity.connectToBaseApp();
         if (connectStatus.status) {
           console.log("Aepp connect status Success");
           this.$store.commit("setAeClient", aeternity.client);
-          this.status = STATUS_CONNECTED;
+					this.status = STATUS_CONNECTED
+					this.$bvModal.hide('loadingModal');
           this.$router.push({
             name: "scanqr",
             params: { subview: "onboarding" }
@@ -142,14 +110,16 @@ export default {
             "Oops! We could not connect to your wallet",
             connectStatus.error.toString()
           );
-          this.status = STATUS_INIT;
+					this.status = STATUS_INIT;
+					this.$bvModal.hide('loadingModal')
         }
       } catch (e) {
         this.$displayError(
           "Oops! We could not connect to your wallet",
           e.toString()
         );
-        this.status = STATUS_INIT;
+				this.status = STATUS_INIT;
+				this.$bvModal.hide('loadingModal')
       }
     }
   }
@@ -162,7 +132,7 @@ export default {
 	}
 	.content {
 		position: relative;
-		height: 80%;
+		height: 100%;
 	}
 	.button {
 		position: absolute !important;

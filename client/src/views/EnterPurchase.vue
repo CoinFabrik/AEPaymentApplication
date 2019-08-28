@@ -50,22 +50,10 @@
 
 <script>
 /* eslint-disable no-console */
-
-import {
-  AeButton,
-  AeText,
-  AeInput
-} from "@aeternity/aepp-components";
-
 import { makePaymentQrData } from "../util/messages";
 
 export default {
   name: "EnterPurchase",
-  components: {
-    AeButton,
-    AeText,
-    AeInput
-  },
   props: {},
   data() {
     return {

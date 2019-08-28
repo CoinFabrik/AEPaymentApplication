@@ -36,21 +36,8 @@
 <script>
 import HubConnection from "../controllers/hub";
 
-import {
-  AeText,
-	AeQRCode,
-	AeDivider,
-  AeButton
-} from "@aeternity/aepp-components";
-
 export default {
   name: "MainMenu",
-  components: {
-    AeText,
-		AeQRCode,
-		AeDivider,
-    AeButton
-  },
   props: {
     message: Object
   },

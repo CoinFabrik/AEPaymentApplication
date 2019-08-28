@@ -10,15 +10,10 @@
 
 const STATUS_ACK_HUB = 1, STATUS_WORKING = 2, STATUS_STOPPED = 3;
 
-import { AeText, AeLoader } from "@aeternity/aepp-components";
 import HubConnection from "../controllers/hub";
 
 export default {
   name: "ChannelOpen",
-  components: {
-    AeText,
-    AeLoader
-  },
   props: {},
   data() {
     return {
@@ -150,7 +145,10 @@ export default {
         this.$swal({
 					type: "success",
 					title: "Success",
-          text:"Every time you get paid, the money will be addressed to your channel. \n Once you close it, all the funds will be withdrawn to your wallet."
+					text: this.$isMerchantAppRole ?
+						"Every time you get paid, the money will be addressed to your channel. Once you close it, all the funds will be withdrawn to your wallet."
+						:
+						"Now your channel balance is $$$. You can deposit more AEs when needed."
 				}).then(this.$router.replace("main-menu"));
 
       } else if (status === "disconnected") {

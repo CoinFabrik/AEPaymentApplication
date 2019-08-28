@@ -9,8 +9,39 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import { LayoutPlugin, ModalPlugin, ButtonPlugin } from 'bootstrap-vue'
 import { sync } from 'vuex-router-sync'
+import AeBanner from "./components/AeBanner";
+import ViewTitle from "./components/ViewTitle";
+import ViewDescription from "./components/ViewDescription";
+import ViewButtonSection from "./components/ViewButtonSection";
+import LoadingModal from "./components/LoadingModal";
+import ViewBalances from "./components/ViewBalances";
+import ViewTransaction from "./components/ViewTransaction";
+import { AeButton, AeDivider, AeText, AeAmount,
+	AeAmountInput, AePanel, AeLoader,
+	AeList, AeListItem, AeInput, AeQRCode, AeIcon
+ } from "@aeternity/aepp-components";
 
 window.eventBus = new Vue();
+
+Vue.component('AeBanner', AeBanner)
+Vue.component('AeQRCode', AeQRCode)
+Vue.component('AeIcon', AeIcon)
+Vue.component('AePanel', AePanel)
+Vue.component('AeAmountInput', AeAmountInput)
+Vue.component('AeListItem', AeListItem)
+Vue.component('AeList', AeList)
+Vue.component('AeInput', AeInput)
+Vue.component('AeButton', AeButton)
+Vue.component('AeLoader', AeLoader)
+Vue.component('AeDivider', AeDivider)
+Vue.component('AeAmount', AeAmount)
+Vue.component('AeText', AeText)
+Vue.component('ViewTitle', ViewTitle)
+Vue.component('ViewDescription', ViewDescription)
+Vue.component('ViewTransaction', ViewTransaction)
+Vue.component('ViewBalances', ViewBalances)
+Vue.component('ViewButtonSection', ViewButtonSection)
+Vue.component('LoadingModal', LoadingModal)
 
 Vue.use(ButtonPlugin)
 Vue.use(LayoutPlugin)

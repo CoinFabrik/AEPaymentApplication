@@ -56,21 +56,8 @@
 </template>
 
 <script>
-import {
-  AeText,
-  AeButton,
-  AeDivider,
-  AeIcon
-} from "@aeternity/aepp-components";
-
 export default {
   name: "Success",
-  components: {
-    AeText,
-    AeButton,
-    AeDivider,
-    AeIcon
-  },
   props: {
     txKind: String
   },

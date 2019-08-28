@@ -1,12 +1,6 @@
 <template>
   <b-container id="confirm-tx">
-    <AeText
-      v-if="txKind === 'deposit'"
-      weight="bold"
-      align="center"
-    >
-      Deposit detail
-    </AeText>
+    <ViewTitle title="Deposit details" />
 
     <AeText
       v-if="txKind === 'withdraw'"
@@ -14,105 +8,21 @@
     >
       Please review and confirm your CHANNEL WITHDRAW transaction
     </AeText>
-    <AePanel
-      id="tx_confirm_panel"
-      fill="secondary"
-    >
-      <!--
-      <AeText align="left" weight="bold" fill="alternative">TX Description</AeText>
-      <AeText align="left" face="sans-s">{{ description }}xyz</AeText>
-      <AeDivider />
-      <AeText align="left" weight="bold" fill="alternative">Destination Address</AeText>
-      <AeText align="left" face="sans-s">{{ destination }}xyz</AeText>
-      <AeDivider />
-      -->
-      <AeText
-        align="left"
-        weight="bold"
-        fill="alternative"
-      >
-        Amount
-      </AeText>
-      <AeText
-        align="left"
-        face="sans-s"
-      >
-        {{ amountAE }} AE
-      </AeText>
-      <AeDivider />
-      <AeText
-        v-show="fee != '' "
-        align="left"
-        weight="bold"
-        fill="alternative"
-      >
-        Fee
-      </AeText>
-      <AeText
-        v-show="fee != '' "
-        align="left"
-        face="sans-s"
-      >
-        {{ feeAE }} AE
-      </AeText>
-      <!--
-        <AeDivider />
-      <AeText align="left" weight="bold" fill="alternative">Transaction Priority</AeText>
-
-      <AeSwitch
-        style="font-family: sans-serif;"
-        name="tx_prio"
-        :choices="[
-                { label: 'NORMAL', value: 'normal' },
-                { label: 'HIGH', value: 'high' },
-                { label: 'TOP', value: 'top' }
-                ]"
-      -->
-    </AePanel>
-    <div id="button-group">
-      <b-row
-        align-h="center"
-        class="xs-1"
-      >
-        <AeButton
-          face="round"
-          fill="primary"
-          @click="confirm()"
-        >
-          Confirm
-        </AeButton>
-      </b-row>
-      <b-row align-h="center">
-        <AeButton
-          face="round"
-          fill="negative"
-          @click="cancel()"
-        >
-          Cancel
-        </AeButton>
-      </b-row>
-    </div>
+    <ViewTransaction
+      :amount="amountAE"
+      :fee="feeAE"
+    />
+    <ViewButtonSection
+      :buttons="[{name:'Confirm', action: confirm},{name:'Cancel', action: cancel, cancel:true}]"
+    />
   </b-container>
 </template>
 
 <script>
-import {
-  AeText,
-  AeButton,
-  AePanel,
-  AeDivider
-} from "@aeternity/aepp-components";
-
 import BigNumber from "bignumber.js";
 
 export default {
   name: "ConfirmTx",
-  components: {
-    AeButton,
-    AeText,
-    AePanel,
-    AeDivider
-  },
   props: {
     txKind: String, // decide following fields based on txKind?
     amountAettos: String,

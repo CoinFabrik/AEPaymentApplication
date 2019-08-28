@@ -1,8 +1,20 @@
 <template>
   <div class="error-content">
-    <ae-icon fill="primary" face="round" name="close" />
-    <AeText face="sans-l" weight="400" fill="alternative">{{ errorTitle }}</AeText>
-    <AeText face="mono-s">{{ errorDescription }}</AeText>
+    <ae-icon
+      fill="primary"
+      face="round"
+      name="close"
+    />
+    <AeText
+      face="sans-l"
+      weight="400"
+      fill="alternative"
+    >
+      {{ errorTitle }}
+    </AeText>
+    <AeText face="mono-s">
+      {{ errorDescription }}
+    </AeText>
   </div>
 </template>
 

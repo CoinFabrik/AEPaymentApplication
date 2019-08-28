@@ -1,147 +1,28 @@
 <template>
   <b-container class="main-app">
-    <AeText
-      fill="secondary"
-      align="left"
-      face="sans-s"
-    >
-      Wallet Balance
-    </AeText>
-    <ae-amount
-      class="amount"
-      align="left"
-      :value="getMyWalletBalance.toFixed(2)"
-      unit="Æ"
-      size="small"
-      clear="right"
+    <ViewTitle title="Menu" />
+    <ViewBalances
+      :wallet-balance="getMyWalletBalance.toFixed(2)"
+      :channel-balance="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
     />
 
-    <AeText
-      fill="secondary"
-      align="left"
-      face="sans-s"
-    >
-      Channel Balance
-    </AeText>
-    <ae-amount
-      class="amount"
-      :value="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
-      unit="Æ"
-      size="small"
-    />
-
-    <AeDivider />
-    <!-- Client Menu -->
-
-    <div
+    <ViewButtonSection
       v-if="$isClientAppRole"
-      class="button-group"
-    >
-      <AeButton
-        class="margin"
-        face="round"
-        fill="primary"
-        extend
-        @click="deposit()"
-      >
-        Deposit Funds
-      </AeButton>
-      <AeButton
-        class="margin"
-        face="round"
-        fill="primary"
-        extend
-        @click="scanTxQr()"
-      >
-        Pay With Qr Code
-      </AeButton>
-      <AeButton
-        class="margin"
-        face="round"
-        fill="primary"
-        extend
-        @click="history()"
-      >
-        History
-      </AeButton>
-      <AeButton
-        class="margin"
-        face="round"
-        fill="secondary"
-        extend
-        @click="closeChannelConfirmation()"
-      >
-        Close Channel
-      </AeButton>
-    </div>
+      :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan A Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action:closeChannelConfirmation, cancel:true}]"
+    />
 
-    <!-- Merchant Menu -->
-
-    <div
+    <ViewButtonSection
       v-if="$isMerchantAppRole"
-      class="button-group"
-    >
-      <AeButton
-        face="round"
-        fill="primary"
-        class="margin"
-        extend
-        @click="withdraw()"
-      >
-        Withdraw Funds
-      </AeButton>
-
-      <AeButton
-        face="round"
-        fill="primary"
-        class="margin"
-        extend
-        @click="generatePaymentQr()"
-      >
-        Generate Payment Qr
-      </AeButton>
-
-      <AeButton
-        face="round"
-        fill="primary"
-        class="margin"
-        extend
-        @click="history()"
-      >
-        History
-      </AeButton>
-      <AeButton
-        face="round"
-        fill="secondary"
-        class="margin"
-        extend
-        @click="closeChannelConfirmation()"
-      >
-        Close Channel
-      </AeButton>
-    </div>
+      :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{ name: 'My Activity', action: history}, {name:'Close channel', action:closeChannelConfirmation, cancel:true}]"
+    />
   </b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
 
-import {
-  AeText,
-  AeAmount,
-	AeButton,
-	AeDivider
-} from "@aeternity/aepp-components";
-//import { setInterval } from "timers";
-
 export default {
   name: "MainMenu",
-  components: {
-    AeText,
-    AeAmount,
-		AeButton,
-		AeDivider
-  },
   computed: {
     getAddress: function() {
       return this.$store.getters.initiatorId;

@@ -1,43 +1,26 @@
 <template>
   <b-container class="register-merch">
-    <AeText
-      weight="bold"
-      face="sans-l"
-    >
-      Register
-    </AeText>
-    <br>
-    <AeDivider />
-    <br>
-    <AeText
-      weight="bold"
-      face="sans-s"
-    >
-      {{ this.$isMerchantAppRole ? "What is the name of your store?" : "What is your name?" }}
-    </AeText>
-    <AeText
-      face="sans-xs"
-    >
-      This name will allow others to identify your payments or payment requests.
-    </AeText>
-    <br>
+    <ViewTitle
+      title="Identify yourself"
+    />
+    <ViewDescription
+      :first="this.$isMerchantAppRole ? 'Enter the name of your store' : 'Enter your name'"
+      customer="This name will allow merchants to identify your payments."
+      merchant="This name will allow customers to identify your payment requests."
+    />
+
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
       v-model="nameInput"
-      placeholder="Name..."
+      style="border-bottom: 1px solid #CC4040;"
+      placeholder="Your name..."
     />
     <AeLoader v-show="fetchingName" />
-    <br>
-    <AeButton
-      v-show="!fetchingName"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
+
+    <ViewButtonSection
+      :buttons="[{name: 'Confirm', action: confirm}]"
+    />
   </b-container>
 </template>
 
@@ -45,24 +28,9 @@
 /* eslint-disable no-console */
 
 import HubConnection from "../controllers/hub";
-import {
-  AeText,
-  AeButton,
-  AeInput,
-	AeLoader,
-	AeDivider
-} from "@aeternity/aepp-components";
 
 export default {
   name: "RegisterUser",
-  components: {
-    AeButton,
-    AeText,
-    AeLoader,
-		AeInput,
-		AeDivider
-  },
-  props: {},
   data() {
     return {
       fetchingName: false,

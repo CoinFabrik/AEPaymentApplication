@@ -131,39 +131,19 @@
         </AeButton>
       </AeList>
     </div>
-    <div class="footer">
-      <AeButton
-        v-if="isIOS()"
-        face="round"
-        fill="secondary"
-        extend
-        @click="goBack"
-      >
-        Cancel
-      </AeButton>
-    </div>
+    <ViewButtonSection
+      v-if="isIOS()"
+      :buttons="[{name:'Cancel', action: goBack, cancel:true}]"
+    />
   </b-container>
 </template>
 
 <script>
-  import {
-    AeText,
-    AeList,
-    AeListItem,
-		AeButton
-	} from "@aeternity/aepp-components";
-
   import getTxHistory from './../controllers/requests';
   import BigNumber from 'bignumber.js';
 
   export default {
     name: "History",
-    components: {
-      AeText,
-      AeList,
-      AeListItem,
-			AeButton
-		},
 		data: () => {
 			return {
 				history: [
@@ -185,7 +165,7 @@
 				});
 			},
       goBack: function() {
-        this.$router.go(-1);
+        this.$router.back();
 			},
 			isIOS: function() {
 				if(/iPhone/i.test(navigator.userAgent)) {

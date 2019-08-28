@@ -81,7 +81,6 @@
 <script>
 /* eslint-disable no-console */
 
-import { AeText, AeButton, AeDivider } from "@aeternity/aepp-components";
 import BigNumber from "bignumber.js";
 import { clearInterval, setInterval } from "timers";
 import HubConnection from "../controllers/hub";
@@ -91,11 +90,6 @@ let paymentProcessor;
 
 export default {
   name: "ConfirmPayment",
-  components: {
-    AeButton,
-    AeDivider,
-    AeText
-  },
   props: {
     paymentData: Object
   },

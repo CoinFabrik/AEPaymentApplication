@@ -1,6 +1,10 @@
 <template>
   <div class="qr-code-reader">
-    <div v-if="browserReader" v-show="cameraAllowed" class="video-wrapper">
+    <div
+      v-if="browserReader"
+      v-show="cameraAllowed"
+      class="video-wrapper"
+    >
       <video ref="qrCodeVideo" />
     </div>
   </div>

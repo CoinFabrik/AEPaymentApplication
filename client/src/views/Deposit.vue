@@ -3,42 +3,19 @@
     id="deposit"
     class="content"
   >
-    <AeText
-      weight="bold"
-      face="sans-l"
-    >
-      Deposit
-    </AeText>
-    <AeDivider style="margin-top:20px; margin-bottom:20px;" />
+    <ViewTitle
+      title="Fund your channel"
+    />
     <div v-if="initialDeposit">
-      <div v-if="$isClientAppRole">
-        <AeText face="sans-s">
-          Please enter an amount of AE to deposit for channel open.
-        </AeText>
-        <AeText face="sans-s">
-          You can add more tokens later
-        </AeText>
-      </div>
-
-      <div v-if="$isMerchantAppRole">
-        <AeText
-          weight="500"
-          face="sans-s"
-        >
-          To open a channel, you have to place a {{ merchantInitialDepositAE }} guarantee deposit. (*)
-        </AeText>
-        <br>
-        <AeText
-          face="sans-s"
-          weight="700"
-        >
-          This deposit will be reimbursed once you close this channel.
-        </AeText>
-      </div>
+      <ViewDescription
+        :first="'Your wallet balance is ' + balance + ' AEs'"
+        :merchant="'To open a channel, you have to place a ' + merchantInitialDepositAE + ' AEs guarantee deposit. This deposit will be reimbursed once you close this channel.'"
+        :customer="'Please enter the amount to deposit into your channel. You will be able to add more AEs later and to withdraw all your funds whenever you want.'"
+      />
     </div>
     <div v-else>
       <div v-if="$isClientAppRole">
-        <AeText>How many tokens do you want to deposit in the PoS channel?</AeText>
+        <AeText>How much do you want to deposit in your channel?</AeText>
       </div>
     </div>
 
@@ -64,32 +41,11 @@
         v-show="$isClientAppRole"
         face="mono-xs"
       >
-        (*) Transaction fee: {{ estimatedFeeAE }}
+        Transaction fee: {{ estimatedFeeAE }} AEs
       </AeText>
     </div>
-    <br>
-    <AeButton
-      face="round"
-      fill="primary"
-      class="margin"
-      extend
-      :disabled="depositInput.amount <= 0 || isQueryingBalance"
-      @click="deposit()"
-    >
-      Deposit
-    </AeButton>
-    <AeButton
-      face="round"
-      fill="secondary"
-      class="margin"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
-    <AeText
-      face="mono-xs"
-      weight="500"
+    <ViewButtonSection
+      :buttons="[{name:'Deposit', action: deposit}, {name:'Cancel', action:cancel, cancel:true}]"
     />
   </b-container>
 </template>
@@ -99,21 +55,11 @@
 
 const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
-
-import {
-  AeText,
-  AeAmountInput,
-  AeLoader,
-  AeButton,
-  AeDivider
-} from "@aeternity/aepp-components";
-
 import BigNumber from "bignumber.js";
 import aeternity from "../controllers/aeternity";
 
 export default {
   name: "Deposit",
-  components: { AeButton, AeText, AeLoader, AeAmountInput, AeDivider },
   props: {
     initialDeposit: Boolean
   },
@@ -132,7 +78,7 @@ export default {
       return parseInt(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT) / 10 ** 18;
     },
     balance() {
-      return this.$store.state.balance;
+      return (BigNumber(this.$store.state.balance).dividedBy(10**18)).toFixed(2, BigNumber.ROUND_DOWN);
     },
     isWaitingUserInput() {
       return this.viewState == STATUS_USER_INPUT;
@@ -146,14 +92,14 @@ export default {
     estimatedFeeAE() {
       return this.estimatedFee / 10 ** 18;
     }
-  },
+	},
   methods: {
     cancel() {
       this.$router.back();
     },
     setWaitingInputState() {
       this.viewState = STATUS_USER_INPUT;
-    },
+		},
     async deposit() {
       console.log("Setting status to STATUS_QUERY_BALANCE");
       this.viewState = STATUS_QUERY_BALANCE;
@@ -203,7 +149,10 @@ export default {
     onAmountInput(v) {
       this.depositInput = v;
     }
-  }
+	},
+	mounted() {
+		this.$store.dispatch('updateOnchainBalance');
+	}
 };
 </script>
 

@@ -1,17 +1,35 @@
 <template>
-	<div :class="{ fadeout: !isLoading }">
-		<div class="loader">
-			<b-container class="image-splash">
-				<b-row>
-					<b-col md="6" offset-md="3">
-						<img id="ae-logo" alt="AE-logo" src="./../assets/ae2x.png"/>
-						<ae-text weight="bold" fill="white" face="sans-l">æternity</ae-text>
-						<ae-text fill="white" face="sans-xs">BLOCKCHAIN</ae-text>
-					</b-col>
-				</b-row>
-			</b-container>
-		</div>
-	</div>
+  <div :class="{ fadeout: !isLoading }">
+    <div class="loader">
+      <b-container class="image-splash">
+        <b-row>
+          <b-col
+            md="6"
+            offset-md="3"
+          >
+            <img
+              id="ae-logo"
+              alt="AE-logo"
+              src="./../assets/ae2x.png"
+            >
+            <ae-text
+              weight="bold"
+              fill="white"
+              face="sans-l"
+            >
+              æternity
+            </ae-text>
+            <ae-text
+              fill="white"
+              face="sans-xs"
+            >
+              BLOCKCHAIN
+            </ae-text>
+          </b-col>
+        </b-row>
+      </b-container>
+    </div>
+  </div>
 </template>
 
 
@@ -21,8 +39,8 @@
 
 	export default {
 		name: "LoadingScreen",
-		props: ["isLoading"],
 		components: { AeText },
+		props: ["isLoading"],
 	};
 </script>
 

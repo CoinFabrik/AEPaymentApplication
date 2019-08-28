@@ -19,16 +19,11 @@ const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
   STATUS_TRACK_TX_PROGRESS = 1;
 import aeternity from "../controllers/aeternity"
-import { AeText, AeLoader } from "@aeternity/aepp-components";
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 
 export default {
   name: "CommitAndWaitTx",
-  components: {
-    AeText,
-    AeLoader
-  },
   props: {
     txKind: String,
     txParams: Object

@@ -1,16 +1,12 @@
 <template>
   <b-container class="scanqrview">
+    <ViewTitle
+      :title="subview === 'pay-with-qr' ? 'Scan the payment request QR code from the merchant\'s device.' : 'Scan the QR code to open the payments channel.'"
+    />
     <b-row align-h="center">
-      <!-- <div v-if="this.subview === 'onboarding'">
-				<AeText face="sans-s">
-					To access AE Universe Services, please scan the "Onboarding" QR Code at your nearest AEUniverse Conference
-					Stand
-				</AeText>
-			</div>-->
-      <!-- <br> -->
-      <div v-if="subview === 'pay-with-qr'">
+      <div v-if="">
         <AeText weight="500">
-          Scan a QR Code for your desired transaction
+
         </AeText>
       </div>
 
@@ -20,13 +16,13 @@
           id="payment-code-input"
           type="text"
         >
-        <button
+        <AeButton
           id="load-payment-code"
           text="Load"
           @click="loadPaymentCode"
         >
           Load
-        </button>
+        </AeButton>
       </div>
 
       <div
@@ -44,6 +40,9 @@
         </div>
       </div>
     </b-row>
+    <ViewButtonSection
+      :buttons="[{name: 'Cancel', action: cancel, cancel:true}]"
+    />
   </b-container>
 </template>
 
@@ -51,7 +50,6 @@
 /* eslint-disable no-console */
 
 import QrCodeReader from "../components/QrCodeReader.vue";
-import { AeText } from "@aeternity/aepp-components";
 //import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
@@ -62,8 +60,7 @@ const uuidv4 = require("uuid/v4");
 export default {
   name: "ScanQR",
   components: {
-    AeText,
-    QrCodeReader
+		QrCodeReader,
   },
   props: {
     subview: String
@@ -266,15 +263,18 @@ export default {
     },
     async doOnboardingProcess() {
       this.$router.push("register-user");
-    }
+		},
+		cancel() {
+			this.$router.back()
+		}
   }
 };
 </script>
 
-<style>
+<style scoped>
 #scan_qr_subcontainer {
-  height: 150px;
-  width: 150px;
+  height: 250px;
+  width: 250px;
   border-radius: 30px;
   border: 1px dashed red;
   position: relative;
@@ -283,9 +283,13 @@ export default {
   transform: translate(-50%, -50%);
 }
 #scan_qr_container {
-  height: 200px;
-  width: 200px;
+  height: 300px;
+  width: 300px;
   border-radius: 30px;
-  border: 1px solid #311b58;
+	border: 1px solid #311b58;
+	position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>
