@@ -16,7 +16,7 @@
         id="scan_qr_container"
         @click="onQrClick"
       >
-      <div>
+      <div v-if="subview === 'pay-with-qr'">
         <AeText face="sans-s">Payment Code</AeText>
         <input
           id="payment-code-input"
