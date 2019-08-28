@@ -79,9 +79,9 @@ export default {
         this.transactionHash
       );
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
-      if (this.elapsedBlocks == WAIT_BLOCKS + 1) {
+      if (this.elapsedBlocks >= WAIT_BLOCKS + 1) {
         // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
-        await this.navigateOut();
+        this.navigateOut();
       } else {
         setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
       }
