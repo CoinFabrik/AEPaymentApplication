@@ -25,7 +25,7 @@
         </AeButton>
       </div>
 
-      <div
+      <div v-if="!isDisabledCodeReader || subview === 'onboarding'"
         id="scan_qr_container"
         @click="onQrClick"
       >
@@ -33,7 +33,7 @@
           id="scan_qr_subcontainer"
         >
           <QrCodeReader
-            v-if="!isDisabledCodeReader"
+            :key="scanCount"
             @hasData="onQrHasData"
             @error="onQrHasError"
           />
@@ -67,6 +67,7 @@ export default {
   },
   data() {
     return {
+      scanCount: 0,
       qrData: null
     };
   },
@@ -151,26 +152,6 @@ export default {
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
 
-      // if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
-      //   this.qrData.hub = process.env.VUE_APP_TEST_HUB_IP_PORT;
-      //   this.qrData.node =
-      //     process.env.VUE_APP_TEST_API_SERVER_PROTO +
-      //     "//" +
-      //     process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
-      //     ":" +
-      //     process.env.VUE_APP_TEST_API_SERVER_PORT;
-
-      //   console.warn(
-      //     "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
-      //       this.qrData
-      //   );
-      //   this.$store
-      //     .dispatch("storeNetChannelParameters", this.qrData.hub)
-      //     .then(() => {
-      //       this.navigateOut();
-      //     });
-      // } else {
-
       if (this.subview === "pay-with-qr") {
         this.processPaymentData(scanData, true, false);
       } else if (this.subview === "onboarding") {
@@ -181,7 +162,10 @@ export default {
             title: "Oops...",
             text:
               "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
+          }).then ( () => {
+          this.scanCount++;
           });
+          
         } else {
           this.qrData = JSON.parse(scanData);
           this.$store
