@@ -1,7 +1,7 @@
 import {ServiceBase} from "./client.service";
 import {Actor, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
-import {Account, array_rm, sleep, voidf, wait_for} from "../tools";
+import {Account, array_rm, clone, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
 import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
@@ -117,10 +117,21 @@ export abstract class ServerChannel extends EventEmitter {
         return ServerChannel.pubkey;
     }
 
-    static GetInfo() {
+    static GetInfo(client?: CClient) {
+        let options = this.base_options();
+        if (client!=null) {
+            options["initiatorId"] = client.address;
+            options["initiatorAmount"] = client.amount;
+            options["url"] = "ws"+MoreConfig.USER_NODE;
+            options["role"] = "initiator";
+        } else {
+            let msg = "WARNING: GetInfo() with no client!";
+            console.log(new Error(msg))
+        }
         return {
             address: this.address,
             node: MoreConfig.USER_NODE,
+            options: options,
         }
     }
 
@@ -183,18 +194,27 @@ export abstract class ServerChannel extends EventEmitter {
         return this.opposite;
     }
 
-    get_options() {
-        let options = {
-            url: WS_URL + '/channel',
+    static base_options() {
+        return clone({
+            // initiatorId: "",
+            // url: WS_URL + '/channel',
+            // initiatorAmount: null,
+            // role: this.role,
+            responderId: this.address,
             pushAmount: 0,
-            initiatorAmount: this.client.amount,
             responderAmount: 1,
             channelReserve: 1,
             host: "localhost",
             port: 3001,
             lockPeriod: 1,
-            role: this.role,
-        };
+        });
+    }
+
+    get_options() {
+        let options = Channel.base_options();
+        options["url"] = WS_URL + '/channel';
+        options["initiatorAmount"] = this.client.amount;
+        options["role"] = this.role;
         this.log("init:" + this.initiator);
         this.log("resp:" + this.responder);
         options["initiatorId"] = this.initiator;

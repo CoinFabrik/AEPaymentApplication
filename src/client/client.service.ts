@@ -202,7 +202,7 @@ export class ClientService extends ServiceBase {
         }
         ServiceBase.addPending(toClient, toClient.kind);
         this.emit(toClient.kind + "-connection", toClient);
-        return ServerChannel.GetInfo();
+        return ServerChannel.GetInfo(toClient);
     }
 
     constructor() {
