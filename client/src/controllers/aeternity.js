@@ -28,64 +28,17 @@ const aeternity = {
 
 aeternity.connectToBaseApp = async function () {
 
-  // if (process.env.VUE_APP_USE_TEST_ENV === "1") {
-  //   //
-  //   // Forgae Testing Nodes Setup
-  //   //
-  //   aeternity.apiServerAddress = process.env.VUE_APP_TEST_API_SERVER_ADDRESS;
-  //   aeternity.apiServerPort = process.env.VUE_APP_TEST_API_SERVER_PORT;
-  //   aeternity.apiServerProtocol = process.env.VUE_APP_TEST_API_SERVER_PROTO;
-
-  //   aeternity.stateChannelApiProtocol = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PROTO;
-  //   aeternity.stateChannelApiHost = process.env.VUE_APP_TEST_STATE_CHANNEL_API_HOST;
-  //   aeternity.stateChannelApiPort = process.env.VUE_APP_TEST_STATE_CHANNEL_API_PORT;
-
-  //   const params = {
-  //     networkId: 'ae_devnet',
-  //     url: aeternity.getApiServerUrl(),
-  //     internalUrl: aeternity.getApiServerUrl(),
-  //     keypair: {
-  //       publicKey: process.env.VUE_APP_TEST_WALLET_ADDRESS,
-  //       secretKey: process.env.VUE_APP_TEST_WALLET_PK
-  //     },
-  //     compilerUrl: null
-  //   }
-
-  //   aeternity.address = process.env.VUE_APP_TEST_WALLET_ADDRESS;
-
-  //   try {
-  //     console.log("Initiating test Universal object with params:");
-  //     console.log(params);
-
-  //     aeternity.client = await Universal(params);
-  //     return { status: true, error: null };
-  //   } catch (err) {
-  //     console.log(err);
-  //     return { status: false, error: err }
-  //   }
-  // } else {
-  //
-  // Connect through the Base Aepp Object 
-  //
   try {
     if (aeternity.client != null) {
-      console.log("ConnectToBaseApp() : Already connected.");
       return;
     }
+
+    console.warn("Aeternity Client null, reconnecting...");
 
     aeternity.client = await Aepp();
 
     console.log("Connected to Base-Aepp Object. Chain height: " + await aeternity.client.height());
     console.log("Your address: " + await aeternity.client.address());
-
-    // console.log("Node Address: " + await aeternity.client.getNodeInfo());
-
-    // TODO : getNodeInfo DOES NOT WORK. All hardcoded for testnet.
-
-
-    // aeternity.stateChannelApiProtocol = "wss";
-    // aeternity.stateChannelApiHost = "aehub.coinfabrik.com";
-    // aeternity.stateChannelApiPort = "";
 
     return { status: true, error: null };
   } catch (err) {

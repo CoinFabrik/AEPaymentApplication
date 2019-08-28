@@ -142,9 +142,6 @@ export default {
               "You don't have enough channel balance to pay for this product. You may deposit funds and purchase this item again later. "
           });
         } else {
-          // generate a new UUID
-
-          if (generateNewUuid) this.qrData.id = uuidv4();
           this.navigateOut();
         }
       }
@@ -168,9 +165,7 @@ export default {
           
         } else {
           this.qrData = JSON.parse(scanData);
-          this.$store
-            .dispatch("storeNetChannelParameters", this.qrData.hub)
-            .then(() => this.navigateOut());
+          this.navigateOut();
         }
       }
     },
@@ -197,9 +192,7 @@ export default {
             "VUE_APP_DISABLE_QRCODES active. Setup simulated onboarding QR data: " +
               this.qrData
           );
-          this.$store
-            .dispatch("storeNetChannelParameters", this.qrData.hub)
-            .then(() => this.navigateOut());
+          this.navigateOut();
         } else if (this.subview === "scanaddress") {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
           this.navigateOut();
@@ -246,6 +239,7 @@ export default {
       }
     },
     async doOnboardingProcess() {
+      this.$store.commit('loadHubIpAddr', this.qrData.hub);
       this.$router.push("register-user");
 		},
 		cancel() {

@@ -7,16 +7,17 @@ import aeternity from './controllers/aeternity';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  plugins: [createPersistedState({ paths: ["channelParams", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route.*"] })],
+  plugins: [createPersistedState({ paths: ["channelOptions", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route.*"] })],
   state: {
     balance: 0,
     aeClient: null,
     onboardingDone: false,
-    channelParams: null,
+    channelOptions: null,
     channel: null,
     channelReconnectInfo: { offChainTx: null, channelId: null },
     initiatorBalance: null,
     responderBalance: null,
+    initiatorAmount: null,
     hubBalance: null,
     hubUrl: null,
     hubAddress: null,
@@ -25,13 +26,10 @@ export default new Vuex.Store({
   },
   getters: {
     initiatorAddress(state) {
-      return state.channelParams.initiatorId;
+      return state.channelOptions.initiatorId;
     },
     responderAddress(state) {
-      return state.channelParams.responderId;
-    },
-    initiatorAmount(state) {
-      return state.channelParams.initiatorAmount;
+      return state.channelOptions.responderId;
     }
   },
   mutations: {
@@ -41,12 +39,10 @@ export default new Vuex.Store({
     updateBalance(state, balance) {
       state.balance = balance;
     },
-    loadChannelParams(state, params) {
-      state.channelParams = params;
+    loadChannelOptions(state, params) {
+      state.channelOptions = params;
     },
-    setResponderId(state, addr) {
-      state.channelParams.responderId = addr;
-    },
+    
     loadHubIpAddr(state, url) {
       state.hubUrl = url;
     },
@@ -57,18 +53,13 @@ export default new Vuex.Store({
       state.hubNode = node;
     },
     setInitialDeposit(state, amount) {
-      if (state.channelParams !== null) {
-        state.channelParams.initiatorAmount = amount;
-      }
+        state.initiatorAmount = amount;
     },
     setUserName(state, name) {
       state.userName = name;
     },
     setChannel(state, channel) {
       state.channel = channel;
-    },
-    setChannelApiUrl(state, apiUrl) {
-      state.channelParams.url = apiUrl;
     },
     setChannelReconnectInfo(state, offChainTx, channelId) {
       state.channelReconnectInfo.offChainTx = offChainTx;
@@ -135,7 +126,7 @@ export default new Vuex.Store({
     },
     async createChannel({ commit, state }) {
       return new Promise((resolve, reject) => {
-        aeternity.createChannel(state.channelParams).then(
+        aeternity.createChannel(state.channelOptions).then(
           function (channel) {
             commit('setChannel', channel);
             // Broadcast channel messages
@@ -187,9 +178,9 @@ export default new Vuex.Store({
       });
     },
     async reconnectChannel({ commit, state }) {
-      state.channelParams.offChainTx = state.channel.id;
-      state.channelParams.existingChannelId = state.channelReconnectInfo.channelId;
-      aeternity.createChannel(state.channelParams).then(
+      state.channelOptions.offChainTx = state.channel.id;
+      state.channelOptions.existingChannelId = state.channelReconnectInfo.channelId;
+      aeternity.createChannel(state.channelOptions).then(
         function (channel) {
           commit('setChannel', channel);
         }
@@ -208,29 +199,14 @@ export default new Vuex.Store({
         }
       );
     },
-    async storeNetChannelParameters({ commit, state }, hubIpAddr) {
-      let params = {
-        initiatorId:
-          process.env.VUE_APP_TEST_ENV !== "0"
-            ? await state.aeClient.address()
-            : process.env.VUE_APP_TEST_WALLET_ADDRESS,
-        responderId: null, // known after connection with Hub
-        pushAmount: process.env.VUE_APP_CHANNEL_PUSH_AMOUNT,
-        initiatorAmount: 0,
-        responderAmount: process.env.VUE_APP_CHANNEL_RESPONDER_AMOUNT,
-        channelReserve: process.env.VUE_APP_CHANNEL_RESERVE,
-        ttl: process.env.VUE_APP_CHANNEL_TTL,
-        lockPeriod: process.env.VUE_APP_CHANNEL_LOCK_PERIOD,
-        host: process.env.VUE_APP_RESPONDER_HOST,
-        port: process.env.VUE_APP_RESPONDER_PORT,
-        role: "initiator",
-        url: null, // known after connection with Hub
-        sign: state.aeClient.signFunction
-      };
+    async storeChannelOptions({ commit, state }, options) {
+      let params = options;
+      params.sign = state.aeClient.signFunction;
+      params.initiatorId = await state.aeClient.address();
 
-      console.log("Storing up Channel Parameters:" + JSON.stringify(params) + ", Hub IP: " + hubIpAddr);
-      commit("loadChannelParams", params);
-      commit("loadHubIpAddr", hubIpAddr);
+      console.log("Storing up Channel Parameters:" + JSON.stringify(params));
+      commit("loadChannelOptions", options);
+      
     }
   }
 })

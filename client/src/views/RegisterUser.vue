@@ -28,7 +28,7 @@
 /* eslint-disable no-console */
 
 import HubConnection from "../controllers/hub";
-
+import aeternity from '../controllers/aeternity'
 export default {
   name: "RegisterUser",
   data() {
@@ -47,7 +47,7 @@ export default {
       this.fetchingName = true;
       let hubConnection = new HubConnection(
         this.$store.state.hubUrl,
-        this.$store.getters.initiatorAddress
+        await aeternity.getAddress()
       );
       let res = await hubConnection.getRegisteredName(
         this.$isClientAppRole ? "client" : "merchant"
