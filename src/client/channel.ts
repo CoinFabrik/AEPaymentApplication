@@ -49,6 +49,7 @@ export class InvalidUpdateNegativeAmount extends Error {
 
 
 export abstract class ServerChannel extends EventEmitter {
+    readonly RECONNECT = false;
     private static readonly xlogger = new Logger("Channel");
     is_initiator: boolean;
     channel: any;
@@ -232,7 +233,7 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         let options = this.get_options();
 
-        if (0) { //this.channel_state!==null) {
+        if (this.RECONNECT && (this.channel_state!==null)) {
             options["offchainTx"] = this.channel_state;
             options["existingChannelId"] = this.channel_id;
             this.channel_state = null;
@@ -338,8 +339,10 @@ export abstract class ServerChannel extends EventEmitter {
         }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
-            this._initChannel().then(voidf)
-                .catch(err=>console.error("Cannot re init channel:"+err))
+            if (this.RECONNECT) {
+                this._initChannel().then(voidf)
+                    .catch(err=>console.error("Cannot re init channel:"+err))
+            }
         }
     }
 
