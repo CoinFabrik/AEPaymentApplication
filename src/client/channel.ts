@@ -232,7 +232,7 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         let options = this.get_options();
 
-        if (this.channel_state!==null) {
+        if (0) { //this.channel_state!==null) {
             options["offchainTx"] = this.channel_state;
             options["existingChannelId"] = this.channel_id;
             this.channel_state = null;
@@ -338,7 +338,8 @@ export abstract class ServerChannel extends EventEmitter {
         }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
-            this._initChannel().then(voidf).catch(err=>console.error("Cannot re init channel:"+err))
+            this._initChannel().then(voidf)
+                .catch(err=>console.error("Cannot re init channel:"+err))
         }
     }
 

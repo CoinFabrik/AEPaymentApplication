@@ -21,7 +21,8 @@ class Merchant extends MyChannel {
 
     static async Init(account) {
         let sdata = await MyChannel.register("merchant",
-                        account.publicKey, myjschannel.INITIATOR_MIN_BALANCE, "dave's beer");
+                        account.publicKey, myjschannel.INITIATOR_MIN_BALANCE,
+            "dave's beer");
         return new Merchant(account.publicKey, account.secretKey, sdata["address"], myjschannel.INITIATOR_MIN_BALANCE);
     }
 }
