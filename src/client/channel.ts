@@ -211,7 +211,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     get_options() {
-        let options = Channel.base_options();
+        let options = ServerChannel.base_options();
         options["url"] = WS_URL + '/channel';
         options["initiatorAmount"] = this.client.amount;
         options["role"] = this.role;
