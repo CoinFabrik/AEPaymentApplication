@@ -13,7 +13,6 @@ export default new Vuex.Store({
     aeClient: null,
     onboardingDone: false,
     channelOptions: null,
-    channel: null,
     channelReconnectInfo: { offChainTx: null, channelId: null },
     initiatorBalance: null,
     responderBalance: null,
@@ -152,7 +151,11 @@ export default new Vuex.Store({
                 // accepted/rejected are treated as payment-request-ack
                 // completed/canceled are treated as payment-complete-ack
                 let eventname, eventdata, info;
-                if (infoObj.type === "payment-request-accepted") {
+                if (infoObj.type === "heartbeat") {
+                  window.aehub_channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
+                  return;
+                }
+                else if (infoObj.type === "payment-request-accepted") {
                   eventname = "payment-request-ack"
                   eventdata = "accepted"
                 } else if (infoObj.type === "payment-request-rejected") {
@@ -177,15 +180,15 @@ export default new Vuex.Store({
         ).catch(err => reject(err));
       });
     },
-    async reconnectChannel({ commit, state }) {
-      state.channelOptions.offChainTx = state.channel.id;
-      state.channelOptions.existingChannelId = state.channelReconnectInfo.channelId;
-      aeternity.createChannel(state.channelOptions).then(
-        function (channel) {
-          commit('setChannel', channel);
-        }
-      )
-    },
+    // async reconnectChannel({ commit, state }) {
+    //   state.channelOptions.offChainTx = state.channel.id;
+    //   state.channelOptions.existingChannelId = state.channelReconnectInfo.channelId;
+    //   aeternity.createChannel(state.channelOptions).then(
+    //     function (channel) {
+    //       commit('setChannel', channel);
+    //     }
+    //   )
+    // },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
       aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
@@ -207,6 +210,12 @@ export default new Vuex.Store({
       console.log("Storing up Channel Parameters:" + JSON.stringify(params));
       commit("loadChannelOptions", options);
       
+    },
+    async getChannel( { dispatch,  commit, state }) {
+      if (state.store.channel === null) {
+        await dispatch('createChannel');
+      }
+      return this.store.state.channel;
     }
   }
 })
