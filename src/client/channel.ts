@@ -117,21 +117,23 @@ export abstract class ServerChannel extends EventEmitter {
         return ServerChannel.pubkey;
     }
 
-    static GetInfo(client?: CClient) {
+    static GetInfo(client: CClient) {
         let options = this.base_options();
-        if (client!=undefined) {
-            options["initiatorId"] = client.address;
-            options["initiatorAmount"] = client.amount;
-            options["url"] = "ws"+MoreConfig.USER_NODE;
-            options["role"] = "initiator";
-        } else {
-            let msg = "WARNING: GetInfo() with no client!";
-            console.log(new Error(msg))
-        }
+        options["initiatorId"] = client.address;
+        options["initiatorAmount"] = client.amount;
+        options["url"] = "ws"+MoreConfig.USER_NODE+'/channel';
+        options["role"] = "initiator";
         return {
             address: this.address,
             node: MoreConfig.USER_NODE,
             options: options,
+        }
+    }
+
+    static GetNameInfo() {
+        return {
+            address: this.address,
+            node: MoreConfig.USER_NODE,
         }
     }
 

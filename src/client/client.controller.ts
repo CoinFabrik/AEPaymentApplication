@@ -74,7 +74,7 @@ abstract class ClientController {
   @Get(":address")
   async queryClient(@Param() params): Promise<any> {
       let result = await this.service.queryClient(params.address, this.kind);
-      let response = ServerChannel.GetInfo();
+      let response = ServerChannel.GetNameInfo();
       let name = null;
       if (result!=undefined) {
           name = result.name;

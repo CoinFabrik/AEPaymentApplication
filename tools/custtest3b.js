@@ -24,7 +24,8 @@ class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
         //INIT = "2000000000000000"
-        let serverdata = await Customer.register("client", account.publicKey, INIT, (Date.now().toString()));
+        let serverdata = await Customer.register("client", account.publicKey,
+                                                        INIT, (Date.now().toString()));
         let address = serverdata["address"];
         return new Customer(account.publicKey, account.secretKey, address, INIT);
     }
