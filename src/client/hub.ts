@@ -123,7 +123,7 @@ export class Hub extends EventEmitter {
                 await RepoService.save(mca);
                 return
             }
-            await sleep(1000);
+            await sleep(5000);
         }
         this.log("Wait for balance timed out...");
         throw new PaymentTimeout();

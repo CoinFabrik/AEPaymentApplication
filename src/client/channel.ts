@@ -203,7 +203,6 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     initChannel(s: ServiceBase) {
-        this.setService(s);
         this._initChannel().then(voidf).catch(console.error);
     }
 
@@ -311,12 +310,12 @@ export abstract class ServerChannel extends EventEmitter {
         this.status = status;
         this.log(`[${this.status}]`);
         if (this.status == "OPEN") {
-            //this.hb().then(console.log).catch(console.error);
+            this.hb().then(console.log).catch(console.error);
             this.client.setChannel(this);
             ServiceBase.addClient(this.client, this.Name);
         }
         if (this.status.startsWith("DISCONNECT")) {
-            //ServiceBase.rmClient(this.client, this.Name);
+            ServiceBase.rmClient(this.client, this.Name);
             this._initChannel().then(voidf).catch(err=>console.error("Cannot re init channel:"+err))
         }
     }
@@ -340,17 +339,12 @@ export abstract class ServerChannel extends EventEmitter {
 
     async hb() {
         while (this.status == "OPEN") {
-            //this.log("sending hb..")
             await this.sendMessage({"type": "heartbeat"});
             await sleep(45 * 1000)
         }
     }
 
     ///////////////////////////////////////////////////////////
-    setService(s: ServiceBase) {
-        //this.service = s;
-    }
-
     async update(_from, _to, amount) {
         const self = this;
         try {

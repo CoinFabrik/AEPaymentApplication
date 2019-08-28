@@ -26,34 +26,36 @@ const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
 const NETWORK_ID = 'ae_devnet';
 
+const INITIATOR_MIN_BALANCE = "1000000000000000";
+
 
 console.log("hub>  ", HUBADDR);
 console.log("node> ", URL);
 
 
 async function get(url) {
+    const opts = { hostname: HUBADDR, port: HUBPORT, path: url };
     return new Promise((resolve, reject) => {
-        http.get({
-            hostname: HUBADDR,
-            port: HUBPORT,
-            path: url
-        }, (res) => {
+        http.get(opts, (res) => {
+            let rawData = '';
+
             if (res.statusCode !== 200) {
-                reject(res.statusCode);
+                reject("Request returned:" + res.statusCode +
+                        " returned when: "+JSON.stringify(opts));
             }
             res.setEncoding('utf8');
-            let rawData = '';
             res.on('data', (chunk) => {
                 rawData += chunk;
             });
             res.on('end', () => {
                 resolve(rawData);
             });
+            res.on('error', (err) => {
+                reject(err);
+            });
         });
     });
 }
-
-var INITIATOR_MIN_BALANCE = "1000000000000000";
 
 
 class MyChannel extends events.EventEmitter {
@@ -74,7 +76,6 @@ class MyChannel extends events.EventEmitter {
                 url = url + "/" + encodeURIComponent(name);
             }
             data = await get(url);
-            //console.log("data:", data)
             return JSON.parse(data);
         } catch (err) {
             console.log("server returned:", data);
@@ -119,7 +120,7 @@ class MyChannel extends events.EventEmitter {
             lockPeriod: 1,
             role: this.role,
         };
-        //console.log("options:", options);
+        console.log("options:", options);
         options["initiatorId"] = this.initiator;
         options["responderId"] = this.responder;
         //console.log(1,this.initiator);
@@ -152,8 +153,8 @@ class MyChannel extends events.EventEmitter {
             compilerUrl: compilerURL
         });
 
-        // let balance = await this.nodeuser.balance(this.pubkey);
-        // //console.log(" we: ", this.pubkey);
+        let balance = await this.nodeuser.balance(this.pubkey);
+        console.log(" we: ", this.pubkey);
         // let bal = new BigNumber(balance);
         // if(bal.isLessThan(new BigNumber(INITIATOR_MIN_BALANCE))) {
         //     console.log("balance:  ", balance);

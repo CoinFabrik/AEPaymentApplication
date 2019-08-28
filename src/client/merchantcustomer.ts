@@ -2,6 +2,7 @@ import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest, MerchantCusto
 import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
+const uuidlib = require('uuid');
 
 export class Guid {
   static generate() {
@@ -92,6 +93,7 @@ export class MerchantCustomer {
     msgPaymentAccepted(): object {
         let base = this.base();
         base["type"] = "payment-request-accepted";
+        base["random"] = uuidlib();
         return base;
     }
 

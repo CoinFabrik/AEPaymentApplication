@@ -116,7 +116,7 @@ function pick_random(arr) {
 
     peer.on("message", (msg) => {
         if(msg["type"]==="payment-request-rejected") {
-            console.log("payment canceled:", msg["msg"]);
+            console.log("payment canceled:", JSON.stringify(msg));   //msg["msg"]);
         }
         if(msg["type"]==="payment-request-accepted") {
             console.log("sending payment..");
@@ -150,7 +150,8 @@ function pick_random(arr) {
     async function quit(code) {
         try {
             await peer.showBalances("pre-shutdown");
-            await peer.shutdown();
+            await peer.channel.leave();
+            //await peer.shutdown();
             await peer.wait_state("DISCONNECTED");
             await myjschannel.sleep(3*1000);
             let final = await peer.showBalances("final");

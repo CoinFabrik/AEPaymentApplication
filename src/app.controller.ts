@@ -7,7 +7,6 @@ import {API_URL, MoreConfig} from "./config";
 const qr = require('qr-image');
 
 
-//@UsePipes(new ValidationPipe())
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService,

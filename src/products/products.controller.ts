@@ -53,16 +53,26 @@ export class ProductsController {
   async retrieve_png(@Param() params, @Res() res: Response): Promise<any> {
       let mgr = getManager();
       let product = await mgr.findOne(Product, {uuid: params.uuid});
-      let code = qr.image(product.data, {type: "png"});
-      res.setHeader('Content-Type', 'image/png')
+      let code = qr.image(this.R(product.data), {type: "png"});
+      res.setHeader('Content-Type', 'image/png');
       code.pipe(res);
+  }
+
+  R(str: string): string {
+      try {
+          let obj = JSON.parse(str);
+          obj["uuid"] = uuidlib();
+          return JSON.stringify(obj);
+      } catch(err) {
+          return str;
+      }
   }
 
   @Get("/svg/:uuid")
   async retrieve_svg(@Param() params, @Res() res: Response): Promise<any> {
       let mgr = getManager();
       let product = await mgr.findOne(Product, {uuid: params.uuid});
-      let code = qr.image(product.data, {type: "svg"});
+      let code = qr.image(this.R(product.data), {type: "svg"});
       res.setHeader('Content-Type', 'image/svg+xml');
       code.pipe(res);
   }
@@ -92,6 +102,7 @@ export class ProductsController {
   @Get("/:uuid")
   async retrieve(@Param() params): Promise<any> {
       let mgr = getManager();
-      return await mgr.findOne(Product, {uuid: params.uuid});
+      let obj = await mgr.findOne(Product, {uuid: params.uuid});
+      return JSON.parse(this.R(JSON.stringify(obj)));
   }
 }
