@@ -10,13 +10,20 @@
         </AeText>
       </div>
 
-      <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'">
-        Payment Code
+      <!--
+      <div v-if="!isDisabledCodeReader || subview === 'onboarding'" -->
+      <div
+        id="scan_qr_container"
+        @click="onQrClick"
+      >
+      <div>
+        <AeText face="sans-s">Payment Code</AeText>
         <input
           id="payment-code-input"
           type="text"
         >
         <AeButton
+          face="primary"
           id="load-payment-code"
           text="Load"
           @click="loadPaymentCode"
@@ -25,10 +32,6 @@
         </AeButton>
       </div>
 
-      <div v-if="!isDisabledCodeReader || subview === 'onboarding'"
-        id="scan_qr_container"
-        @click="onQrClick"
-      >
         <div
           id="scan_qr_subcontainer"
         >
@@ -38,8 +41,12 @@
             @error="onQrHasError"
           />
         </div>
+         <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
+      
       </div>
+      
     </b-row>
+     
     <ViewButtonSection
       :buttons="[{name: 'Cancel', action: cancel, cancel:true}]"
     />
@@ -82,6 +89,7 @@ export default {
       this.subview !== "pay-with-qr" &&
       this.subview !== "scanaddress"
     ) {
+        console.log(this.$store.state.route.params);
       throw Error(
         "The subview prop must be 'onboarding' , 'pay-with-qr' or 'scanaddress'"
       );
