@@ -1,56 +1,26 @@
 <template>
   <div
-    class="banner"
+    id="banner"
     @click="goHome()"
   >
-		<b-container>
-			<div v-if="getHeight() > 500">
-				<img
-					class="logo"
-					alt="AE-logo"
-					src="./../assets/ae2x.png"
-				>
-				<ae-text
-					weight="bold"
-					fill="white"
-					face="sans-s"
-				>
-					æternity
-				</ae-text>
-				<ae-text
-					fill="primary"
-					face="mono-xs"
-				>
-					{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
-				</ae-text>
-			</div>
-			<div v-else>
-				<b-row align-h="center">
-					<b-col align-v="center">
-						<img
-							class="logo"
-							alt="AE-logo"
-							src="./../assets/ae2x.png"
-						>
-					</b-col>
-					<b-col align-v="center">
-						<ae-text
-							weight="bold"
-							fill="white"
-							face="sans-s"
-						>
-							æternity
-						</ae-text>
-						<ae-text
-							fill="primary"
-							face="mono-xs"
-						>
-							{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
-						</ae-text>
-					</b-col>
-				</b-row>
-			</div>
-		</b-container>
+    <img
+      id="ae-logo"
+      alt="AE-logo"
+      src="./../assets/ae2x.png"
+    >
+    <ae-text
+      weight="bold"
+      fill="white"
+      face="sans-l"
+    >
+      æternity
+    </ae-text>
+    <ae-text
+      fill="primary"
+      face="uppercase-xs"
+    >
+      {{ this.$isMerchantAppRole ? "merchant wallet" : "customer wallet" }}
+    </ae-text>
   </div>
 </template>
 
@@ -65,25 +35,16 @@
 			goHome() {
 				this.$router.replace({name: "connectToWallet"});
 			},
-			getHeight() {
-				console.log(window.innerHeight)
-				return window.innerHeight;
-			}
 		}
 	};
 </script>
 
 <style>
-@media only screen and (min-width: 530)
-	.banner {
-		height: 12vh;
+	#banner {
+		height: 18vh;
 	}
-@media only screen and (min-width: 530)
-	.banner {
-		height: 15vh;
-	}
-	.logo {
+	#ae-logo {
 		padding-top: 10px;
-		height: 9vh;
+		height: 55%;
 	}
 </style>

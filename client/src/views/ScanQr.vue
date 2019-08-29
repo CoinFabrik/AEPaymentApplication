@@ -42,13 +42,13 @@
           />
         </div>
          <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
-
+      
       </div>
-
+      
     </b-row>
-
+     
     <ViewButtonSection
-      :buttons="[{name: 'Cancel', action: cancel, fill:'neutral'}]"
+      :buttons="[{name: 'Cancel', action: cancel, cancel:true}]"
     />
   </b-container>
 </template>
@@ -56,6 +56,7 @@
 <script>
 /* eslint-disable no-console */
 
+import QrCodeReader from "../components/QrCodeReader.vue";
 //import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
@@ -65,6 +66,9 @@ const uuidv4 = require("uuid/v4");
 
 export default {
   name: "ScanQR",
+  components: {
+		QrCodeReader,
+  },
   props: {
     subview: String
   },
@@ -166,7 +170,7 @@ export default {
           }).then ( () => {
           this.scanCount++;
           });
-
+          
         } else {
           this.qrData = JSON.parse(scanData);
           this.navigateOut();
@@ -253,26 +257,25 @@ export default {
 };
 </script>
 
-
 <style scoped>
-	#scan_qr_subcontainer {
-		height: 35vh;
-		width: 35vh;
-		border-radius: 30px;
-		border: 1px dashed red;
-		position: relative;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-	#scan_qr_container {
-		height: 40vh;
-		width: 40vh;
-		border-radius: 30px;
-		border: 1px solid #311b58;
-		position: absolute;
-		top: 58%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
+#scan_qr_subcontainer {
+  height: 250px;
+  width: 250px;
+  border-radius: 30px;
+  border: 1px dashed red;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#scan_qr_container {
+  height: 300px;
+  width: 300px;
+  border-radius: 30px;
+	border: 1px solid #311b58;
+	position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 </style>

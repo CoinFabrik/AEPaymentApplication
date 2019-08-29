@@ -37,11 +37,11 @@
 
 <style>
 	.container {
-		height: 100%;
+		height: 80%;
 	}
 	#content {
 		height: 100%;
-		margin-top: 5%;
+		margin-top: 10%;
 		margin-bottom: 10%;
 		border-collapse: collapse;
 	}

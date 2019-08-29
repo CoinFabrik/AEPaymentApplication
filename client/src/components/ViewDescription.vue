@@ -1,16 +1,16 @@
 <template>
-  <div class="text-area">
+  <b-container class="text-area">
     <AeText
       weight="500"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-s'"
+      face="sans-base"
     >
       {{ first }}
     </AeText>
     <AeText
       weight="400"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-xs'"
+      face="sans-base"
     >
       {{ this.$isMerchantAppRole ? merchant : customer }}
     </AeText>
@@ -18,11 +18,11 @@
       v-if="final"
       weight="400"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-xs'"
+      face="sans-base"
     >
       {{ final }}
     </AeText>
-  </div>
+  </b-container>
 </template>
 
 
@@ -32,18 +32,13 @@
 		name: "ViewDescription",
 		components: { AeText },
 		props: ['first', 'merchant', 'customer', 'final'],
-		methods: {
-			getHeight() {
-				return window.innerHeight;
-			}
-		}
 	};
 </script>
 
 <style scoped>
 	.text-area {
 		width: 95%;
-		max-height: 30vh;
+		max-height: 20vh;
 	}
 	.label {
 		margin-bottom: 10px;
