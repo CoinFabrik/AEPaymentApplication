@@ -23,7 +23,7 @@
       v-show="$isClientAppRole"
       v-model="depositInput"
       placeholder="0.00"
-      style="margin-bottom:2px !important;"
+			class="input"
       :units="[
         { symbol: 'AE', name: 'æternity' }
       ]"
@@ -45,7 +45,7 @@
       </AeText>
     </div>
     <ViewButtonSection
-      :buttons="[{name:'Deposit', action: deposit}, {name:'Cancel', action:cancel, cancel:true}]"
+      :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit}]"
     />
   </b-container>
 </template>
@@ -156,14 +156,12 @@ export default {
 };
 </script>
 
-<style>
-.content {
-  position: relative;
-  height: 80%;
-}
-.button {
-  position: absolute;
-  bottom: 0px;
-  align-self: center;
-}
+<style scoped>
+	.content {
+		position: relative;
+		height: 100%;
+	}
+	.input {
+		margin-top:4vh;
+	}
 </style>

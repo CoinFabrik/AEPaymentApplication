@@ -106,8 +106,6 @@ export default {
   position: relative;
 }
 video {
-  padding: 2px;
-  border: grey 1px solid;
   object-fit: cover;
   width: 100%;
   height: 100%;

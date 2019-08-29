@@ -16,6 +16,9 @@ import ViewButtonSection from "./components/ViewButtonSection";
 import LoadingModal from "./components/LoadingModal";
 import ViewBalances from "./components/ViewBalances";
 import ViewTransaction from "./components/ViewTransaction";
+import WrappedQrReader from "./components/WrappedQrReader";
+import QrCodeReader from "./components/QrCodeReader.vue";
+import CloseModal from "./components/CloseModal.vue";
 import { AeButton, AeDivider, AeText, AeAmount,
 	AeAmountInput, AePanel, AeLoader,
 	AeList, AeListItem, AeInput, AeQRCode, AeIcon
@@ -24,6 +27,8 @@ import { AeButton, AeDivider, AeText, AeAmount,
 window.eventBus = new Vue();
 
 Vue.component('AeBanner', AeBanner)
+Vue.component('CloseModal', CloseModal)
+Vue.component('QrCodeReader', QrCodeReader)
 Vue.component('AeQRCode', AeQRCode)
 Vue.component('AeIcon', AeIcon)
 Vue.component('AePanel', AePanel)
@@ -38,6 +43,7 @@ Vue.component('AeAmount', AeAmount)
 Vue.component('AeText', AeText)
 Vue.component('ViewTitle', ViewTitle)
 Vue.component('ViewDescription', ViewDescription)
+Vue.component('WrappedQrReader', WrappedQrReader)
 Vue.component('ViewTransaction', ViewTransaction)
 Vue.component('ViewBalances', ViewBalances)
 Vue.component('ViewButtonSection', ViewButtonSection)

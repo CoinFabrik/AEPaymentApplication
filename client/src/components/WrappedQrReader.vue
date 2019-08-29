@@ -1,68 +1,22 @@
 <template>
-  <b-container class="scanqrview">
-    <ViewTitle
-      :title="subview === 'pay-with-qr' ? 'Scan the payment request QR code from the merchant\'s device.' : 'Scan the QR code to open the payments channel.'"
-    />
-    <b-row align-h="center">
-      <div v-if="">
-        <AeText weight="500">
-
-        </AeText>
-      </div>
-
-      <!--
-      <div v-if="!isDisabledCodeReader || subview === 'onboarding'" -->
-      <div
-        id="scan_qr_container"
-        @click="onQrClick"
-      >
-      <div v-if="subview === 'pay-with-qr'">
-        <AeText face="sans-s">Payment Code</AeText>
-        <input
-          id="payment-code-input"
-          type="text"
-        >
-        <AeButton
-          face="primary"
-          id="load-payment-code"
-          text="Load"
-          @click="loadPaymentCode"
-        >
-          Load
-        </AeButton>
-      </div>
-
-        <div
-          id="scan_qr_subcontainer"
-        >
-          <QrCodeReader
-            :key="scanCount"
-            @hasData="onQrHasData"
-            @error="onQrHasError"
-          />
-        </div>
-         <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
-
-      </div>
-
-    </b-row>
-
-    <ViewButtonSection
-      :buttons="[{name: 'Cancel', action: cancel, fill:'neutral'}]"
-    />
-  </b-container>
+	<div
+		id="scan_qr_container"
+		@click="onQrClick"
+	>
+		<div
+			id="scan_qr_subcontainer"
+		>
+			<QrCodeReader
+				id="qr"
+				v-if="!isDisabledCodeReader"
+				@hasData="onQrHasData"
+				@error="onQrHasError"
+			/>
+		</div>
+	</div>
 </template>
 
 <script>
-/* eslint-disable no-console */
-
-//import HubConnection from "../controllers/hub";
-import BigNumber from "bignumber.js";
-import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
-import { BrowserQRCodeReader } from "@zxing/library/esm5/browser/BrowserQRCodeReader";
-import HubConnection from "../controllers/hub";
-const uuidv4 = require("uuid/v4");
-
 export default {
   name: "ScanQR",
   props: {
@@ -70,7 +24,6 @@ export default {
   },
   data() {
     return {
-      scanCount: 0,
       qrData: null
     };
   },
@@ -85,7 +38,6 @@ export default {
       this.subview !== "pay-with-qr" &&
       this.subview !== "scanaddress"
     ) {
-        console.log(this.$store.state.route.params);
       throw Error(
         "The subview prop must be 'onboarding' , 'pay-with-qr' or 'scanaddress'"
       );
@@ -146,12 +98,35 @@ export default {
               "You don't have enough channel balance to pay for this product. You may deposit funds and purchase this item again later. "
           });
         } else {
+          // generate a new UUID
+
+          if (generateNewUuid) this.qrData.id = uuidv4();
           this.navigateOut();
         }
       }
     },
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
+
+      // if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
+      //   this.qrData.hub = process.env.VUE_APP_TEST_HUB_IP_PORT;
+      //   this.qrData.node =
+      //     process.env.VUE_APP_TEST_API_SERVER_PROTO +
+      //     "//" +
+      //     process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
+      //     ":" +
+      //     process.env.VUE_APP_TEST_API_SERVER_PORT;
+
+      //   console.warn(
+      //     "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
+      //       this.qrData
+      //   );
+      //   this.$store
+      //     .dispatch("storeNetChannelParameters", this.qrData.hub)
+      //     .then(() => {
+      //       this.navigateOut();
+      //     });
+      // } else {
 
       if (this.subview === "pay-with-qr") {
         this.processPaymentData(scanData, true, false);
@@ -163,13 +138,12 @@ export default {
             title: "Oops...",
             text:
               "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
-          }).then ( () => {
-          this.scanCount++;
           });
-
         } else {
           this.qrData = JSON.parse(scanData);
-          this.navigateOut();
+          this.$store
+            .dispatch("storeNetChannelParameters", this.qrData.hub)
+            .then(() => this.navigateOut());
         }
       }
     },
@@ -181,59 +155,6 @@ export default {
           ".  Please try again with another code"
       );
     },
-    onQrClick() {
-      //
-      // A click on the QR element box will trigger out a simulated
-      // QR scan if its enabled in the environment settings
-      //
-      if (process.env.VUE_APP_DISABLE_QRCODES === "1") {
-        if (this.subview === "onboarding") {
-          this.qrData = {
-            hub: process.env.VUE_APP_TEST_HUB_IP_PORT
-          };
-
-          console.warn(
-            "VUE_APP_DISABLE_QRCODES active. Setup simulated onboarding QR data: " +
-              this.qrData
-          );
-          this.navigateOut();
-        } else if (this.subview === "scanaddress") {
-          this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
-          this.navigateOut();
-        } else if (this.subview === "pay-with-qr") {
-          // this.qrData = {
-          //   //
-          //   // Mock payment data
-          //   //
-          //   amount: new BigNumber(0.001234)
-          //     .multipliedBy(new BigNumber(10).exponentiatedBy(18))
-          //     .toString(10),
-          //   merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
-          //   something: "3 BEERS",
-          //   id: uuidv4(),
-          //   type: "payment-request"
-          // };
-          // console.warn(
-          //   "VUE_APP_DISABLE_QRCODES active. Setup simulated payment QR data: " +
-          //     this.qrData
-          // );
-          // this.navigateOut();
-        }
-      }
-    },
-    async navigateOut() {
-      if (this.subview === "onboarding") {
-        await this.doOnboardingProcess();
-      } else if (this.subview === "pay-with-qr") {
-        console.log("Gonna confirm", this.qrData);
-        this.$router.push({
-          name: "confirm-payment",
-          params: { paymentData: this.qrData }
-        });
-      } else if (this.subview === "scanaddress") {
-        await this.doProcessAddress();
-      }
-    },
     doProcessAddress() {
       if (this.$isMerchantAppRole) {
         this.$router.push({
@@ -243,7 +164,6 @@ export default {
       }
     },
     async doOnboardingProcess() {
-      this.$store.commit('loadHubIpAddr', this.qrData.hub);
       this.$router.push("register-user");
 		},
 		cancel() {
@@ -252,8 +172,6 @@ export default {
   }
 };
 </script>
-
-
 <style scoped>
 	#scan_qr_subcontainer {
 		height: 35vh;

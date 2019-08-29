@@ -133,7 +133,7 @@
     </div>
     <ViewButtonSection
       v-if="isIOS()"
-      :buttons="[{name:'Cancel', action: goBack, cancel:true}]"
+      :buttons="[{name:'Cancel', action: goBack, fill:'neutral'}]"
     />
   </b-container>
 </template>
@@ -193,10 +193,10 @@
 		padding-bottom: 20;
 	}
 	.footer {
-    width: 300px;
+    width: 80%;
     position: fixed;
     bottom: 0;
     left: 50%;
-    margin-left: -150px;
+    margin-left: -40%;
 	}
 </style>
