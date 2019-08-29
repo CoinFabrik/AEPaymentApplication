@@ -35,3 +35,4 @@ KNOWN ISSUES:
 + Camera does not work in iOS devices
 + Payment process can  time-out due to a bug we are analyzing.
 + Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
++ UI Scaling does not work well in low vertical res screens, this is a WIP
