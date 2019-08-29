@@ -10,13 +10,20 @@
         </AeText>
       </div>
 
-      <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'">
-        Payment Code
+      <!--
+      <div v-if="!isDisabledCodeReader || subview === 'onboarding'" -->
+      <div
+        id="scan_qr_container"
+        @click="onQrClick"
+      >
+      <div v-if="subview === 'pay-with-qr'">
+        <AeText face="sans-s">Payment Code</AeText>
         <input
           id="payment-code-input"
           type="text"
         >
         <AeButton
+          face="primary"
           id="load-payment-code"
           text="Load"
           @click="loadPaymentCode"
@@ -24,21 +31,22 @@
           Load
         </AeButton>
       </div>
+
+        <div
+          id="scan_qr_subcontainer"
+        >
+          <QrCodeReader
+            :key="scanCount"
+            @hasData="onQrHasData"
+            @error="onQrHasError"
+          />
+        </div>
+         <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
+
+      </div>
+
     </b-row>
-		<div
-			id="scan_qr_container"
-			@click="onQrClick"
-		>
-			<div
-				id="scan_qr_subcontainer"
-			>
-				<QrCodeReader
-					v-if="!isDisabledCodeReader"
-					@hasData="onQrHasData"
-					@error="onQrHasError"
-				/>
-			</div>
-		</div>
+
     <ViewButtonSection
       :buttons="[{name: 'Cancel', action: cancel, fill:'neutral'}]"
     />
@@ -62,6 +70,7 @@ export default {
   },
   data() {
     return {
+      scanCount: 0,
       qrData: null
     };
   },
@@ -76,6 +85,7 @@ export default {
       this.subview !== "pay-with-qr" &&
       this.subview !== "scanaddress"
     ) {
+        console.log(this.$store.state.route.params);
       throw Error(
         "The subview prop must be 'onboarding' , 'pay-with-qr' or 'scanaddress'"
       );
@@ -136,35 +146,12 @@ export default {
               "You don't have enough channel balance to pay for this product. You may deposit funds and purchase this item again later. "
           });
         } else {
-          // generate a new UUID
-
-          if (generateNewUuid) this.qrData.id = uuidv4();
           this.navigateOut();
         }
       }
     },
     onQrHasData(scanData) {
       console.log("Obtained QR Data: " + scanData);
-
-      // if (process.env.VUE_APP_ONBOARDING_QR_ACCEPT_ANY === 1) {
-      //   this.qrData.hub = process.env.VUE_APP_TEST_HUB_IP_PORT;
-      //   this.qrData.node =
-      //     process.env.VUE_APP_TEST_API_SERVER_PROTO +
-      //     "//" +
-      //     process.env.VUE_APP_TEST_API_SERVER_ADDRESS +
-      //     ":" +
-      //     process.env.VUE_APP_TEST_API_SERVER_PORT;
-
-      //   console.warn(
-      //     "VUE_APP_ONBOARDING_QR_ACCEPT_ANY active. Setup simulated QR data: " +
-      //       this.qrData
-      //   );
-      //   this.$store
-      //     .dispatch("storeNetChannelParameters", this.qrData.hub)
-      //     .then(() => {
-      //       this.navigateOut();
-      //     });
-      // } else {
 
       if (this.subview === "pay-with-qr") {
         this.processPaymentData(scanData, true, false);
@@ -176,12 +163,13 @@ export default {
             title: "Oops...",
             text:
               "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
+          }).then ( () => {
+          this.scanCount++;
           });
+
         } else {
           this.qrData = JSON.parse(scanData);
-          this.$store
-            .dispatch("storeNetChannelParameters", this.qrData.hub)
-            .then(() => this.navigateOut());
+          this.navigateOut();
         }
       }
     },
@@ -208,9 +196,7 @@ export default {
             "VUE_APP_DISABLE_QRCODES active. Setup simulated onboarding QR data: " +
               this.qrData
           );
-          this.$store
-            .dispatch("storeNetChannelParameters", this.qrData.hub)
-            .then(() => this.navigateOut());
+          this.navigateOut();
         } else if (this.subview === "scanaddress") {
           this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
           this.navigateOut();
@@ -257,6 +243,7 @@ export default {
       }
     },
     async doOnboardingProcess() {
+      this.$store.commit('loadHubIpAddr', this.qrData.hub);
       this.$router.push("register-user");
 		},
 		cancel() {

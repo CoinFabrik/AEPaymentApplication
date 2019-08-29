@@ -76,17 +76,6 @@ export default new Router({
       component: MainMenu
     },
     {
-      path: '/success',
-      name: 'success',
-      component: Success,
-      props: true
-    },
-    // {
-    //   path: '/shutdowndone',
-    //   name: 'shutdowndone',
-    //   component: ShutdownDone
-    // },
-    {
       path: '/channelopen',
       name: 'channelopen',
       component: ChannelOpen,

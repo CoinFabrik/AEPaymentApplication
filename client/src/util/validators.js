@@ -20,9 +20,9 @@ export function validateOnboardingQr(qrtext) {
             return false;
         }
 
-        const ip_port_regex = "^(http:\/\/|https:\/\/){1}(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$";
+        const ip_port_regex = "^(http:\/\/|https:\/\/){1}([^:/]+):[0-9]+$";
 
-        if ((!validator.matches(obj.hub, ip_port_regex)) || (!validator.matches(obj.node, ip_port_regex))) {
+        if ((!validator.matches(obj.hub, ip_port_regex))) {
             console.error("Onboarding QR: Requires hub  in http[s]://IP:PORT format");
             return false;
         }
