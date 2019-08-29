@@ -1,7 +1,6 @@
 <template>
   <div class="channel-open">
-    <AeText>{{ getChannelStatusDescriptiveText }}</AeText>
-    <AeLoader v-show="!isStopped" />
+		<LoadingModal alwaysVisible :text="this.getChannelStatusDescriptiveText"/>
   </div>
 </template>
 
@@ -130,7 +129,7 @@ export default {
         params: { initialDeposit: true }
       });
     }
-  },
+	},
   beforeDestroy() {
     window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
   },

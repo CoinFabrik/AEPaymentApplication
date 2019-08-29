@@ -2,7 +2,7 @@
   <div>
     <AeText
       weight="bold"
-      face="sans-l"
+      :face="getHeight() > 630 ? 'sans-l' : 'sans-base'"
     >
       {{ title }}
     </AeText>
@@ -21,12 +21,16 @@
 			goHome() {
 				this.$router.replace({name: "connectToWallet"});
 			},
+			getHeight() {
+				console.log(window.innerHeight)
+				return window.innerHeight;
+			}
 		}
 	};
 </script>
 
 <style scoped>
 	.divider {
-		margin: 20px 150px;
+		margin: 2vh 15vh;
 	}
 </style>

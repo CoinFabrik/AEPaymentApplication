@@ -1,20 +1,23 @@
 <template>
   <b-container class="main-app">
-    <ViewTitle title="Menu" />
+    <ViewTitle :title="getName || 'Menu'"/>
     <ViewBalances
+			style="margin-top:8vh;"
       :wallet-balance="getMyWalletBalance.toFixed(2)"
       :channel-balance="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
     />
 
     <ViewButtonSection
       v-if="$isClientAppRole"
-      :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan A Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action:closeChannelConfirmation, cancel:true}]"
+      :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan A Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
 
     <ViewButtonSection
       v-if="$isMerchantAppRole"
-      :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{ name: 'My Activity', action: history}, {name:'Close channel', action:closeChannelConfirmation, cancel:true}]"
+      :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
     />
+
+		<CloseModal text="Close channel?" :onConfirm="this.closeChannel"/>
   </b-container>
 </template>
 
@@ -24,6 +27,9 @@
 export default {
   name: "MainMenu",
   computed: {
+		getName: function() {
+			return this.$store.state.userName;
+		},
     getAddress: function() {
       return this.$store.getters.initiatorId;
     },
@@ -55,6 +61,9 @@ export default {
     }
   },
   methods: {
+		popUpCloseModal: function() {
+			this.$bvModal.show('closeModal');
+		},
     withdraw: function() {
       this.$router.push("withdraw");
     },
@@ -72,22 +81,6 @@ export default {
         name: "commit-and-wait-tx",
         params: { txKind: "close" }
       });
-		},
-		closeChannelConfirmation: function() {
-			this.$swal.fire({
-				heightAuto: false,
-				type: "question",
-				title: "Are you sure you want to close this channel?",
-				text: "Your funds in the channel will be transferred to your wallet.",
-				showCancelButton: true,
-				focusConfirm: false,
-				confirmButtonText: 'Close',
-				cancelButtonText: 'Cancel',
-			}).then(({value}) => {
-				if(value) {
-					this.closeChannel();
-				}
-			});
 		},
     history: function() {
       this.$router.push("history");
