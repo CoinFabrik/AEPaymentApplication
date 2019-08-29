@@ -152,7 +152,7 @@ export default new Vuex.Store({
                 // completed/canceled are treated as payment-complete-ack
                 let eventname, eventdata, info;
                 if (infoObj.type === "heartbeat") {
-                  window.aehub_channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
+                  state.channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
                   return;
                 }
                 else if (infoObj.type === "payment-request-accepted") {
@@ -168,6 +168,7 @@ export default new Vuex.Store({
                 } else if (infoObj.type === "payment-request-completed") {
                   eventname = "payment-complete-ack";
                   eventdata = "completed"
+                  info = infoObj;
                 } else {
                   eventname = infoObj.type
                 }

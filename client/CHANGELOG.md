@@ -21,7 +21,7 @@ KNOWN ISSUES:
 + Payment process can  time-out due to a bug we are analyzing.
 
 
-0.8.4 (190828)
+0.8.5 (190828)
 --------------
 + Fixed: Sometimes "Waiting transaction" screens at Deposit or Withdraw stuck at 100%
 + Fixed: Hide QR if build flag VUE_APP_DISABLEQRSCANCODES=1
@@ -29,8 +29,9 @@ KNOWN ISSUES:
 + Fixed: Onboarding QR format validation 
 + Hub now communicates channel options at onboarding stage, preventing misconfiguration.
 + Heartbeat protocol with Hub to mantain permanent connection
++ Merchant receives a payment message for every successful purchase.
 
 KNOWN ISSUES: 
 + Camera does not work in iOS devices
 + Payment process can  time-out due to a bug we are analyzing.
-+ Cancelling transactions through BaseAeep dialog may enter inconsistent state.
++ Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
