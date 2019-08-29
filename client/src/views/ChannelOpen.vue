@@ -175,6 +175,26 @@ export default {
         } else {
           console.error("createChannel: Channel already created!");
         }
+
+        // Channel created -- if we are merchants  suscribe to global
+        // payment received notification.
+
+        if (this.$isMerchantAppRole) {
+          window.eventBus.$on("payment-complete-ack", e => {
+            console.log("Received COMPLETE ",e);
+            if (e.eventdata === "completed") {
+              this.$swal.fire({
+                text:
+                  "Payment of " +
+                  DisplayUnitsToAE(e.info.amount) +
+                  " AE received from " +
+                  e.info.customer_name,
+                toast: true,
+                position: "top"
+              });
+            }
+          });
+        }
       } catch (e) {
         this.$displayError(
           "Oops! There is some problem",
