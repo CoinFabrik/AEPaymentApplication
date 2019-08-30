@@ -1,6 +1,6 @@
 <template>
   <b-container>
-    <AePanel style="padding:0.5rem">
+    <AePanel style="padding:0.5rem; height=110%;">
 			<b-row class="no-padding">
 				<b-col>
 					<AeText

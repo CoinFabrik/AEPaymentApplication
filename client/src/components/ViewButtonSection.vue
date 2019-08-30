@@ -109,7 +109,7 @@
 <style scoped>
 	.buttonsection {
 		margin-bottom: 2vh !important;
-		position: absolute;
+		position: fixed;
 	}
 	.marginal {
 		margin-top: 10px

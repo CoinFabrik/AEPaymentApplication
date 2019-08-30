@@ -3,14 +3,14 @@
     <AeText
       weight="500"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-s'"
+      :face="getHeight() > 550 ? 'sans-base' : 'sans-s'"
     >
       {{ first }}
     </AeText>
     <AeText
       weight="400"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-xs'"
+      :face="getHeight() > 550 ? 'sans-base' : 'sans-xs'"
     >
       {{ this.$isMerchantAppRole ? merchant : customer }}
     </AeText>
@@ -18,7 +18,7 @@
       v-if="final"
       weight="400"
       class="label"
-      :face="getHeight() > 630 ? 'sans-base' : 'sans-xs'"
+      :face="getHeight() > 550 ? 'sans-base' : 'sans-xs'"
     >
       {{ final }}
     </AeText>

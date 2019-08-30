@@ -61,9 +61,8 @@ export default {
     if (!this.cameraAllowed) {
       this.$displayError(
         "Oops!",
-        "We don't have permission to access your camera. Please review your security settings and try again.",
+        "We don't have access to your camera. Please review your security settings and try again.",
         () => {
-          this.$router.back();
         }
       );
     }

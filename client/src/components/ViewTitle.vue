@@ -2,7 +2,7 @@
   <div>
     <AeText
       weight="bold"
-      :face="getHeight() > 630 ? 'sans-l' : 'sans-base'"
+      :face="getHeight() > 550 ? 'sans-l' : 'sans-base'"
     >
       {{ title }}
     </AeText>
