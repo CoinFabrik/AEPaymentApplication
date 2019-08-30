@@ -248,7 +248,8 @@ export default {
     },
     async doOnboardingProcess() {
       this.$store.commit('loadHubIpAddr', this.qrData.hub);
-      this.$router.push("register-user");
+      this.$store.commit('setOnboardingQrScan', true);
+      this.$router.replace("register-user");
 		},
 		cancel() {
 			this.$router.back()

@@ -7,8 +7,9 @@ const {
 } = require('@aeternity/aepp-sdk');
 
 import Aepp from '@aeternity/aepp-sdk/es/ae/aepp';
-
 const { TxBuilder: { calculateFee, unpackTx } } = require('@aeternity/aepp-sdk')
+
+import { setTimeout } from 'timers'
 
 const aeternity = {
   network: null,
@@ -28,22 +29,27 @@ const aeternity = {
 
 aeternity.connectToBaseApp = async function () {
 
-  try {
-    if (aeternity.client != null) {
-      return;
-    }
-
-    console.warn("Aeternity Client null, reconnecting...");
-
-    aeternity.client = await Aepp();
-
-    console.log("Connected to Base-Aepp Object. Chain height: " + await aeternity.client.height());
-    console.log("Your address: " + await aeternity.client.address());
-
+  if (aeternity.client != null) {
     return { status: true, error: null };
-  } catch (err) {
+  }
+
+  console.warn("Aeternity Client null, reconnecting...");
+
+  let timeout = new Promise((resolve, reject) => {
+    let id = setTimeout(() => {
+      clearTimeout(id);
+      reject('timeout')
+    }, 6000);
+  });
+
+  try {
+    let ret = await Promise.race([timeout, Aepp()]);
+    aeternity.client = ret;
+    return { status: true, error: null };
+  }
+  catch (err) {
     console.log(err);
-    return { status: false, error: err };
+    return { status: false, error: err.toString() === 'timeout' ? "The connection to node timed out. This may indicate connection problems. Please try again later" : err.toString() };
   }
 
 }

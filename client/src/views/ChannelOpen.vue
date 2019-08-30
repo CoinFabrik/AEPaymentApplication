@@ -139,7 +139,7 @@ export default {
       console.log("Channel status change [" + status + "]");
       this.channelStatus = status;
       if (status === "open") {
-        this.$store.commit("setOnboardingDone", true);
+        this.$store.commit("setChannelOpenDone", true);
 
         this.$swal({
           type: "success",

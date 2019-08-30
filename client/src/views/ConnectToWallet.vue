@@ -1,20 +1,13 @@
 <template>
   <b-container class="connectToWallet">
-    <div
-      v-if="isAtInitialState"
-      class="content"
-    >
-      <ViewTitle
-        title="Connect your wallet"
-      />
+    <div v-if="isAtInitialState" class="content">
+      <ViewTitle title="Connect your wallet" />
       <ViewDescription
         first="This payments application must be connected to your wallet."
         customer="You will be able to fund the channel and then make payments. You will be asked to confirm every transaction."
         merchant="You will be able to withdraw the AEs you receive and pay fees when needed. You will be asked to confirm every transaction."
       />
-      <ViewButtonSection
-        :buttons="[{name: 'Sure!', action: connectToBaseApp}]"
-      />
+      <ViewButtonSection :buttons="[{name: 'Sure!', action: connectToBaseApp}]" />
     </div>
     <LoadingModal />
   </b-container>
@@ -92,55 +85,109 @@ export default {
   },
   methods: {
     async connectToBaseApp() {
-			this.status = STATUS_CONNECTING;
-			this.$bvModal.show('loadingModal')
+      // if (window.parent.location.href !== "https://base.aepps.com") {
+      //   this.$swal.fire({
+      //     type: "info",
+      //     text: "Please open this application in the Æternity Base æpp Browser"
+      //   });
+      //   return;
+      // }
+      let connectStatus = null;
+      this.status = STATUS_CONNECTING;
+      this.$bvModal.show("loadingModal");
       try {
-        const connectStatus = await aeternity.connectToBaseApp();
+        connectStatus = await aeternity.connectToBaseApp();
         if (connectStatus.status) {
           console.log("Aepp connect status Success");
           this.$store.commit("setAeClient", aeternity.client);
-					this.status = STATUS_CONNECTED
-					this.$bvModal.hide('loadingModal');
-          this.$router.push({
-            name: "scanqr",
-            params: { subview: "onboarding" }
-          });
+          this.status = STATUS_CONNECTED;
+          this.$bvModal.hide("loadingModal");
+
+          const myAddress = await aeternity.client.address();
+          console.log("Your address: " + myAddress);
+          aeternity.client
+            .balance(myAddress)
+            .then(() => {
+              this.$router.push({
+                name: "scanqr",
+                params: { subview: "onboarding" }
+              });
+            })
+            .catch(() => {
+              this.$swal.fire({
+                type: "warning",
+                title: "No funds",
+                text:
+                  "Your selected account does not have any funds! Please login with a positive balance."
+              });
+              this.status = STATUS_INIT;
+            });
         } else {
           this.$displayError(
             "Oops! We could not connect to your wallet",
             connectStatus.error.toString()
           );
-					this.status = STATUS_INIT;
-					this.$bvModal.hide('loadingModal')
+          this.status = STATUS_INIT;
+          this.$bvModal.hide("loadingModal");
         }
       } catch (e) {
         this.$displayError(
-          "Oops! We could not connect to your wallet",
+          "Oops! We could not connect to zzyour wallet",
           e.toString()
         );
-				this.status = STATUS_INIT;
-				this.$bvModal.hide('loadingModal')
+        this.status = STATUS_INIT;
+        this.$bvModal.hide("loadingModal");
       }
+    }
+  },
+  mounted() {
+    // boot process:
+    // If we didnt went thru Scan QR, we are clean. Wait for connection.
+    // If we already scanned QR, but didnt went thru User Register, go to Register.
+    // If we already scanned QR plus user name, go to channel Opening.
+    // If we did QR + user name + channel open, go to Main Menu.
+
+    if (this.$store.state.onboardingQrScan) {
+      if (this.$store.state.userName) {
+        if (this.$store.state.channelOpened) {
+          console.log(
+            "QR-Scan, Register and Channel Open done, going to Main Menu..."
+          );
+          this.$router.replace("main-menu");
+          return;
+        }
+        console.log(
+          "QR-Scan, and Register done, going to Initial Deposit for channel open..."
+        );
+        this.$router.replace({
+          name: "deposit",
+          params: { initialDeposit: true }
+        });
+        return;
+      }
+      console.log("QR-Scan done, going to User register...");
+
+      this.$router.replace("register-user");
     }
   }
 };
 </script>
 
 <style>
-	.connectToWallet {
-		height: 100%;
-	}
-	.content {
-		position: relative;
-		height: 100%;
-	}
-	.button {
-		position: absolute !important;
-		bottom: 0px !important;
-		left: 0px !important;
-	}
-	.divider {
-		margin-top: 20px;
-		margin-bottom: 20px;
-	}
+.connectToWallet {
+  height: 100%;
+}
+.content {
+  position: relative;
+  height: 100%;
+}
+.button {
+  position: absolute !important;
+  bottom: 0px !important;
+  left: 0px !important;
+}
+.divider {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 </style>

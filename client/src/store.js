@@ -7,11 +7,20 @@ import aeternity from './controllers/aeternity';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  plugins: [createPersistedState({ paths: ["channelOptions", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route.*"] })],
+  plugins: [createPersistedState({ paths: ["channelOptions", 
+  "channel",
+   "hubUrl", 
+   "hubAddress", 
+   "hubNode", 
+   "userName", 
+   "channelOpenDone", 
+   "onboardingQrScan",
+   "route.*"] })],
   state: {
     balance: 0,
     aeClient: null,
-    onboardingDone: false,
+    onboardingQrScan: null,
+    channelOpenDone: null,
     channelOptions: null,
     channelReconnectInfo: { offChainTx: null, channelId: null },
     initiatorBalance: null,
@@ -73,8 +82,11 @@ export default new Vuex.Store({
     updateInHubBalance(state, amount) {
       state.hubBalance = amount;
     },
-    setOnboardingDone(state, f) {
-      state.onboardingDone = f;
+    setChannelOpenDone(state, f) {
+      state.channelOpenDone = f;
+    },
+    setOnboardingQrScan(state, f) {
+      state.onboardingQrScan = f;
     }
   },
   actions: {
@@ -87,7 +99,8 @@ export default new Vuex.Store({
       commit('updateResponderBalance', null);
       commit('updateInHubBalance', null);
       commit('setChannelReconnectInfo', null, null);
-      commit('setOnboardingDone', false);
+      commit('setChannelOpenDone', null);
+      commit('setOnboardingQrScan', null);
     },
     updateOnchainBalance({ commit, state }) {
 			return aeternity.getAccountBalance()
@@ -205,8 +218,9 @@ export default new Vuex.Store({
     },
     async storeChannelOptions({ commit, state }, options) {
       let params = options;
-      params.sign = state.aeClient.signFunction;
-      params.initiatorId = await state.aeClient.address();
+      params.sign = aeternity.signFunction;
+      params.initiatorId = await aeternity.client.address();
+      //params.url = "wss://aehub.coinfabrik.com:4433/channel"
 
       console.log("Storing up Channel Parameters:" + JSON.stringify(params));
       commit("loadChannelOptions", options);
