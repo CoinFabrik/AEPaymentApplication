@@ -2,6 +2,7 @@ import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest, MerchantCusto
 import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
+import BigNumber from "bignumber.js";
 const uuidlib = require('uuid');
 
 export class Guid {
@@ -47,29 +48,34 @@ export class MerchantCustomer {
         this.id = id;
         MerchantCustomer.register(this);
 
+        if (typeof msg["info"]["amount"] === "number") {
+            console.error("!!!!  WE RECEIVED A NUMBER: " + (msg["info"]["amount"].toString()) );
+            console.error("!!!!  AT: "+ JSON.stringify(msg));
+        }
         this.original_msg = msg;
+        this.original_msg["info"]["amount"] = new BigNumber(msg["info"]["amount"]).toString(10);
         this._base = {
             "id": this.id,
             "merchant": this.merchant,
             "merchant_name": this.mclient.name,
             "customer": this.customer,
-            "amount": this.original_msg["info"]["amount"],
+            "amount": this.original_msg["info"]["amount"],  // we ensure this is a string
             "something": this.original_msg["info"]["something"],
         }
     }
 
     getEntity(): MerchantCustomerAccepted {
         return MerchantCustomerAccepted.Create(this.merchant, this.customer,
-            this.id, this.amount.toString(),  // XXX
+            this.id, this.amount_str,  // XXX
             this.original_msg["info"]["something"]);
     }
 
-    get amount(): number {
-        return this.original_msg["info"]["amount"];
+    get amount(): BigNumber {
+        return new BigNumber(this.original_msg["info"]["amount"]);
     }
 
     get amount_str(): string {
-        return this.amount.toString();
+        return this.amount.toString(10);
     }
 
     base(): object {

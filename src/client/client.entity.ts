@@ -1,5 +1,5 @@
 import {Entity, Column, PrimaryGeneratedColumn, Index, getRepository, Repository} from 'typeorm';
-import {get_private, get_public} from "../tools";
+import {get_private, get_public, voidf} from "../tools";
 import {promises} from "fs";
 import {ServerChannel} from "./channel";
 
@@ -58,6 +58,13 @@ export class CClient {
   @Column({nullable: true})
   name: string;
 
+  @Column({nullable: true})
+  channelId: string;
+
+  @Column({nullable: true})
+  channelSt: string;
+
+
   private private?: string;
   public channel: ServerChannel;
   public amount: string;
@@ -90,9 +97,25 @@ export class CClient {
       await this.tsave();
   }
 
+  save() {
+      this.tsave().then(voidf).catch(console.error);
+  }
+
   async tsave() { //repo?: Repository<CClient>) {
       let repo: Repository<CClient> = getRepository<CClient>(CClient);
-      await repo.save(this);
+      try {
+          return await repo.save(this);
+      } catch (err) {
+          console.log("CANT SAVE: cclient:", JSON.stringify(this))
+          console.log(err)
+      }
+  }
+
+  setChannelOptions(opts: object) {
+    if ((this.channelSt!=null)&&(this.channelSt!=="")&&(this.channelId!=="")) {
+        opts["offchainTx"] = this.channelSt;
+        opts["existingChannelId"] = this.channelId;
+    }
   }
 }
 

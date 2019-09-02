@@ -52,7 +52,7 @@ async function show_hub_balance(peer) {
     try {
         peer = await Merchant.Init(account);
     } catch(err) {
-        console.log("cant connect!")
+        console.log("cant connect!");
         return;
     }
 

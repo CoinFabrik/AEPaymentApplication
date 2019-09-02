@@ -38,32 +38,49 @@ abstract class ClientController {
 
   @Get(":address/:amount/:name")
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {
-      return this.launchClient(this.kind, params.address.toString(),
-                                params.name.toString(), params.amount.toString(), res);
+      return this.launchClient(res, this.kind, params.address.toString(),
+                                params.amount.toString(), params.name.toString());
   }
 
   @Get(":address/:amount")
   async connectMerchant2(@Param() params, @Res() res: Response): Promise<any> {
-      let result = await this.service.queryClient(params.address, this.kind);
-      if (result==undefined) {
-          return res.status(HttpStatus.FORBIDDEN).json({"error": "no name"});
-      }
-      return this.launchClient(this.kind, params.address.toString(),
-                                result.name, params.amount.toString(), res);
+      return this.launchClient(res, this.kind, params.address.toString(),
+                                params.amount.toString());
   }
 
-  launchClient(kind: Actor, address, name, amount: string, res: any) {
-      const client: CClient = new CClient();
-      client.kind = kind;
-      client.address = address;
-      client.amount = amount;
-      client.name = name;
+  async launchClient(res, kind: Actor, address, amount: string, name?:string) {
+      let save = false;
+      let client = await this.service.queryClient(address, this.kind);
+      if (client==undefined) {
+          if (name==undefined) {
+              return res.status(HttpStatus.FORBIDDEN).json({"error": "no name"});
+          }
+          client = new CClient();
+          client.kind = kind;
+          client.address = address;
+          client.amount = amount;
+          client.name = name;
+      }
+
+      if(client.amount!==amount) {
+          save = true;
+          client.amount = amount;
+      }
+      if(client.name!==name) {
+          save = true;
+          client.name = name;
+      }
+      if(save) {
+          client = await client.tsave();
+      }
+
       // TO DO : revisar
       // if(this.service.isOnOrPendingClientByAddress(address, kind)){
       //     console.log("already connected:", address);
       //     return res.status(HttpStatus.TEMPORARY_REDIRECT).json({"error": "already connected"});
       // }
-      return res.json(this.service.connect(client));
+      let result = await this.service.connect(client);
+      return res.json(result);
   }
 
   @Get("all")

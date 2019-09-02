@@ -47,8 +47,11 @@ export class MoreConfig {
     }
 
     static get USER_NODE(): string {
-        return getEnv('USER_NODE', WS_URL);
-
+        let url = WS_URL;
+        if(url.startsWith("wss://")||(url.startsWith("ws://"))) {
+            url = url.slice(2);
+        }
+        return getEnv('USER_NODE', url);
     }
 }
 
