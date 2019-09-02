@@ -1,3 +1,4 @@
+/* tslint:disable:whitespace */
 import {Entity, Column, PrimaryGeneratedColumn, Index, getRepository, Repository} from 'typeorm';
 import {get_private, get_public} from "../tools";
 import {promises} from "fs";
@@ -46,6 +47,45 @@ export class InvalidCustomer extends InvalidRequest{
 @Entity()
 @Index(["address", "kind"], { unique: true })
 export class CClient {
+  static OnlineClients = {'customer': {}, 'merchant': {}};
+
+  static async GetOrCreate(address: string, kind: Actor, amount: string, name?: string): Promise<CClient> {
+      let save = false;
+      let update = false;
+      let client = this.OnlineClients[kind][address];
+      if (client==null) {
+          const repo: Repository<CClient> = getRepository<CClient>(CClient);
+          client = await repo.findOne({address, kind});
+          if (client===undefined) {
+              client = new CClient();
+              client.address = address;
+              client.kind = kind;
+              if (name===undefined) {
+                  throw new Error('No name specified!');
+              }
+              save = true;
+          }
+      }
+
+      if((name !== undefined) && (name !== client.name)) {
+          client.name = name;
+          update = true;
+      }
+      if((amount !== undefined) && (amount !== client.amount)) {
+          client.amount = amount;
+          update = true;
+      }
+
+      if (save || update) {
+          const result = await client.tsave();
+          if (save) {
+              client = result;
+              this.OnlineClients[kind][address] = result;
+          }
+      }
+      return client;
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -63,7 +103,7 @@ export class CClient {
   public amount: string;
 
   static async FromFile(name: string): Promise<CClient> {
-    let client = new CClient();
+    const client = new CClient();
     client.address = await get_public(name);
     client.name = name;
     client.private = await get_private(name);
@@ -91,7 +131,7 @@ export class CClient {
   }
 
   async tsave() { //repo?: Repository<CClient>) {
-      let repo: Repository<CClient> = getRepository<CClient>(CClient);
+      const repo: Repository<CClient> = getRepository<CClient>(CClient);
       await repo.save(this);
   }
 }
@@ -120,7 +160,7 @@ export class MerchantCustomerAccepted {
     @Column()
     item: string;
 
-    static Create(merchant, customer, uuid, amount:string, item: object) {
+    static Create(merchant, customer, uuid, amount: string, item: object) {
       const mca = new MerchantCustomerAccepted();
       mca.merchant = merchant;
       mca.customer = customer;

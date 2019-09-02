@@ -27,7 +27,7 @@ export class RepoService {
 
   static async MerchantBalance(merchant: string): Promise<BigNumber> {
       let repo = getRepository(MerchantCustomerAccepted);
-      let all = await repo.find({merchant:merchant});
+      let all = await repo.find({merchant: merchant});
       let sum = new BigNumber("0");
       for (let mca of all) {
           sum = sum.plus(new BigNumber(mca.amount));

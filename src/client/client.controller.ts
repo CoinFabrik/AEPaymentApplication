@@ -38,26 +38,25 @@ abstract class ClientController {
 
   @Get(":address/:amount/:name")
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {
-      return this.launchClient(this.kind, params.address.toString(),
-                                params.name.toString(), params.amount.toString(), res);
+      try {
+          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString(), params.name.toString());
+            return this.launchClient(res, client);
+      } catch (err) {
+              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
+      }
   }
 
   @Get(":address/:amount")
   async connectMerchant2(@Param() params, @Res() res: Response): Promise<any> {
-      let result = await this.service.queryClient(params.address, this.kind);
-      if (result==undefined) {
-          return res.status(HttpStatus.FORBIDDEN).json({"error": "no name"});
+      try {
+          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString());
+          return this.launchClient(client, res);
+      } catch (err) {
+              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
       }
-      return this.launchClient(this.kind, params.address.toString(),
-                                result.name, params.amount.toString(), res);
   }
 
-  launchClient(kind: Actor, address, name, amount: string, res: any) {
-      const client: CClient = new CClient();
-      client.kind = kind;
-      client.address = address;
-      client.amount = amount;
-      client.name = name;
+  async launchClient(client: CClient, res: any) {
       // TO DO : revisar
       // if(this.service.isOnOrPendingClientByAddress(address, kind)){
       //     console.log("already connected:", address);
