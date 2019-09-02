@@ -69,7 +69,6 @@ export abstract class ServerChannel extends EventEmitter {
     logger: Logger;
     readonly opposite: string;
     private last_update: number;
-    protected my_pending = null;
     private disconnect_by_leave = false;
     pending_mcs: MerchantCustomer[] = [];
 
@@ -105,7 +104,6 @@ export abstract class ServerChannel extends EventEmitter {
                 networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
-                //compilerUrl: compilerURL
             });
         }
 
@@ -206,7 +204,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     update_clash() {
         this.update(this.opposite, this.address, 1, "triggering update conflict.")
-            .then(voidf)
+            .then((result)=> console.log("clash-update()=",result, JSON.stringify(result)))
             .catch((err)=>{ console.log("update clash failed: "+err)});
     }
 
