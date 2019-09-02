@@ -115,7 +115,7 @@ function pick_random(arr) {
     }
 
 
-    let initial = await peer.showBalances("init");
+    await peer.showBalances("init");
     // let merchants = await peer.get_("merchant");
     // console.log("merchants online:", JSON.stringify(merchants))
     // if (merchants.length===0) {
@@ -137,9 +137,22 @@ function pick_random(arr) {
     let idx = 4;
     while (idx>0) {
         await peer.update(1);
-        await myjschannel.sleep(2000);
+        await myjschannel.sleep(1000);
+        console.log(idx,"...")
         idx-=1;
     }
+
+
+    let result = await peer.channel.leave();
+    console.log(result);
+    console.log("");
+    console.log(result);
+    console.log("");
+    console.log(result);
+    console.log("");
+    //await peer.shutdown();
+    await peer.wait_state("DISCONNECTED");
+
 
     // peer.on("message", (msg) => {
     //     if(msg["type"]==="payment-request-rejected") {

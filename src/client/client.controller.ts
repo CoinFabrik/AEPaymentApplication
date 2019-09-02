@@ -80,6 +80,7 @@ abstract class ClientController {
       //     return res.status(HttpStatus.TEMPORARY_REDIRECT).json({"error": "already connected"});
       // }
       let result = await this.service.connect(client);
+      console.log("client:", JSON.stringify(result));
       return res.json(result);
   }
 

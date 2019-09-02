@@ -137,7 +137,7 @@ class MyChannel extends events.EventEmitter {
     async initChannel() {
         //     url:  WS_URL+'/channel',
         let options = jstools.clone(this.options);
-        console.log(options);
+        console.log(options)
         options["sign"] = async (tag, tx) => {
             console.log(tag, tx);
             try {

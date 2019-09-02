@@ -64,6 +64,9 @@ export class CClient {
   @Column({nullable: true})
   channelSt: string;
 
+  @Column({nullable: true})
+  channelRn: number;
+
 
   private private?: string;
   public channel: ServerChannel;
