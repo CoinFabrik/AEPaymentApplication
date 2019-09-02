@@ -70,6 +70,7 @@ export abstract class ServerChannel extends EventEmitter {
     readonly opposite: string;
     private last_update: number;
     protected my_pending = null;
+    private disconnect_by_leave = false;
     pending_mcs: MerchantCustomer[] = [];
 
 
@@ -317,7 +318,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     _save_state(s) {
-        if (s==undefined) {
+        if (s==null) {
             this.client.channelId = null;
             this.client.channelSt = null;
             this.client.channelRn = null;
@@ -363,7 +364,9 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
             console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
-            this._save_state(undefined);
+            if (!this.disconnect_by_leave) {
+                this._save_state(null);
+            }
             // if (this.RECONNECT) {
             //     this._initChannel().then(voidf)
             //         .catch(err=>console.error("Cannot re init channel:"+err))
@@ -401,6 +404,7 @@ export abstract class ServerChannel extends EventEmitter {
             }
         }
         console.log("Issuing leave()..");
+        this.disconnect_by_leave = true;
         let state = await this.channel.leave();
         this._save_state(state);
     }
