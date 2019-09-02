@@ -23,7 +23,7 @@
       v-show="$isClientAppRole"
       v-model="depositInput"
       placeholder="0.00"
-			class="input"
+      class="input"
       :units="[
         { symbol: 'AE', name: 'æternity' }
       ]"
@@ -93,6 +93,9 @@ export default {
       return this.estimatedFee / 10 ** 18;
     }
 	},
+	mounted() {
+		this.$store.dispatch('updateOnchainBalance');
+	},
   methods: {
     cancel() {
       this.$router.back();
@@ -149,9 +152,6 @@ export default {
     onAmountInput(v) {
       this.depositInput = v;
     }
-	},
-	mounted() {
-		this.$store.dispatch('updateOnchainBalance');
 	}
 };
 </script>

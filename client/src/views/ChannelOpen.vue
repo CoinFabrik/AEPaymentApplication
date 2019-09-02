@@ -1,6 +1,9 @@
 <template>
   <div class="channel-open">
-		<LoadingModal alwaysVisible :text="this.getChannelStatusDescriptiveText"/>
+    <LoadingModal
+      always-visible
+      :text="this.getChannelStatusDescriptiveText"
+    />
   </div>
 </template>
 

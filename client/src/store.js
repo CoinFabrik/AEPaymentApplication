@@ -7,7 +7,7 @@ import aeternity from './controllers/aeternity';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  plugins: [createPersistedState({ paths: ["channelOptions", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route.*"] })],
+  plugins: [createPersistedState({ paths: ["channelOptions", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route"] })],
   state: {
     balance: 0,
     aeClient: null,
@@ -41,7 +41,7 @@ export default new Vuex.Store({
     loadChannelOptions(state, params) {
       state.channelOptions = params;
     },
-    
+
     loadHubIpAddr(state, url) {
       state.hubUrl = url;
     },
@@ -141,7 +141,7 @@ export default new Vuex.Store({
               "message", (message) => {
                 console.warn("Global-message-handler: ", message);
                 const infoObj = JSON.parse(message.info);
-                // emit event based in msg type:  
+                // emit event based in msg type:
                 // heartbeat
                 // payment-request-accepted
                 // payment-request-rejected
@@ -210,7 +210,7 @@ export default new Vuex.Store({
 
       console.log("Storing up Channel Parameters:" + JSON.stringify(params));
       commit("loadChannelOptions", options);
-      
+
     },
     async getChannel( { dispatch,  commit, state }) {
       if (state.store.channel === null) {
