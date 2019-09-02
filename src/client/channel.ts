@@ -317,10 +317,17 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     _save_state(s) {
-        let state = s["signedTx"];
-        this.client.channelSt = state;
-        this.client.channelRn = this.channel.round;
-        console.log("client Saving...:", state, this.client.channelRn);
+        if (s==undefined) {
+            this.client.channelId = null;
+            this.client.channelSt = null;
+            this.client.channelRn = null;
+            console.log("removing saved state!");
+        } else {
+            let state = s["signedTx"];
+            this.client.channelSt = state;
+            this.client.channelRn = this.channel.round;
+            console.log("client Saving...:", state, this.client.channelRn);
+        }
         return this.client.save();
     }
 
@@ -356,6 +363,7 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
             console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
+            this._save_state(undefined);
             // if (this.RECONNECT) {
             //     this._initChannel().then(voidf)
             //         .catch(err=>console.error("Cannot re init channel:"+err))
@@ -388,7 +396,7 @@ export abstract class ServerChannel extends EventEmitter {
         while (this.status == "OPEN") {
             await this.sendMessage({"type": "heartbeat"});
             await sleep(1 * 1000)
-            if (this.is_customer() && (Date.now()-this.last_update<90*1000)) {
+            if (this.is_customer() && (Date.now()-this.last_update>90*1000)) {
                 break
             }
         }
