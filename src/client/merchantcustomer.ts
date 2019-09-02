@@ -27,7 +27,6 @@ export class MerchantCustomer {
     static all: { [key: string]: MerchantCustomer } = {};
     readonly original_msg: object;
     readonly _base: object;
-    readonly id: string;
     state: PaymentState = PaymentState.Waiting;
 
     static register(mc: MerchantCustomer) {
