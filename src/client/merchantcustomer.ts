@@ -3,6 +3,7 @@ import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
 import BigNumber from "bignumber.js";
+import {ServerChannel} from "./channel";
 const uuidlib = require('uuid');
 
 export class Guid {
@@ -26,6 +27,7 @@ export class MerchantCustomer {
     static all: { [key: string]: MerchantCustomer } = {};
     readonly original_msg: object;
     readonly _base: object;
+    readonly id: string;
     state: PaymentState = PaymentState.Waiting;
 
     static register(mc: MerchantCustomer) {
@@ -37,7 +39,8 @@ export class MerchantCustomer {
     }
 
     private constructor(readonly merchant: string, readonly customer: string, public msg: object,
-                        id?: string, private _mclient?: CClient, private _cclient?: CClient) {
+                        private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
+        let id = msg["id"];
         if (id != undefined) {
             if (!MerchantCustomer.ValidId(id)) {
                 throw new InvalidRequest("Invalid id:" + id);
@@ -117,7 +120,7 @@ export class MerchantCustomer {
     }
 
     sendCustomer(msg: object) {
-        this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        this.cust_channel.sendMessage(msg).then(voidf).catch(console.error);
     }
 
     sendMerchant(msg: object) {
@@ -138,21 +141,7 @@ export class MerchantCustomer {
         return this._cclient;
     }
 
-    // static FromMerchantRequest(msg: object): MerchantCustomer {
-    //     let merchant = msg["from"];
-    //     let mclient = ClientService.getClientByAddress(merchant, "merchant");
-    //     if (mclient == null) {
-    //         throw new InvalidMerchant(merchant)
-    //     }
-    //     let customer = msg["info"]["toId"];
-    //     let cclient = ClientService.getClientByAddress(customer, "customer");
-    //     if (cclient == null) {
-    //         throw new InvalidCustomer(customer);
-    //     }
-    //     return new MerchantCustomer(merchant, customer, msg);
-    // }
-
-    static FromRequest(msg: object): MerchantCustomer {
+    static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
         let merchant = msg["info"]["merchant"];
         let mclient = ClientService.getClientByAddress(merchant, "merchant");
         if (mclient == null) {
@@ -163,7 +152,7 @@ export class MerchantCustomer {
         if (cclient == null) {
             throw new InvalidCustomer(customer);
         }
-        return new MerchantCustomer(merchant, customer, msg, msg["id"]);
+        return new MerchantCustomer(merchant, customer, msg, cust_channel, mclient, cclient);
     }
 
     paymentReceived() {
