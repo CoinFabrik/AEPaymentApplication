@@ -75,3 +75,10 @@ html, body {
     border: 2px solid;
     border-color: #FF0D6A;
 }
+
+/* Ae Panel */
+.ae-panel[data-v-2591ccdc] {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid #6948a15c;
+}
