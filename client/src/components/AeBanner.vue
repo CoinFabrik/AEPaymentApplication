@@ -5,45 +5,41 @@
   >
 		<b-container>
 			<div v-if="getHeight() > 500">
-				<img
-					class="logo"
-					alt="AE-logo"
-					src="./../assets/ae2x.png"
-				>
-				<ae-text
-					weight="bold"
-					fill="white"
-					face="sans-s"
-				>
-					æternity
-				</ae-text>
-				<ae-text
-					fill="primary"
-					face="mono-xs"
-				>
-					{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
-				</ae-text>
-			</div>
-			<div v-else>
-				<b-row align-h="center">
-					<b-col align-v="center">
+        <b-row align-v="center" style="height: 80px;">
+					<b-col align-h="left">
 						<img
+              align = "left"
 							class="logo"
 							alt="AE-logo"
-							src="./../assets/ae2x.png"
+							src="./../assets/images/aeternity-logo-vector-black-bg-horizontal03.svg"
 						>
 					</b-col>
-					<b-col align-v="center">
+					<b-col>
 						<ae-text
-							weight="bold"
-							fill="white"
-							face="sans-s"
-						>
-							æternity
-						</ae-text>
-						<ae-text
+              align="right"
 							fill="primary"
-							face="mono-xs"
+							face="mono-s"
+						>
+							{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
+						</ae-text>
+					</b-col>
+				</b-row>
+			</div>
+			<div v-else>
+				<b-row align-v="center" style="height: 60px;">
+					<b-col align-h="left">
+						<img
+              align = "left"
+							class="logo"
+							alt="AE-logo"
+							src="./../assets/images/aeternity-logo-vector-black-bg-horizontal03.svg"
+						>
+					</b-col>
+					<b-col>
+						<ae-text
+              align="right"
+							fill="primary"
+							face="mono-s"
 						>
 							{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
 						</ae-text>
@@ -73,17 +69,9 @@
 	};
 </script>
 
-<style>
-@media only screen and (min-width: 530)
-	.banner {
-		height: 12vh;
-	}
-@media only screen and (min-width: 530)
-	.banner {
-		height: 15vh;
-	}
-	.logo {
-		padding-top: 10px;
-		height: 9vh;
-	}
+<style scope>
+.row {
+  padding-bottom: 0 !important;
+}
+
 </style>

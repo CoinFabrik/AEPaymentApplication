@@ -5,6 +5,26 @@ html, body {
   height: 100%;
   padding: 0 10px!important;
 }
+
+/* AeBanner */
+
+.banner {
+  padding: 0 0.5em;
+}
+@media only screen and (min-width: 530)
+	.banner {
+		height: 12vh;
+	}
+@media only screen and (min-width: 530)
+	.banner {
+		height: 15vh;
+	}
+	.logo {
+		/* padding-top: 10px; */
+		height: 4.5vh;
+	}
+
+
 #content {
   height: 100%;
   margin-top: 5%;
@@ -26,6 +46,9 @@ html, body {
   width: 100vw;
   border-radius:30px 30px 0px 0px;
 }
+.ae-main {
+  background: #FFFFFF!important;
+}
 .ae-text.titleHead {
   /* color: red; */
 }
@@ -39,7 +62,6 @@ html, body {
   background-color: #FF0D6A !important;
   color: #fff;
   font-size: 1.0625em;
-  padding:
 }
 .swal2-styled:focus {
   outline: none;

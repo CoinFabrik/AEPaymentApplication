@@ -4,7 +4,7 @@
 			<b-row class="no-padding">
 				<b-col>
 					<AeButton
-						class="marginal"
+						class=""
 						face="round"
 						extend
 						:fill="buttons[0]['fill'] ? buttons[0]['fill'] : 'primary'"
