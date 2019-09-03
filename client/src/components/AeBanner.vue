@@ -18,9 +18,9 @@
 						<ae-text
               align="right"
 							fill="primary"
-							face="mono-s"
+							face="uppercase-base"
 						>
-							{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
+							{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }}
 						</ae-text>
 					</b-col>
 				</b-row>
@@ -39,9 +39,9 @@
 						<ae-text
               align="right"
 							fill="primary"
-							face="mono-s"
+              face="uppercase-base"
 						>
-							{{ this.$isMerchantAppRole ? "MERCHANT" : "CUSTOMER" }}
+							{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }}
 						</ae-text>
 					</b-col>
 				</b-row>
