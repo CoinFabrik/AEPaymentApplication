@@ -9,7 +9,10 @@ const PAYMENT_STATE_INITIAL = 0,
   PAYMENT_STATE_COMPLETED = 4,
   PAYMENT_STATE_UPDATE_REJECTED = 5,
   PAYMENT_STATE_UPDATE_ERROR = 6,
-  PAYMENT_STATE_AWAITING_COMPLETE_ACK = 7
+  PAYMENT_STATE_REJECTED_BY_USER = 7,
+  PAYMENT_STATE_AWAITING_COMPLETE_ACK = 8,
+  PAYMENT_STATE_CANCELED = 9
+
 
 export default class PaymentProcessor extends EventEmitter {
   constructor(customerAddress, hubAddress, paymentData, channel) {
@@ -36,11 +39,13 @@ export default class PaymentProcessor extends EventEmitter {
   }
 
   update() {
+    console.log('PaymentProcessor::update');
+    
     var that = this;
     window.eventBus.$once("payment-complete-ack", function (e) { that.onPaymentCompleteAck(e) });
 
     aeternity.update(this.channel, this.customerAddress, this.hubAddress, this.paymentData.amount).then(
-       ({ accepted, signedTx }) => {
+      ({ accepted, signedTx }) => {
         if (accepted) {
           console.log("PaymentProcessor:  accepted update TX " + signedTx);
           this.status = PAYMENT_STATE_AWAITING_COMPLETE_ACK;
@@ -50,7 +55,24 @@ export default class PaymentProcessor extends EventEmitter {
           this.emit("payment-update-rejected", "None");
         }
       }).catch((err) => {
-        this.status === PAYMENT_STATE_UPDATE_ERROR;
+        console.log("payment_rejected ", err);
+        //
+        // Error: Method not found is our result of handling "rejected by user"  (see aeternity.update)
+        //
+        if (err.toString() === "Error: Method not found") {
+          //
+          // There is no way at this time (sep 2019) to reject
+          // an update "cleanly".  So we will send another one, forcing  
+          // an update conflict, and discarding this round.
+          //
+          this.status = PAYMENT_STATE_REJECTED_BY_USER;
+          this.emit("payment-update-rejected-by-user")
+          return;
+        }
+        else {
+          this.status = PAYMENT_STATE_UPDATE_ERROR;
+        }
+
         this.emit("payment-update-rejected", err)
       })
   }
@@ -80,16 +102,17 @@ export default class PaymentProcessor extends EventEmitter {
   }
 
   onPaymentCompleteAck(e) {
+    if (e.eventdata === "canceled") {
+
+      console.warn("PaymentProcessor: Payment-request CANCELED message received");
+      this.status = PAYMENT_STATE_CANCELED;
+      this.emit("payment-request-canceled");
+      return;
+    }
 
     if (this.status === PAYMENT_STATE_AWAITING_COMPLETE_ACK) {
-      if (e.eventdata === "canceled") {
 
-        console.warn("PaymentProcessor: Payment-request CANCELED message received");
-        this.status = PAYMENT_STATE_CANCELED;
-        this.emit("payment-request-canceled");
-      }
-
-      else if (e.eventdata === "completed") {
+      if (e.eventdata === "completed") {
         console.warn("PaymentProcessor: Payment-request COMPLETED message received");
 
         this.status = PAYMENT_STATE_COMPLETED;
@@ -99,7 +122,5 @@ export default class PaymentProcessor extends EventEmitter {
     } else {
       console.error("PaymentProcessor: Not in PAYMENT_STATE_AWAITING_COMPLETE_ACK state, but " + this.status);
     }
-
   }
-
 }

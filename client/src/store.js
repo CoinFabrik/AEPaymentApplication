@@ -7,14 +7,28 @@ import aeternity from './controllers/aeternity';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  plugins: [createPersistedState({ paths: ["channelOptions", "channel", "hubUrl", "hubAddress", "hubNode", "userName", "onboardingDone", "route"] })],
+  plugins: [createPersistedState({
+    paths: ["channel",
+      "channelOptions",
+      "lastOpenChannelId",
+      "lastOpenChannelState",
+      "hubUrl",
+      "hubAddress",
+      "hubNode",
+      "userName",
+      "channelOpenDone",
+      "onboardingDone",
+      "onboardingQrScan",
+      "route"]
+  })],
   state: {
     balance: 0,
-    aeClient: null,
+    channel: null,
+    lastOpenChannelId: null,
+    lastOpenChannelState: null,
     onboardingQrScan: null,
     channelOpenDone: null,
     channelOptions: null,
-    channelReconnectInfo: { offChainTx: null, channelId: null },
     initiatorBalance: null,
     responderBalance: null,
     initiatorAmount: null,
@@ -33,9 +47,7 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    setAeClient(state, aeClient) {
-      state.aeClient = aeClient;
-    },
+
     updateBalance(state, balance) {
       state.balance = balance;
     },
@@ -53,17 +65,13 @@ export default new Vuex.Store({
       state.hubNode = node;
     },
     setInitialDeposit(state, amount) {
-        state.initiatorAmount = amount;
+      state.initiatorAmount = amount;
     },
     setUserName(state, name) {
       state.userName = name;
     },
     setChannel(state, channel) {
       state.channel = channel;
-    },
-    setChannelReconnectInfo(state, offChainTx, channelId) {
-      state.channelReconnectInfo.offChainTx = offChainTx;
-      state.channelReconnectInfo.channelId = channelId;
     },
     updateInitiatorBalance(state, amount) {
       state.initiatorBalance = amount;
@@ -79,6 +87,12 @@ export default new Vuex.Store({
     },
     setOnboardingQrScan(state, f) {
       state.onboardingQrScan = f;
+    },
+    setLastOpenChannelId(state, id) {
+      state.lastOpenChannelId = id;
+    },
+    setLastOpenChannelState(state, chstate) {
+      state.lastOpenChannelState = chstate;
     }
   },
   actions: {
@@ -90,24 +104,33 @@ export default new Vuex.Store({
       commit('updateInitiatorBalance', null);
       commit('updateResponderBalance', null);
       commit('updateInHubBalance', null);
-      commit('setChannelReconnectInfo', null, null);
       commit('setChannelOpenDone', null);
       commit('setOnboardingQrScan', null);
+      commit('setLastOpenChannelId', null);
+      commit('setLastOpenChannelState', null);
     },
     updateOnchainBalance({ commit, state }) {
-			return aeternity.getAccountBalance()
-							.then(
-								function (balance) {
-          				commit('updateBalance', balance);
-        				}
-							)
-							.catch(
-								function (err) {
-									console.error(err);
-								}
-							)
+      return aeternity.getAccountBalance()
+        .then(
+          function (balance) {
+            commit('updateBalance', balance);
+          }
+        )
+        .catch(
+          function (err) {
+            console.error(err);
+          }
+        )
     },
-    updateChannelBalances({ commit, state, getters }) {
+    async updateChannelBalances({ dispatch, commit, state, getters }) {
+      // if (state.channel.balances === undefined) {
+      //   console.log("state.channel NULL, re-creating channel ...");
+      //   state.channelOptions.existingChannelId = state.lastOpenChannelId;
+      //   state.channelOptions.offchainTx = state.lastOpenChannelState.signedTx;
+      //   //state.channelOptions.initiatorAmount = 0;
+      //   await dispatch('createChannel');
+      //   console.log("Created new channel");
+      // }
       const iAddr = getters.initiatorAddress;
       const rAddr = getters.responderAddress;
       state.channel.balances([iAddr, rAddr]).then(
@@ -128,6 +151,21 @@ export default new Vuex.Store({
       }
       commit('updateInHubBalance', res.balance);
     },
+    async openChannel({ dispatch, commit, state }) {
+      console.log("action: openChannel");
+      let hub = new HubConnection(state.hubUrl, await aeternity.getAddress()
+      );
+
+      let res = await hub.notifyUserOnboarding(
+        state.initiatorAmount,
+        state.userName,
+        process.env.VUE_APP_ROLE
+      );
+
+      commit("loadHubAddress", res.address);
+      await dispatch("storeChannelOptions", res.options);
+      await dispatch("createChannel");
+    },
     async createChannel({ commit, state }) {
       return new Promise((resolve, reject) => {
         aeternity.createChannel(state.channelOptions).then(
@@ -137,7 +175,14 @@ export default new Vuex.Store({
 
             channel.on(
               "statusChanged", (status) => {
+
                 console.warn("Global-status-changed-handler: ", status);
+                if (status === "open") {
+                  // Save identification information
+                  commit('setLastOpenChannelId', channel.id());
+                  channel.state().then(s =>
+                    commit('setLastOpenChannelState', s));
+                }
                 window.eventBus.$emit('channel-status-changed', status);
               }
             );
@@ -186,15 +231,7 @@ export default new Vuex.Store({
         ).catch(err => reject(err));
       });
     },
-    // async reconnectChannel({ commit, state }) {
-    //   state.channelOptions.offChainTx = state.channel.id;
-    //   state.channelOptions.existingChannelId = state.channelReconnectInfo.channelId;
-    //   aeternity.createChannel(state.channelOptions).then(
-    //     function (channel) {
-    //       commit('setChannel', channel);
-    //     }
-    //   )
-    // },
+
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
       aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
@@ -218,7 +255,7 @@ export default new Vuex.Store({
       commit("loadChannelOptions", options);
 
     },
-    async getChannel( { dispatch,  commit, state }) {
+    async getChannel({ dispatch, commit, state }) {
       if (state.store.channel === null) {
         await dispatch('createChannel');
       }

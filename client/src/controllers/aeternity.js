@@ -12,17 +12,8 @@ const { TxBuilder: { calculateFee, unpackTx } } = require('@aeternity/aepp-sdk')
 import { setTimeout } from 'timers'
 
 const aeternity = {
-  network: null,
   client: null,
   address: null,
-  pk: null,
-  height: null,
-  apiServerProtocol: null,
-  apiServerPort: null,
-  apiServerAddress: null,
-  stateChannelApiProtocol: null,
-  stateChannelApiHost: null,
-  stateChannelApiPort: null,
   updateHandler: null,
   afterSignHandler: null
 }
@@ -45,6 +36,7 @@ aeternity.connectToBaseApp = async function () {
   try {
     let ret = await Promise.race([timeout, Aepp()]);
     aeternity.client = ret;
+    console.log("aeternity.client connected. Your address: " + await aeternity.client.address());
     return { status: true, error: null };
   }
   catch (err) {
@@ -59,12 +51,6 @@ aeternity.getAddress = async function () {
   return aeternity.client.address();
 }
 
-aeternity.getApiServerUrl = function () {
-  return aeternity.apiServerProtocol + '://' + aeternity.apiServerAddress + ':' + aeternity.apiServerPort
-}
-aeternity.getStateChannelApiUrl = function () {
-  return aeternity.stateChannelApiProtocol + '://' + aeternity.stateChannelApiHost + ':' + aeternity.stateChannelApiPort + '/channel';
-}
 aeternity.getAccountBalance = async function () {
   await aeternity.connectToBaseApp();
   return await aeternity.client.balance(await aeternity.getAddress());
@@ -119,8 +105,45 @@ aeternity.update = async function (channel, fromAddr, toAddr, amount) {
     fromAddr,
     toAddr,
     amount,
-    async (tx) => aeternity.client.signTransaction(tx)
+    async (tx) => {
+      try {
+        let signedTx = await aeternity.client.signTransaction(tx);
+        return signedTx;
+      }
+      catch (e) {
+        if (e.toString() === "Rejected by user") {
+          console.warn("Sign Function Rejected by user");
+
+          channel.sendMessage({ type: "payment-user-cancel" }, toAddr);
+          return null;  // this makes upper exception handler receive Error: Method not found.
+        }
+      }
+    }
   );
+
+      // catch (e) {
+      //   // Was rejected by user ?
+      //   if (e.toString() === "Rejected by user") {
+      //     //
+      //     // There is no way at this time (sep 2019) to reject
+      //     // an update "cleanly".  So we will send another one, forcing  
+      //     // an update conflict, and discarding this round.
+      //     //
+
+      //     console.warn("Updated rejected by user, sending manual conflicting update to discard");
+      //     aeternity.update(channel, fromAddr, toAddr, amount).then(({ accepted, signedTx }) => {
+      //       if (accepted) {
+      //         console.error("Forced Update-conflict expected to fail, but was accepted anyway!");
+      //       } else {
+      //         console.warn("Forced Update-conflict successfully rejected.");
+      //       }
+      //     }).catch(err => {
+      //       console.error("Forced Update-conflict error: " + err.toString());
+      //     })
+      //   }
+      // }
+   // }
+  //);
 }
 
 aeternity.estimateDepositFee = function (gasAmount) {
@@ -151,10 +174,9 @@ aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
     });
 }
 
-aeternity.closeChannel = async function (channel, onChainTxCallback, onDepositCallback) {
+aeternity.closeChannel = async function (channel, onChainTxCallback) {
   return channel.shutdown(async (tx) => aeternity.client.signTransaction(tx), {
-    onOnChainTx: onChainTxCallback,
-    onDepositCallbackLocked: onDepositCallback
+    onOnChainTx: onChainTxCallback
   });
 }
 

@@ -30,6 +30,9 @@
 export default {
   name: "MainMenu",
   computed: {
+    getName: function() {
+			return this.$store.state.userName;
+		},
     getAddress: function() {
       return this.$store.getters.initiatorId;
     },

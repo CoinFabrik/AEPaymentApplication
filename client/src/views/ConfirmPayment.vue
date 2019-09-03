@@ -1,80 +1,37 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText
-      weight="bold"
-      align="center"
-      face="sans-l"
-    >
-      Check your payment
-    </AeText>
+    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Merchant
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Merchant</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ registeredMerchantName }}
-          </AeText>
+          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Amount
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Amount</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ amountAE }} AE
-          </AeText>
+          <AeText face="mono-base">{{ amountAE }} AE</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Concept
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ paymentData.something }}
-          </AeText>
+          <AeText face="mono-base">{{ paymentData.something }}</AeText>
         </div>
       </div>
     </div>
     <AeDivider />
-    <AeButton
-      class="margin"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      class="margin"
-      face="round"
-      fill="secondary"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+    <AeButton class="margin" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="margin" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -85,6 +42,7 @@ import BigNumber from "bignumber.js";
 import { clearInterval, setInterval } from "timers";
 import HubConnection from "../controllers/hub";
 import PaymentProcessor from "../controllers/payment";
+import aeternity from '../controllers/aeternity';
 const uuidv4 = require("uuid/v4");
 let paymentProcessor;
 
@@ -179,6 +137,19 @@ export default {
                 });
             });
 
+            paymentProcessor.once("payment-update-rejected-by-user", () => {
+              this.$swal
+                .fire({
+                  heightAuto: false,
+                  type: "info",
+                  html:
+                    "You have cancelled your payment."
+                })
+                .then(() => {
+                  this.$router.replace("main-menu");
+                });
+            });
+
             paymentProcessor.once(
               "payment-request-rejected",
               paymentRejectInfo => {
@@ -230,45 +201,62 @@ export default {
       this.$router.replace("main-menu");
     },
     async ensureConnection() {
+      let timerInterval;
       if (this.$store.state.channel.status() === "disconnected") {
         console.warn(
           "We are offline (state is DISCONNECTED), trying to reconnect... "
         );
-        this.$swal
-          .fire({
-            type: "warning",
-            title: "You are offline",
-            text: "Please wait while reconnecting...",
-            heightAuto: false,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            timer: process.env.CHANNEL_RECONNECT_TIMEOUT,
-            onBeforeOpen: () => {
-              //this.$store.dispatch("reconnectChannel");
-              this.$swal.showLoading();
-              timerInterval = setInterval(() => {
-                if (this.$store.state.channel.status === "open") {
-                  this.$swal.close();
-                }
-              }, 500);
-            },
-            onClose: () => {
-              clearInterval(timerInterval);
-            }
-          })
-          .then(result => {
-            if (result.dismiss === "timer") {
-              this.$swal.fire({
-                heightAuto: false,
-                type: "error",
-                html:
-                  "We could not go online mode. This may indicate connection problems. <br> <br>" +
-                  "<ul><li>Re-try again in a moment or,</li>" +
-                  "<li>Ask the merchant to process the offline payment for you instead</li></ul>"
-              });
-            }
-          });
+
+        let hub = new HubConnection(
+          this.$store.state.hubUrl,
+          await aeternity.getAddress()
+        );
+
+        let res = hub.notifyUserOnboarding(
+          this.$store.state.initiatorAmount,
+          this.$store.state.userName,
+          this.$isClientAppRole ? "client" : "merchant"
+        );
+
+        await this.$store.dispatch("storeChannelOptions", res.options);
+        await this.$store.dispatch("connectChannel");
       }
+
+      //   this.$swal
+      //     .fire({
+      //       type: "warning",
+      //       title: "You are offline",
+      //       text: "Please wait while reconnecting...",
+      //       heightAuto: false,
+      //       showConfirmButton: false,
+      //       allowOutsideClick: false,
+      //       timer: process.env.CHANNEL_RECONNECT_TIMEOUT,
+      //       onBeforeOpen: () => {
+      //         this.$swal.showLoading();
+
+      //         timerInterval = setInterval(() => {
+      //           if (this.$store.state.channel.status === "open") {
+      //             this.$swal.close();
+      //           }
+      //         }, 500);
+      //       },
+      //       onClose: () => {
+      //         clearInterval(timerInterval);
+      //       }
+      //     })
+      //     .then(result => {
+      //       if (result.dismiss === "timer") {
+      //         this.$swal.fire({
+      //           heightAuto: false,
+      //           type: "error",
+      //           html:
+      //             "We could not go online mode. This may indicate connection problems. <br> <br>" +
+      //             "<ul><li>Re-try again in a moment or,</li>" +
+      //             "<li>Ask the merchant to process the offline payment for you instead</li></ul>"
+      //         });
+      //       }
+      //     });
+      // }
     },
     async confirm() {
       var that = this;

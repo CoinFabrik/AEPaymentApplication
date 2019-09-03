@@ -37,8 +37,8 @@ KNOWN ISSUES:
 + Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
 + UI Scaling does not work well in low vertical res screens, this is a WIP
 
-0.8.6-WIP (190830)
-------------------
+0.8.6 (190830)
+--------------
 + CLOSE channel request acts as an application exit: will reset all state and require to do re-login process from start
 + Fixed issue where you cannot login on iOS with QR-click instead of camera
 + Node connection timeout implemented at startup.
@@ -51,5 +51,13 @@ KNOWN ISSUES:
 
 KNOWN ISSUES:
 + If you dont get camera access while scanning QRs, you may need to accept camera permission in main base Aepp first.
++ Payment process can  time-out due to a bug we are analyzing.
 + Transparent channel reconnection if it goes to DISCONNECT state
 + Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
+
+0.8.7 (190902)
+--------------
++ An opened channel will re-open on disconnect, if there is any available state
++ Enhanced navigation. Application will always store the latest usable state and return to proper screen.
++ Main Menu shows registered-user name
++ Changed Open Channel UI

@@ -99,12 +99,10 @@ export default {
         connectStatus = await aeternity.connectToBaseApp();
         if (connectStatus.status) {
           console.log("Aepp connect status Success");
-          this.$store.commit("setAeClient", aeternity.client);
           this.status = STATUS_CONNECTED;
           this.$bvModal.hide("loadingModal");
 
           const myAddress = await aeternity.client.address();
-          console.log("Your address: " + myAddress);
           aeternity.client
             .balance(myAddress)
             .then(() => {
@@ -141,34 +139,6 @@ export default {
     }
   },
   mounted() {
-    // boot process:
-    // If we didnt went thru Scan QR, we are clean. Wait for connection.
-    // If we already scanned QR, but didnt went thru User Register, go to Register.
-    // If we already scanned QR plus user name, go to channel Opening.
-    // If we did QR + user name + channel open, go to Main Menu.
-
-    if (this.$store.state.onboardingQrScan) {
-      if (this.$store.state.userName) {
-        if (this.$store.state.channelOpened) {
-          console.log(
-            "QR-Scan, Register and Channel Open done, going to Main Menu..."
-          );
-          this.$router.replace("main-menu");
-          return;
-        }
-        console.log(
-          "QR-Scan, and Register done, going to Initial Deposit for channel open..."
-        );
-        this.$router.replace({
-          name: "deposit",
-          params: { initialDeposit: true }
-        });
-        return;
-      }
-      console.log("QR-Scan done, going to User register...");
-
-      this.$router.replace("register-user");
-    }
   }
 };
 </script>

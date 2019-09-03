@@ -172,11 +172,16 @@ export default {
     async createChannel() {
       this.viewStatus = STATUS_WORKING;
       try {
-        if (this.$store.state.channel == null) {
-          await this.$store.dispatch("createChannel");
+        if (!this.$store.state.lastOpenChannelId){
+          console.log("No last opened channel ID stored");
         } else {
-          console.error("createChannel: Channel already created!");
+        console.warn("Found last opened channel ID: " + this.$store.state.lastOpenChannelId);
+        if (this.$store.state.lastOpenChannelState) {
+          console.warn("Found last opened channel state: " + JSON.stringify(this.$store.state.lastOpenChannelState));
+          }
         }
+
+        await this.$store.dispatch("createChannel");
 
         // Channel created -- if we are merchants  suscribe to global
         // payment received notification.
