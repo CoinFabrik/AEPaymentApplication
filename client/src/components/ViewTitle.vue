@@ -1,21 +1,21 @@
 <template>
   <div>
     <AeText
+      class="titleHead mb-3"
       weight="bold"
       :face="getHeight() > 550 ? 'sans-l' : 'sans-base'"
     >
       {{ title }}
     </AeText>
-    <AeDivider class="divider" />
   </div>
 </template>
 
 
 <script>
-	import { AeText, AeDivider } from "@aeternity/aepp-components";
+	import { AeText } from "@aeternity/aepp-components";
 	export default {
 		name: "ViewTitle",
-		components: { AeText, AeDivider },
+		components: { AeText },
 		props: ['title'],
 		methods: {
 			goHome() {
@@ -28,9 +28,3 @@
 		}
 	};
 </script>
-
-<style scoped>
-	.divider {
-		margin: 2vh 15vh;
-	}
-</style>
