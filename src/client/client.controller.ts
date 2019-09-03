@@ -5,13 +5,10 @@ import {ServerChannel} from "./channel";
 import {Actor, CClient} from "./client.entity";
 import { Response } from 'express';
 import {Hub} from "./hub";
+import {getRepository} from "typeorm";
 
 abstract class ClientController {
-  constructor(private readonly clientService: ClientService) {
-      setTimeout( () => {
-          console.log("1-------- this is:", this);
-      }, 0);
-  }
+  constructor(private readonly clientService: ClientService) { }
 
   get service(): ClientService {
       if (this.clientService!=undefined)
@@ -34,6 +31,21 @@ abstract class ClientController {
   @Get("history/:address")
   async history(@Param() params): Promise<any> {
       return RepoService.getHistory(this.kind, params.address);
+  }
+
+  @Get("reset/:address")
+  async resetoffline(@Param() params): Promise<any> {
+      let repo = getRepository(CClient);
+      let result = "ok";
+      let client = await repo.findOne({address: params.address.toString(), kind: this.kind});
+      if (client!=undefined) {
+          client.channelSt = null;
+          client.channelId = null;
+          client.save();
+      } else {
+          result = "not found";
+      }
+      return {result};
   }
 
   @Get(":address/:amount/:name")
@@ -80,7 +92,6 @@ abstract class ClientController {
       //     return res.status(HttpStatus.TEMPORARY_REDIRECT).json({"error": "already connected"});
       // }
       let result = await this.service.connect(client);
-      console.log("client:", JSON.stringify(result));
       return res.json(result);
   }
 

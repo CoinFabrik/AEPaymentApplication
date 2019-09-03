@@ -35,7 +35,7 @@ class Customer extends MyChannel {
     peer = await Customer.Init(account);
     if (peer==null)
         return;
-    
+
     async function quit(code) {
         try {
             console.log("pre leave.")

@@ -1,9 +1,10 @@
-import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest, MerchantCustomerAccepted} from "./client.entity";
+import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest} from "./client.entity";
 import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
 import BigNumber from "bignumber.js";
 import {ServerChannel} from "./channel";
+import {MerchantCustomerAccepted} from "./mca.entity";
 const uuidlib = require('uuid');
 
 export class Guid {
