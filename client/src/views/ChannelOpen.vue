@@ -1,7 +1,9 @@
 <template>
   <div class="channel-open">
-    <AeText>{{ getChannelStatusDescriptiveText }}</AeText>
-    <AeLoader v-show="!isStopped" />
+    <LoadingModal
+      always-visible
+      :text="this.getChannelStatusDescriptiveText"
+    />
   </div>
 </template>
 

@@ -5,9 +5,7 @@
     />
     <b-row align-h="center">
       <div v-if="">
-        <AeText weight="500">
-
-        </AeText>
+        <AeText weight="500" />
       </div>
 
       <!--
@@ -16,21 +14,23 @@
         id="scan_qr_container"
         @click="onQrClick"
       >
-      <div v-if="subview === 'pay-with-qr'">
-        <AeText face="sans-s">Payment Code</AeText>
-        <input
-          id="payment-code-input"
-          type="text"
-        >
-        <AeButton
-          face="primary"
-          id="load-payment-code"
-          text="Load"
-          @click="loadPaymentCode"
-        >
-          Load
-        </AeButton>
-      </div>
+        <div v-if="subview === 'pay-with-qr'">
+          <AeText face="sans-s">
+            Payment Code
+          </AeText>
+          <input
+            id="payment-code-input"
+            type="text"
+          >
+          <AeButton
+            id="load-payment-code"
+            face="primary"
+            text="Load"
+            @click="loadPaymentCode"
+          >
+            Load
+          </AeButton>
+        </div>
 
         <div
           id="scan_qr_subcontainer"
@@ -41,10 +41,8 @@
             @error="onQrHasError"
           />
         </div>
-         <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
-      
+        <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
       </div>
-      
     </b-row>
      
     <ViewButtonSection

@@ -32,6 +32,9 @@
 		data() {
 			return { isLoading: false };
 		},
+		beforeMount() {
+			this.$store.state.route && this.$router.replace({name: this.$store.state.route.name});
+		}
 	};
 </script>
 

@@ -1,7 +1,8 @@
 <template>
   <b-container class="main-app">
-    <ViewTitle title="Menu" />
+    <ViewTitle :title="getName || 'Menu'" />
     <ViewBalances
+      style="margin-top:8vh;"
       :wallet-balance="getMyWalletBalance.toFixed(2)"
       :channel-balance="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
     />
@@ -14,6 +15,11 @@
     <ViewButtonSection
       v-if="$isMerchantAppRole"
       :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{ name: 'My Activity', action: history}, {name:'Close channel', action:closeChannelConfirmation, cancel:true}]"
+    />
+
+    <CloseModal
+      text="Close channel?"
+      :on-confirm="this.closeChannel"
     />
   </b-container>
 </template>
