@@ -29,3 +29,19 @@ html, body {
 .ae-text.titleHead {
   /* color: red; */
 }
+/* sweetalert2 AE Sytles */
+
+.swal2-styled {
+  padding: 0.625em 3em !important;
+}
+.swal2-styled.swal2-confirm {
+  border-radius: 32px !important;
+  background-color: #FF0D6A !important;
+  color: #fff;
+  font-size: 1.0625em;
+  padding:
+}
+.swal2-styled:focus {
+  outline: none;
+  box-shadow: none !important;
+}
