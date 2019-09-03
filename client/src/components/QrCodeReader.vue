@@ -87,29 +87,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.qr-code-reader {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 100vh;
-}
-.permission-denied {
-  text-align: center;
-  line-height: 1.56;
-  padding: 0 20px;
-  margin: auto;
-  font-size: 18px;
-}
-.video-wrapper {
-  flex-grow: 1;
-  overflow: hidden;
-  position: relative;
-}
-video {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-</style>
