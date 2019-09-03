@@ -70,21 +70,26 @@ html, body {
 
 /* Ae Button */
 .ae-button.neutral[data-v-d0360416] {
-    background: #FFFFFF;
-    color: #FF0D6A;
-    border: 2px solid;
-    border-color: #FF0D6A;
+  background: #FFFFFF;
+  color: #FF0D6A;
+  border: 2px solid;
+  border-color: #FF0D6A;
 }
 
 /* Ae Panel */
 .ae-panel[data-v-2591ccdc] {
-    -webkit-box-shadow: none;
-    box-shadow: none;
-    border: 1px solid #6948a15c;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border: 1px solid #6948a15c;
 }
 
 /* Ae Input */
 .ae-input[data-v-103db926] {
-    margin: 10px 0 15px 0;
+  margin: 10px 0 15px 0;
 
+}
+
+/* Ae Unit display */
+.unit[data-v-43286e6f] {
+  margin-left: 0.1em;
 }

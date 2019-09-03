@@ -10,7 +10,7 @@
     <AeText
       weight="400"
       class="label"
-      :face="getHeight() > 550 ? 'sans-base' : 'sans-xs'"
+      :face="getHeight() > 550 ? 'sans-s' : 'sans-xs'"
     >
       {{ this.$isMerchantAppRole ? merchant : customer }}
     </AeText>
@@ -42,7 +42,7 @@
 
 <style scoped>
 	.text-area {
-		width: 95%;
+		/* width: 95%; */
 		max-height: 30vh;
 	}
 	.label {
