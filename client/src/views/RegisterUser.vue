@@ -19,7 +19,7 @@
     <AeLoader v-show="fetchingName" />
 
     <ViewButtonSection
-      :buttons="[{name: 'Confirm', action: confirm}]"
+      :buttons="[{name: 'Confirm', action: confirm, validator: isValidInput}]"
     />
   </b-container>
 </template>
@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     isValidInput() {
-      return this.nameInput.length > 0;
+      return this.nameInput.trim().length > 0;
     }
   },
   async mounted() {

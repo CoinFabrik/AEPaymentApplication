@@ -7,26 +7,31 @@
         :fill="btn['cancel'] ? 'neutral' : 'primary'"
         extend
         @click="btn['action']"
-      >
-        {{ btn['name'] }}
-      </AeButton>
+        :disabled="btn['validator'] !== undefined && !btn['validator']"
+      >{{ btn['name'] }}</AeButton>
     </div>
   </div>
 </template>
 
 
 <script>
-	export default {
-		name: "ViewButtonSection",
-		props: ['buttons'],
-	};
+
+export default {
+  name: "ViewButtonSection",
+  props: ["buttons"],
+  computed: {
+    isDisabled() {
+      return ;
+    }
+  }
+};
 </script>
 
 <style scoped>
-	.buttonsection {
-		margin-bottom: 30px !important;
-	}
-	.marginal {
-		margin-top: 10px
-	}
+.buttonsection {
+  margin-bottom: 30px !important;
+}
+.marginal {
+  margin-top: 10px;
+}
 </style>
