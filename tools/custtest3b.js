@@ -164,16 +164,6 @@ function pick_random(arr) {
     //     }
     //     if(msg["type"]==="payment-request-completed") {
     //         console.log("payment completed!")
-    //         //peer.on("message", (msg) => {console.log("RECV:>", msg)})
-    //         // peer.showBalances("post")
-    //         //     .then(()=>{})
-    //         //     .catch(console.error);
-    //         if(-1!==process.argv.indexOf("continue")) {
-    //             peer.sendPayment(pr).then(()=>{
-    //                 idx= idx +1;
-    //                 console.log("iteration:", idx);
-    //             }).catch(console.error);
-    //         }
     //     }
     //     if(msg["type"]==="payment-request-canceled") {
     //         console.log("payment request canceled is unexpected! :-o !")

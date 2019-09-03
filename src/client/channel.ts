@@ -69,6 +69,7 @@ export abstract class ServerChannel extends EventEmitter {
     logger: Logger;
     readonly opposite: string;
     private last_update: number;
+    private last_ping: number = null;
     private disconnect_by_leave = false;
     pending_mcs: MerchantCustomer[] = [];
 
@@ -185,6 +186,7 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         this.on("message", (msg) => {
             if ((msg[info]==PING)||(msg[info]==PINGACK)) {
+                this.last_ping = Date.now();
             } else {
                 this.last_update = Date.now();
                 try {
