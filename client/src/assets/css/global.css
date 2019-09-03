@@ -82,3 +82,9 @@ html, body {
     box-shadow: none;
     border: 1px solid #6948a15c;
 }
+
+/* Ae Input */
+.ae-input[data-v-103db926] {
+    margin: 10px 0 15px 0;
+
+}
