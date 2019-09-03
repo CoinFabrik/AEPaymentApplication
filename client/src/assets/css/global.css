@@ -67,3 +67,11 @@ html, body {
   outline: none;
   box-shadow: none !important;
 }
+
+/* Ae Button */
+.ae-button.neutral[data-v-d0360416] {
+    background: #FFFFFF;
+    color: #FF0D6A;
+    border: 2px solid;
+    border-color: #FF0D6A;
+}
