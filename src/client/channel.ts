@@ -187,6 +187,8 @@ export abstract class ServerChannel extends EventEmitter {
         this.on("message", (msg) => {
             if ((msg[info]==PING)||(msg[info]==PINGACK)) {
                 this.last_ping = Date.now();
+            } else if (msg[info]==="leave") {
+                this.leave();
             } else {
                 this.last_update = Date.now();
                 try {
@@ -403,10 +405,15 @@ export abstract class ServerChannel extends EventEmitter {
                 break
             }
         }
+        this.leave();
+    }
+
+    leave() {
         console.log("Issuing leave()..");
         this.disconnect_by_leave = true;
-        let state = await this.channel.leave();
-        this._save_state(state);
+        this.channel.leave()
+            .then( (state) => this._save_state(state))
+            .catch( (err) => console.error("CAnnot leave:"+err));
     }
 
     ///////////////////////////////////////////////////////////
