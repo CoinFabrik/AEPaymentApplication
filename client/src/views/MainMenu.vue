@@ -2,7 +2,7 @@
   <b-container class="main-app">
     <ViewTitle :title="getName || 'Menu'"/>
     <ViewBalances
-			style="margin-top:8vh;"
+			style="margin-top:4vh;"
       :wallet-balance="getMyWalletBalance.toFixed(2)"
       :channel-balance="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
     />

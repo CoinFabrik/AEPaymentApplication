@@ -1,13 +1,13 @@
 <template>
   <b-container>
     <AePanel style="padding:0.5rem; height=110%;">
-			<b-row class="no-padding">
+			<b-row align-v="center">
 				<b-col>
 					<AeText
 						fill="secondary"
 						weight="600"
 						align="left"
-						face="sans-xs"
+						face="sans-s"
 					>
 						Wallet Balance
 					</AeText>
@@ -24,13 +24,13 @@
 				</b-col>
 			</b-row>
       <AeDivider />
-			<b-row class="no-padding">
+			<b-row align-v="center">
 				<b-col>
 					<AeText
 						fill="secondary"
 						weight="600"
 						align="left"
-						face="sans-xs"
+						face="sans-s"
 					>
 						Channel Balance
 					</AeText>
@@ -57,7 +57,7 @@
 </script>
 
 <style scoped>
-	.no-padding {
-		padding-bottom: 0px !important;
-	}
+  .ae-divider[data-v-328bcfc3] {
+    height: 1px;
+  }
 </style>
