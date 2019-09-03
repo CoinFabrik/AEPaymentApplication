@@ -28,7 +28,7 @@
 			</b-row>
 		</div>
 		<div v-if="buttons.length == 4">
-      <div v-if="getHeight() > 500">
+      <div v-if="getHeight() > 500" class="mb-2">
         <b-row class="no-padding">
           <b-col>
             <AeButton
@@ -73,7 +73,7 @@
           </b-col>
         </b-row>
       </div>
-      <div v-else>
+      <div v-else class="mb-4">
         <b-row class="no-padding">
   				<b-col>
   					<AeButton
