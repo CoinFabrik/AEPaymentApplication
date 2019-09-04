@@ -10,7 +10,6 @@ const {
 
 
 async function save(an_array) {
-    console.log(JSON.stringify(an_array));
     fs.writeFileSync("accounts_idx.json", JSON.stringify(an_array));
 }
 
@@ -124,7 +123,8 @@ async function transfer_all(from_ac, to_ac_publicKey, amount, idx) {
     while (accounts.length<max) {
         let ac = await generateSecureWallet("nr_"+accounts.length.toString() ); //, {password:"1234"});
         accounts.push(ac);
-        await save(accounts);
+				await save(accounts);
+		console.log(JSON.stringify(accounts));
     }
 
     // merge all funds:
