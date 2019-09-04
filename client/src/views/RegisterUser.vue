@@ -57,11 +57,13 @@ export default {
         throw new Error(res.error);
       }
 
-      if (res.name !== undefined || res.name.length > 0) {
+      if (res.name != null && (res.name !== undefined || res.name.length > 0)) {
         console.log("Found Name at Hub for this address: " + res.name);
         this.nameInput = res.name;
-        this.fetchingName = false;
       }
+
+
+        this.fetchingName = false;
     } catch (e) {
       this.$displayError(
         "Oops!",
