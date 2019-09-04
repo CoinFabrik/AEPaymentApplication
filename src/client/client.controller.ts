@@ -50,42 +50,25 @@ abstract class ClientController {
 
   @Get(":address/:amount/:name")
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {
-      return this.launchClient(res, this.kind, params.address.toString(),
-                                params.amount.toString(), params.name.toString());
+      try {
+          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString(), params.name.toString());
+            return this.launchClient(res, client);
+      } catch (err) {
+              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
+      }
   }
 
   @Get(":address/:amount")
   async connectMerchant2(@Param() params, @Res() res: Response): Promise<any> {
-      return this.launchClient(res, this.kind, params.address.toString(),
-                                params.amount.toString());
+      try {
+          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString());
+          return this.launchClient(client, res);
+      } catch (err) {
+              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
+      }
   }
 
-  async launchClient(res, kind: Actor, address, amount: string, name?:string) {
-      let save = false;
-      let client = await this.service.queryClient(address, this.kind);
-      if (client==undefined) {
-          if (name==undefined) {
-              return res.status(HttpStatus.FORBIDDEN).json({"error": "no name"});
-          }
-          client = new CClient();
-          client.kind = kind;
-          client.address = address;
-          client.amount = amount;
-          client.name = name;
-      }
-
-      if(client.amount!==amount) {
-          save = true;
-          client.amount = amount;
-      }
-      if(client.name!==name) {
-          save = true;
-          client.name = name;
-      }
-      if(save) {
-          client = await client.tsave();
-      }
-
+  async launchClient(client: CClient, res: any) {
       // TO DO : revisar
       // if(this.service.isOnOrPendingClientByAddress(address, kind)){
       //     console.log("already connected:", address);
