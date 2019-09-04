@@ -55,9 +55,26 @@ KNOWN ISSUES:
 + Transparent channel reconnection if it goes to DISCONNECT state
 + Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
 
-0.8.7 (190902)
+0.8.8 (190904)
 --------------
 + An opened channel will re-open on disconnect, if there is any available state
 + Enhanced navigation. Application will always store the latest usable state and return to proper screen.
 + Main Menu shows registered-user name
-+ Changed Open Channel UI
++ Router navigation fix on reload.
++ Close / Deposit can be cancelled at user request.
+
+UI changes: 
+
++ UI updates
++ (New) Global Style CSS
++ (removed) Title Dividers
++ SweetAlert2 “OK button” restyle for matching color pallet
++ AEHeader tweaks & logo replacement
++ Tx Fee estimate in Bold
++ QR Scan screens Tweaks
++ Text Elements Tweaks AeInput reduced bottom spacing
++ home buttons > responsive iphone 5 and X
++ home button group margins in low resolutions (iPhone 5)
++  restyle AeButton neutral (white) > Cancel Button
++ Wallet Balance widget tweaks
++ History “Add Tx” button > Rounded

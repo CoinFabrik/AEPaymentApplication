@@ -41,11 +41,11 @@
         v-show="$isClientAppRole"
         face="mono-xs"
       >
-        Transaction fee: {{ estimatedFeeAE }} AEs
+        Transaction fee: <b>{{ estimatedFeeAE }} AEs</b>
       </AeText>
     </div>
     <ViewButtonSection
-      :buttons="[{name:'Deposit', action: deposit}, {name:'Cancel', action:cancel, cancel:true}]"
+            :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit}]"
     />
   </b-container>
 </template>
