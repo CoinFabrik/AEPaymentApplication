@@ -3,50 +3,24 @@
     id="banner"
     @click="goHome()"
   >
-		<b-container>
-			<div v-if="getHeight() > 500">
-        <b-row align-v="center" style="height: 80px;">
-					<b-col align-h="left">
-						<img
-              align = "left"
-							class="logo"
-							alt="AE-logo"
-							src="./../assets/images/aeternity-logo-vector-black-bg-horizontal03.svg"
-						>
-					</b-col>
-					<b-col>
-						<ae-text
-              align="right"
-							fill="primary"
-							face="uppercase-base"
-						>
-							{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }}
-						</ae-text>
-					</b-col>
-				</b-row>
-			</div>
-			<div v-else>
-				<b-row align-v="center" style="height: 60px;">
-					<b-col align-h="left">
-						<img
-              align = "left"
-							class="logo"
-							alt="AE-logo"
-							src="./../assets/images/aeternity-logo-vector-black-bg-horizontal03.svg"
-						>
-					</b-col>
-					<b-col>
-						<ae-text
-              align="right"
-							fill="primary"
-              face="uppercase-base"
-						>
-							{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }}
-						</ae-text>
-					</b-col>
-				</b-row>
-			</div>
-		</b-container>
+    <img
+      id="ae-logo"
+      alt="AE-logo"
+      src="./../assets/ae2x.png"
+    >
+    <ae-text
+      weight="bold"
+      fill="white"
+      face="sans-l"
+    >
+      æternity
+    </ae-text>
+    <ae-text
+      fill="primary"
+      face="uppercase-xs"
+    >
+      {{ this.$isMerchantAppRole ? "merchant wallet" : "customer wallet" }}
+    </ae-text>
   </div>
 </template>
 
@@ -65,9 +39,12 @@
 	};
 </script>
 
-<style scope>
-.row {
-  padding-bottom: 0 !important;
-}
-
+<style>
+	#banner {
+		height: 18vh;
+	}
+	#ae-logo {
+		padding-top: 10px;
+		height: 55%;
+	}
 </style>

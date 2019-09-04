@@ -123,11 +123,11 @@
           </div>
         </b-modal>
         <AeButton
-          face="icon"
+          face="round"
           fill="primary"
           @click="addItems(history.length)"
         >
-          <AeIcon name="plus" />
+          +
         </AeButton>
       </AeList>
     </div>
