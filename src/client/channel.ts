@@ -423,7 +423,7 @@ export abstract class ServerChannel extends EventEmitter {
             this.disconnect_by_leave = true;
             this.channel.leave()
                 .then( (state) => this._save_state(state))
-                .catch( (err) => console.error("CAnnot leave:"+err));
+                .catch( (err) => console.error("Cannot leave:"+err));
         }
     }
 

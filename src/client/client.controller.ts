@@ -52,7 +52,7 @@ abstract class ClientController {
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {
       try {
           const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString(), params.name.toString());
-            return this.launchClient(res, client);
+            return this.launchClient(client, res);
       } catch (err) {
               return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
       }
