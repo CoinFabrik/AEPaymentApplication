@@ -78,7 +78,7 @@ export default {
         // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
 
         if (this.txKind === "deposit" || this.tx === "withdraw") {
-          this.$store.state.dispatch("leaveChannel");
+          //this.$store.state.dispatch("leaveChannel");
         }
         this.navigateOut();
       } else {
@@ -148,8 +148,6 @@ export default {
       console.log("Committing DEPOSIT transaction ... ");
 
       try {
-        await this.$store.dispatch("openChannel");
-
         let r = await aeternity.deposit(
           this.$store.state.channel,
           parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
@@ -165,7 +163,6 @@ export default {
         }
       } catch (e) {
         console.log(e.toString());
-        await this.$store.dispatch("leaveChannel");
 
         // HACK: Interpreted as rejected by user
         if (
@@ -184,8 +181,6 @@ export default {
       console.log("Committing WITHDRAW transaction ... ");
 
       try {
-        await this.$store.dispatch("openChannel");
-
         let accepted = await aeternity.withdraw(
           this.$store.state.channel,
           parseInt(this.txParams.amountAettos),
@@ -218,14 +213,11 @@ export default {
       console.log("Committing CLOSE transaction ... ");
 
       try {
-        await this.$store.dispatch("openChannel");
-
         let tx = await aeternity.closeChannel(this.$store.state.channel);
 
         console.log("posted CLOSE Onchain TX: ", tx);
         this.setStatusTrackProgress(tx);
       } catch (e) {
-        await this.$store.dispatch("leaveChannel");
         // HACK: Interpreted as rejected by user
         if (
           e.hasOwnProperty("wsMessage") &&
