@@ -3,45 +3,33 @@
     id="tx_confirm_panel"
     fill="secondary"
   >
-    <b-row>
-      <b-col>
-      <AeText
-        align="left"
-        weight="bold"
-        fill="secondary"
-      >
-        Amount
-      </AeText>
-      </b-col>
-      <b-col>
-      <AeText
-        align="right"
-        face="sans-s"
-      >
-        {{ (amount * 1.0).toFixed(2) }} AE
-      </AeText>
-      </b-col>
-    </b-row>
+    <AeText
+      align="left"
+      weight="bold"
+      fill="secondary"
+    >
+      Amount
+    </AeText>
+    <AeText
+      align="right"
+      face="sans-s"
+    >
+      {{ (amount * 1.0).toFixed(2) }} AE
+    </AeText>
     <AeDivider />
-    <b-row>
-      <b-col>
-        <AeText
-          align="left"
-          weight="bold"
-          fill="secondary"
-        >
-          Fee
-        </AeText>
-        </b-col>
-        <b-col>
-        <AeText
-          align="right"
-          face="sans-s"
-        >
-          {{ fee }} AE
-        </AeText>
-      </b-col>
-    </b-row>
+    <AeText
+      align="left"
+      weight="bold"
+      fill="secondary"
+    >
+      Fee
+    </AeText>
+    <AeText
+      align="right"
+      face="sans-s"
+    >
+      {{ fee }} AE
+    </AeText>
   </AePanel>
 </template>
 

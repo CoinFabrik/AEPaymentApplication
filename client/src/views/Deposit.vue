@@ -41,7 +41,7 @@
         v-show="$isClientAppRole"
         face="mono-xs"
       >
-        Transaction fee: <b>{{ estimatedFeeAE }} AEs</b>
+        Transaction fee: {{ estimatedFeeAE }} AEs
       </AeText>
     </div>
     <ViewButtonSection

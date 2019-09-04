@@ -2,12 +2,7 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText
-      face="sans-l"
-      fill="primary"
-    >
-      {{ confirmPercent === NaN ? 0 : confirmPercent }}%
-    </AeText>
+    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
     <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
@@ -18,7 +13,7 @@ const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
 const POLL_TIME_MSEC = 1000;
 const STATUS_INITIALIZED = 0,
   STATUS_TRACK_TX_PROGRESS = 1;
-import aeternity from "../controllers/aeternity"
+import aeternity from "../controllers/aeternity";
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 
@@ -81,6 +76,10 @@ export default {
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
       if (this.elapsedBlocks >= WAIT_BLOCKS + 1) {
         // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
+
+        if (this.txKind === "deposit" || this.tx === "withdraw") {
+          //this.$store.state.dispatch("leaveChannel");
+        }
         this.navigateOut();
       } else {
         setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
@@ -136,49 +135,101 @@ export default {
 
       setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
     },
+    async onRejectedByUser() {
+      this.$swal.fire({
+        type: "info",
+        text: "You cancelled your request.",
+        onClose: async () => {
+          await this.$router.replace("main-menu");
+        }
+      });
+    },
     async commitDepositTransaction() {
       console.log("Committing DEPOSIT transaction ... ");
 
-      let r = await aeternity.deposit(
-        this.$store.state.channel,
-        parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
-        async tx => {
-          console.log("posted DEPOSIT Onchain TX: ", tx);
-          this.setStatusTrackProgress(tx);
+      try {
+        let r = await aeternity.deposit(
+          this.$store.state.channel,
+          parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
+          async tx => {
+            console.log("posted DEPOSIT Onchain TX: ", tx);
+            this.setStatusTrackProgress(tx);
+          }
+        );
+        if (r.accepted) {
+          console.log("Accepted deposit");
+        } else {
+          throw new Error("Deposit transaction has been rejected");
         }
-      );
-      if (r.accepted) {
-        console.log("Accepted deposit");
-      } else {
-        throw new Error("Deposit transaction has been rejected");
+      } catch (e) {
+        console.log(e.toString());
+
+        // HACK: Interpreted as rejected by user
+        if (
+          e.hasOwnProperty("wsMessage") &&
+          e.wsMessage.error.code === -32601
+        ) {
+          await this.onRejectedByUser();
+          return;
+        }
+        throw new Error(
+          "Cannot commit DEPOSIT transaction. Reason: " + e.toString()
+        );
       }
     },
     async commitWithdrawTransaction() {
       console.log("Committing WITHDRAW transaction ... ");
 
-      let accepted = await aeternity.withdraw(
-        this.$store.state.channel,
-        parseInt(this.txParams.amountAettos),
-        async tx => {
-          console.log("posted withdraw Onchain TX: ", tx);
-          this.setStatusTrackProgress(tx);
+      try {
+        let accepted = await aeternity.withdraw(
+          this.$store.state.channel,
+          parseInt(this.txParams.amountAettos),
+          async tx => {
+            console.log("posted withdraw Onchain TX: ", tx);
+            this.setStatusTrackProgress(tx);
+          }
+        );
+
+        if (accepted) {
+          console.log("Accepted withdraw");
+        } else {
+          throw new Error("Withdraw transaction has been rejected");
         }
-      );
-      if (accepted) {
-        console.log("Accepted withdraw");
-      } else {
-        throw new Error("Withdraw transaction has been rejected");
+      } catch (e) {
+        // HACK: Interpreted as rejected by user
+        if (
+          e.hasOwnProperty("wsMessage") &&
+          e.wsMessage.error.code === -32601
+        ) {
+          await this.onRejectedByUser();
+          return;
+        }
+        throw new Error(
+          "Cannot commit WITHDRAW transaction. Reason: " + e.toString()
+        );
       }
     },
     async commitCloseTransaction() {
       console.log("Committing CLOSE transaction ... ");
 
-      let tx = await aeternity.closeChannel(
-        this.$store.state.channel
-      );
-      console.log("posted CLOSE Onchain TX: ", tx);
-      this.setStatusTrackProgress(tx);
+      try {
+        let tx = await aeternity.closeChannel(this.$store.state.channel);
 
+        console.log("posted CLOSE Onchain TX: ", tx);
+        this.setStatusTrackProgress(tx);
+      } catch (e) {
+        // HACK: Interpreted as rejected by user
+        if (
+          e.hasOwnProperty("wsMessage") &&
+          e.wsMessage.error.code === -32601
+        ) {
+          await this.onRejectedByUser();
+          return;
+        }
+        throw new Error(
+          "Cannot commit WITHDRAW transaction. Reason: " + e.toString()
+        );
+      }
     },
     async commitTransaction() {
       switch (this.txKind) {

@@ -10,16 +10,16 @@
     />
 
     <AeInput
-      class="mt-4"
       v-show="!fetchingName"
       ref="inputName"
       v-model="nameInput"
+      style="border-bottom: 1px solid #CC4040;"
       placeholder="Your name..."
     />
     <AeLoader v-show="fetchingName" />
 
     <ViewButtonSection
-      :buttons="[{name: 'Confirm', action: confirm}]"
+      :buttons="[{name: 'Confirm', action: confirm, validator: isValidInput}]"
     />
   </b-container>
 </template>
@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     isValidInput() {
-      return this.nameInput.length > 0;
+      return this.nameInput.trim().length > 0;
     }
   },
   async mounted() {
@@ -57,11 +57,13 @@ export default {
         throw new Error(res.error);
       }
 
-      if (res.name !== undefined || res.name.length > 0) {
+      if (res.name != null && (res.name !== undefined || res.name.length > 0)) {
         console.log("Found Name at Hub for this address: " + res.name);
         this.nameInput = res.name;
-        this.fetchingName = false;
       }
+
+
+        this.fetchingName = false;
     } catch (e) {
       this.$displayError(
         "Oops!",
