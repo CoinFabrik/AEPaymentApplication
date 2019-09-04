@@ -16,6 +16,7 @@ import ViewButtonSection from "./components/ViewButtonSection";
 import LoadingModal from "./components/LoadingModal";
 import ViewBalances from "./components/ViewBalances";
 import ViewTransaction from "./components/ViewTransaction";
+import CloseModal from "./components/CloseModal.vue";
 import { AeButton, AeDivider, AeText, AeAmount,
 	AeAmountInput, AePanel, AeLoader,
 	AeList, AeListItem, AeInput, AeQRCode, AeIcon
@@ -23,6 +24,7 @@ import { AeButton, AeDivider, AeText, AeAmount,
 
 window.eventBus = new Vue();
 
+Vue.component('CloseModal', CloseModal)
 Vue.component('AeBanner', AeBanner)
 Vue.component('AeQRCode', AeQRCode)
 Vue.component('AeIcon', AeIcon)
