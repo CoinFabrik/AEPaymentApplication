@@ -1,32 +1,30 @@
 <template>
   <div>
     <AeText
+      class="titleHead mb-3"
       weight="bold"
-      face="sans-l"
+      :face="getHeight() > 550 ? 'sans-l' : 'sans-base'"
     >
       {{ title }}
     </AeText>
-    <AeDivider class="divider" />
   </div>
 </template>
 
 
 <script>
-	import { AeText, AeDivider } from "@aeternity/aepp-components";
+	import { AeText } from "@aeternity/aepp-components";
 	export default {
 		name: "ViewTitle",
-		components: { AeText, AeDivider },
+		components: { AeText },
 		props: ['title'],
 		methods: {
 			goHome() {
 				this.$router.replace({name: "connectToWallet"});
 			},
+			getHeight() {
+				console.log(window.innerHeight)
+				return window.innerHeight;
+			}
 		}
 	};
 </script>
-
-<style scoped>
-	.divider {
-		margin: 20px 150px;
-	}
-</style>

@@ -61,7 +61,9 @@ export default {
     if (!this.cameraAllowed) {
       this.$displayError(
         "Oops!",
-        "We don't have permission to access your camera. Please review your security settings and try again."
+        "We don't have access to your camera. Please review your security settings and try again.",
+        () => {
+        }
       );
     }
   },
@@ -85,31 +87,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.qr-code-reader {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 100vh;
-}
-.permission-denied {
-  text-align: center;
-  line-height: 1.56;
-  padding: 0 20px;
-  margin: auto;
-  font-size: 18px;
-}
-.video-wrapper {
-  flex-grow: 1;
-  overflow: hidden;
-  position: relative;
-}
-video {
-  padding: 2px;
-  border: grey 1px solid;
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-</style>
