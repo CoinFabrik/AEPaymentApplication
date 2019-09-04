@@ -14,23 +14,24 @@
         id="scan_qr_container"
         @click="onQrClick"
       >
-        <div v-if="subview === 'pay-with-qr'">
-          <AeText face="sans-s">
-            Payment Code
-          </AeText>
-          <input
-            id="payment-code-input"
-            type="text"
-          >
-          <AeButton
-            id="load-payment-code"
-            face="primary"
-            text="Load"
-            @click="loadPaymentCode"
-          >
-            Load
-          </AeButton>
-        </div>
+      <div v-if="subview === 'pay-with-qr'">
+        <AeText face="sans-s" class="mb-2">Payment Code</AeText>
+        <input
+          id="payment-code-input"
+          type="text"
+          style="background-color: #f7f7f7; padding: 0.4em 0.1em; border: none"
+        />
+        <AeButton
+          class="px-1 ml-1"
+          style="border-radius: 6px"
+          fill="primary"
+          id="load-payment-code"
+          text="Load"
+          @click="loadPaymentCode"
+        >
+          Load Code
+        </AeButton>
+      </div>
 
         <div
           id="scan_qr_subcontainer"
@@ -255,26 +256,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-#scan_qr_subcontainer {
-  height: 250px;
-  width: 250px;
-  border-radius: 30px;
-  border: 1px dashed red;
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-#scan_qr_container {
-  height: 300px;
-  width: 300px;
-  border-radius: 30px;
-	border: 1px solid #311b58;
-	position: absolute;
-  top: 58%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-</style>

@@ -13,7 +13,7 @@
       :fee="feeAE"
     />
     <ViewButtonSection
-      :buttons="[{name:'Confirm', action: confirm},{name:'Cancel', action: cancel, cancel:true}]"
+      :buttons="[{name:'Cancel', action: cancel, fill:'neutral'}, {name:'Confirm', action: confirm}]"
     />
   </b-container>
 </template>

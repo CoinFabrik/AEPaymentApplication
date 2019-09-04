@@ -3,14 +3,14 @@
     <AeText
       weight="500"
       class="label"
-      face="sans-base"
+      :face="getHeight() > 550 ? 'sans-base' : 'sans-s'"
     >
       {{ first }}
     </AeText>
     <AeText
       weight="400"
       class="label"
-      face="sans-base"
+      :face="getHeight() > 550 ? 'sans-s' : 'sans-xs'"
     >
       {{ this.$isMerchantAppRole ? merchant : customer }}
     </AeText>
@@ -18,7 +18,7 @@
       v-if="final"
       weight="400"
       class="label"
-      face="sans-base"
+      :face="getHeight() > 550 ? 'sans-base' : 'sans-xs'"
     >
       {{ final }}
     </AeText>
@@ -37,8 +37,8 @@
 
 <style scoped>
 	.text-area {
-		width: 95%;
-		max-height: 20vh;
+		/* width: 95%; */
+		max-height: 30vh;
 	}
 	.label {
 		margin-bottom: 10px;
