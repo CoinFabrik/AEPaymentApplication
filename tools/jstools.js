@@ -1,3 +1,4 @@
+const readline = require('readline');
 const nacl = require('tweetnacl');
 const fs = require('fs');
 const uuid = require('uuid');
@@ -196,6 +197,20 @@ function clone(obj) {
     return copy;
 }
 
+async function a_readline(msg) {
+    return new Promise((resolve, reject)=> {
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout
+        });
+        rl.question(msg, (answer) => {
+          rl.close();
+          resolve(answer);
+        });
+    });
+}
+
+
 module.exports = {
   get_account,
   get_public,
@@ -203,5 +218,6 @@ module.exports = {
   getArgv,
   genUUID,
     voidf,
-    clone
-}
+    clone,
+ a_readline
+};

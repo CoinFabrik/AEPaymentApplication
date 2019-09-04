@@ -58,7 +58,7 @@ export class Hub extends EventEmitter {
 
     private setup() {
         this.on("user-payment-request", (msg, emitter_channel) => {
-            this.payment_request(msg)
+            this.payment_request(msg, emitter_channel)
                 .then((mc) => {
                     this.emit("payment-request-accepted", mc)
                 })
@@ -118,10 +118,9 @@ export class Hub extends EventEmitter {
         const timeout = WAIT_PAYMENT_TIMEOUT * 1000;
         while (Date.now() - start < timeout) {
             let last_balance = await mc.cclient.channel.hub_balance();
-            this.log("balances: "+typeof last_balance);
-            let sum = pre_balance.plus(new BigNumber(mc.amount));
-            this.log(`check balance..: ${pre_balance.toString(10)} ${last_balance.toString(10)} to  ${sum.toString(10)} ..`);
-            if (last_balance.isGreaterThanOrEqualTo(pre_balance.plus(new BigNumber(mc.amount)))) {
+            let sum = pre_balance.plus(mc.amount);
+            this.log(`check balance..: ${pre_balance.toString(10)} ${last_balance.toString(10)} to ${sum.toString(10)} ..`);
+            if (last_balance.isGreaterThanOrEqualTo(pre_balance.plus(mc.amount))) {
                 const mca = mc.getEntity();
                 await RepoService.save(mca);
                 return
@@ -132,11 +131,11 @@ export class Hub extends EventEmitter {
         throw new PaymentTimeout();
     }
 
-    async payment_request(msg) {
+    async payment_request(msg, emitter_channel) {
         let mc;
         this.log("pay-request: " + (mystringify(msg)));
         try {
-            mc = MerchantCustomer.FromRequest(msg);
+            mc = MerchantCustomer.FromRequest(msg, emitter_channel);
             let pre_balance = await mc.cclient.channel.hub_balance();
             this.emit("wait-payment", mc, pre_balance);
             return mc;

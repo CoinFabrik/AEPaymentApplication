@@ -1,11 +1,12 @@
 import {Injectable} from '@nestjs/common';
-import {Actor, CClient, MerchantCustomerAccepted} from "./client.entity";
+import {Actor, CClient} from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
 import {array_rm, voidf} from "../tools";
 import {FindManyOptions, getManager, getRepository} from "typeorm";
 import BigNumber from "bignumber.js";
 import {Hub} from "./hub";
+import {MerchantCustomerAccepted} from "./mca.entity";
 
 
 
@@ -217,7 +218,7 @@ export class ClientService extends ServiceBase {
         });
         this.on("connect", (peer: ServerChannel) => {
             peer.client.get_or_create().then(voidf).catch(console.error);
-            peer.initChannel(this);
+            peer.initChannel();
         });
     }
 

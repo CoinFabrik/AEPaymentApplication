@@ -1,6 +1,5 @@
-import {Entity, Column, PrimaryGeneratedColumn, Index, getRepository, Repository} from 'typeorm';
-import {get_private, get_public} from "../tools";
-import {promises} from "fs";
+import {Column, Entity, getRepository, Index, PrimaryGeneratedColumn, Repository} from 'typeorm';
+import {get_private, get_public, voidf} from "../tools";
 import {ServerChannel} from "./channel";
 
 export type Actor = "merchant"|"customer"|"hub";
@@ -58,6 +57,16 @@ export class CClient {
   @Column({nullable: true})
   name: string;
 
+  @Column({nullable: true})
+  channelId: string;
+
+  @Column({nullable: true})
+  channelSt: string;
+
+  @Column({nullable: true})
+  channelRn: number;
+
+
   private private?: string;
   public channel: ServerChannel;
   public amount: string;
@@ -90,46 +99,30 @@ export class CClient {
       await this.tsave();
   }
 
+  save() {
+      this.tsave().then(voidf).catch(console.error);
+  }
+
   async tsave() { //repo?: Repository<CClient>) {
       let repo: Repository<CClient> = getRepository<CClient>(CClient);
-      await repo.save(this);
+      try {
+          return await repo.save(this);
+      } catch (err) {
+          console.log("CANT SAVE: cclient:", JSON.stringify(this))
+          console.log(err)
+      }
   }
-}
 
-
-@Entity()
-@Index(["merchant"])
-@Index(["customer"])
-@Index(["tx_uuid"], { unique: true })
-export class MerchantCustomerAccepted {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Column()
-    merchant: string;
-    @Column()
-    customer: string;
-
-    @Column()
-    tx_uuid: string;
-
-    @Column()
-    timestamp: number;
-    @Column()
-    amount: string;
-    @Column()
-    item: string;
-
-    static Create(merchant, customer, uuid, amount:string, item: object) {
-      const mca = new MerchantCustomerAccepted();
-      mca.merchant = merchant;
-      mca.customer = customer;
-      mca.amount = amount;
-      mca.tx_uuid = uuid;
-      mca.timestamp = Date.now();
-      mca.item = JSON.stringify(item);
-      return mca;
+  setChannelOptions(opts: object) {
+    if ((this.channelSt!=null)&&(this.channelSt!=="")&&(this.channelId!=="")) {
+        opts["offchainTx"] = this.channelSt;
+        opts["existingChannelId"] = this.channelId;
     }
+  }
+
+  isReestablish(opts: object): boolean {
+      return (opts["offchainTx"]!=null) && (opts["existingChannelId"]!=null);
+  }
 }
 
 

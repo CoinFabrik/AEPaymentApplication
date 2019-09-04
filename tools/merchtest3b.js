@@ -52,13 +52,19 @@ async function show_hub_balance(peer) {
     try {
         peer = await Merchant.Init(account);
     } catch(err) {
-        console.log("cant connect!")
+        console.log("cant connect!");
         return;
     }
 
     await peer.init();
     await peer.initChannel();
     await peer.wait_state("OPEN");
+
+    process.once('SIGINT', function() {
+        console.log("Caught interrupt signal");
+        peer.sendMessage("leave");
+        //peer.wait_state("DISCONNECTED");
+    });
 
     show_hub_balance(peer).then(()=>{}).catch(console.error);
 

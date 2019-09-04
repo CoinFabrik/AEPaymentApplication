@@ -91,82 +91,89 @@ function pick_random(arr) {
     if (peer==null)
         return;
     await peer.init();
-    let initial = await peer.showBalances("init");
-
-    let merchants = await peer.get_("merchant");
-    console.log("merchants online:", JSON.stringify(merchants))
-    if (merchants.length===0) {
-        console.log("no merchants online. come back later!");
-        process.exit(-1);
-    }
-
-    await peer.initChannel();
-    await peer.wait_state("OPEN");
-
-    //peer.on("message", (msg)=> console.log("INFO:>", msg) );
-
-    let merchant = pick_random(merchants);
-
-    await peer.showBalances("pre");
-    let pr = Message.PaymentRequest(
-        merchant.address, merchant.name, peer.pubkey, 1,
-        [{what:"beer", amount:1}]);
-
-
-    let idx = 0;
-
-    peer.on("message", (msg) => {
-        if(msg["type"]==="payment-request-rejected") {
-            console.log("payment canceled:", JSON.stringify(msg));   //msg["msg"]);
-        }
-        if(msg["type"]==="payment-request-accepted") {
-            console.log("sending payment..");
-            peer.update(pr.amount).then(()=>{console.log("sent!")}).catch(console.error);
-        }
-        if(msg["type"]==="payment-request-completed") {
-            console.log("payment completed!")
-            //peer.on("message", (msg) => {console.log("RECV:>", msg)})
-            // peer.showBalances("post")
-            //     .then(()=>{})
-            //     .catch(console.error);
-            if(-1!==process.argv.indexOf("continue")) {
-                peer.sendPayment(pr).then(()=>{
-                    idx= idx +1;
-                    console.log("iteration:", idx);
-                }).catch(console.error);
-            }
-        }
-        if(msg["type"]==="payment-request-canceled") {
-            console.log("payment request canceled is unexpected! :-o !")
-        }
-    });
-
-    await peer.sendPayment(pr);
-
-    // await peer.showBalances("pre-update");
-    // await peer.update(10);
-    // await peer.showBalances("post-update");
-    //await myjschannel.sleep(16000*1000);
 
     async function quit(code) {
         try {
-            await peer.showBalances("pre-shutdown");
-            await peer.channel.leave();
+            //await peer.showBalances("pre-shutdown");
+            console.log("pre leave.")
+            let result = await peer.channel.leave();
+            console.log(result);
+            console.log("");
+            console.log(result);
+            console.log("");
+            console.log(result);
+            console.log("");
             //await peer.shutdown();
             await peer.wait_state("DISCONNECTED");
-            await myjschannel.sleep(3*1000);
-            let final = await peer.showBalances("final");
-            showDiff(initial, final);
+            //await myjschannel.sleep(3*1000);
+            //let final = await peer.showBalances("final");
+            //showDiff(initial, final);
         } finally {
             console.log("exit...");
             process.exit(code);
         }
     }
 
-    process.once('SIGINT', function() {
+
+    await peer.showBalances("init");
+    // let merchants = await peer.get_("merchant");
+    // console.log("merchants online:", JSON.stringify(merchants))
+    // if (merchants.length===0) {
+    //     console.log("no merchants online. come back later!");
+    //     process.exit(-1);
+    // }
+    //let merchant = pick_random(merchants);
+
+    await peer.initChannel();
+    await peer.wait_state("OPEN");
+    process.on('SIGINT', function() {
         console.log("Caught interrupt signal");
         quit(0).then(()=>{}).catch(console.error);
     });
-    //h = await peer.height();
-    //console.log("height:", h, "Balance:", await peer.balance({height: h}));
+
+
+
+    // await peer.showBalances("pre");
+    let idx = 4;
+    while (idx>0) {
+        await peer.update(1);
+        await myjschannel.sleep(1000);
+        console.log(idx,"...")
+        idx-=1;
+    }
+
+
+    let result = await peer.channel.leave();
+    console.log(result);
+    console.log("");
+    console.log(result);
+    console.log("");
+    console.log(result);
+    console.log("");
+    //await peer.shutdown();
+    await peer.wait_state("DISCONNECTED");
+
+
+    // peer.on("message", (msg) => {
+    //     if(msg["type"]==="payment-request-rejected") {
+    //         console.log("payment canceled:", JSON.stringify(msg));   //msg["msg"]);
+    //     }
+    //     if(msg["type"]==="payment-request-accepted") {
+    //         console.log("sending payment..");
+    //         peer.update(pr.amount).then(()=>{console.log("sent!")}).catch(console.error);
+    //     }
+    //     if(msg["type"]==="payment-request-completed") {
+    //         console.log("payment completed!")
+    //     }
+    //     if(msg["type"]==="payment-request-canceled") {
+    //         console.log("payment request canceled is unexpected! :-o !")
+    //     }
+    // });
+
+    // let pr = Message.PaymentRequest(
+    //     merchant.address, merchant.name, peer.pubkey, 1,
+    //     [{what:"beer", amount:1}]);
+    //await peer.sendPayment(pr);
+
+
 })();

@@ -14,11 +14,12 @@ export class ProductsController {
   async create(@Res() res: Response): Promise<any> {
       let html = '<form action="./store" method="POST">\n' +
           '  <div>\n' +
-          '    <label for="say">uuid</label>\n' +
+          '    <label for="say">unique id</label>\n' +
           '    <input name="uuid" id="uuid" value="'+uuidlib()+'">\n' +
           '  </div>\n' +
           '  <div>\n' +
-          '    <label for="to">data</label>\n' +
+          '    <label for="to"' +
+          '>{"something":"<???????>", "amount":"10000000000000000", "merchant":"ak_25VJ5qBunt1D5jCs2rxHciRjuPAUqRRsjzQt9ey7zK4Yw4Vs1h","type":"payment-request"}</label>\n' +
           '    <input name="data" id="data" value="">\n' +
           '  </div>\n' +
           '  <div>\n' +
@@ -32,11 +33,7 @@ export class ProductsController {
   async store(@Param() params, @Body("uuid") uuid: string, @Body("data") data: string): Promise<any> {
       let element = new Product();
       element.data = data;
-      if (uuid==null) {
-          element.uuid = uuidlib();
-      } else {
-          element.uuid = uuid;
-      }
+      element.uuid = uuid==null ? uuidlib() : uuid;
 
       while(true) {
           try{

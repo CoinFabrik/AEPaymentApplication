@@ -1,4 +1,4 @@
-import {ServiceBase} from "./client.service";
+import {RepoService, ServiceBase} from "./client.service";
 import {Actor, CClient} from "./client.entity";
 import {EventEmitter} from 'events';
 import {Account, array_rm, clone, sleep, voidf, wait_for} from "../tools";
@@ -8,6 +8,7 @@ import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from
 import BigNumber from "bignumber.js";
 import {stringify} from "querystring";
 import {MerchantCustomer} from "./merchantcustomer";
+import {MerchantCustomerAccepted} from "./mca.entity";
 
 
 const {
@@ -51,9 +52,9 @@ const PING = "beep beep";
 const PINGACK = "heartbeat_ack";
 const info = "info";
 
+const RECONNECT = true;
 
 export abstract class ServerChannel extends EventEmitter {
-    readonly RECONNECT = false;
     private static readonly xlogger = new Logger("Channel");
     is_initiator: boolean;
     channel: any;
@@ -67,12 +68,12 @@ export abstract class ServerChannel extends EventEmitter {
 
     abstract Name: Actor;
     logger: Logger;
-    private opposite: string;
-
-    protected my_pending = null;
+    readonly opposite: string;
+    private last_update: number;
+    private last_ping: number = null;
+    private disconnect_by_leave = false;
     pending_mcs: MerchantCustomer[] = [];
-    channel_state = null;
-    channel_id = null;
+    private closing = false;
 
 
     pendingPayment(mc: MerchantCustomer) {
@@ -81,7 +82,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     checkPayment(amount: BigNumber) {
         this.pending_mcs.forEach((mc)=> {
-           if (amount.isEqualTo(new BigNumber(mc.amount))) {
+           if (amount.isEqualTo(mc.amount)) {
                 mc.paymentReceived();
                 array_rm(this.pending_mcs, mc);
            }
@@ -92,7 +93,8 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.logger==undefined) {
             this.logger = new Logger(this.Name);
         }
-        this.logger.log(this.opposite.slice(0,15) + "|" + msg);
+        let nomi = this.client.channelId ? this.client.channelId : this.opposite;
+        this.logger.log(nomi.slice(0,15) + "|" + msg);
     }
 
     static async Init() {
@@ -106,7 +108,6 @@ export abstract class ServerChannel extends EventEmitter {
                 networkId: NETWORK_ID, url: API_URL,
                 internalUrl: INTERNAL_API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
-                //compilerUrl: compilerURL
             });
         }
 
@@ -126,8 +127,12 @@ export abstract class ServerChannel extends EventEmitter {
         let options = this.base_options();
         options["initiatorId"] = client.address;
         options["initiatorAmount"] = client.amount;
-        options["url"] = "ws"+MoreConfig.USER_NODE+'/channel';
+        options["url"] = "ws"+MoreConfig.USER_NODE+'/channel';  // XXX XXX TODO
         options["role"] = "initiator";
+        if (RECONNECT) {
+            client.setChannelOptions(options);
+        }
+        this.xlogger.log("client:"+ JSON.stringify(options));
         return {
             address: this.address,
             node: MoreConfig.USER_NODE,
@@ -177,6 +182,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     constructor(customer: CClient) {
         super();
+        this.last_update = Date.now();
         this.client = customer;
         this.opposite = customer.address;
         this.is_initiator = false;
@@ -184,17 +190,30 @@ export abstract class ServerChannel extends EventEmitter {
         const self = this;
         this.on("message", (msg) => {
             if ((msg[info]==PING)||(msg[info]==PINGACK)) {
+                this.last_ping = Date.now();
+            } else if (msg[info]==="leave") {
+                this.leave("from client");
             } else {
+                this.last_update = Date.now();
                 try {
                     msg[info] = JSON.parse(msg[info]);
+                    if(msg[info]["type"]==="payment-user-cancel") {
+                        return this.update_clash();
+                    }
                     this.hub.emit("user-"+msg[info]["type"], msg, self);
                 } catch(err) {
-                    console.log(err);
-                    console.log("message was:")
-                    console.log(msg[info]);
+                    this.log(err);
+                    this.log("message was:")
+                    this.log(msg[info]);
                 }
             }
         });
+    }
+
+    update_clash() {
+        this.update(this.opposite, this.address, 1, "triggering update conflict.")
+            .then((result)=> this.log("clash-update()= "  + result + JSON.stringify(result)))
+            .catch((err)=>{ this.log("update clash failed: "+err)});
     }
 
     get initiator() {
@@ -225,123 +244,142 @@ export abstract class ServerChannel extends EventEmitter {
         return options;
     }
 
-    initChannel(s: ServiceBase) {
+    initChannel() {
         this._initChannel().then(voidf).catch(console.error);
     }
 
-    async _initChannel() {
-        const self = this;
-        let options = this.get_options();
-
-        if (this.RECONNECT && (this.channel_state!==null)) {
-            options["offchainTx"] = this.channel_state;
-            options["existingChannelId"] = this.channel_id;
-            this.channel_state = null;
+    async customSign(tag, tx, { updates = {} } = {}) {
+        this.log("");
+        this.log("tag: " + tag + " " +(tx.toString()));
+        try {
+            const {txType, tx: txData} = unpackTx(tx);
+            this.log("tag: " + tag + ": "+ JSON.stringify(txData));
+        } catch (err) {
         }
-
-        this.log("opts:" + JSON.stringify(options));
-
-        options["sign"] = async (tag, tx, { updates = {} } = {}) => {
-            // tag: update_ack tx:
-            // {
-            //      "tag":"57","VSN":"2",
-            //      "channelId":"ch_9qgsjDsjHhXvYT8hWtZYwuiCHvgFsvEBPL5tnmH9vgGRPe7PM",
-            //      "round":"2",
-            //      "stateHash":"st_MiomMNZwISj3zZ47c/jCfjgwgREN4r/7dYR08zZOKXSJt6yr"
-            // }
-            this.log("");
-            this.log("tag: " + tag + " " +(tx.toString()));
-            try {
-                const {txType, tx: txData} = unpackTx(tx);
-                this.log("tag: " + tag + ": "+ JSON.stringify(txData));
-            } catch (err) {
-                //console.log(err);
-            }
-
-            if (tag === "update_ack") {
-                // [{
-                //      "amount":1,
-                //      "from":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
-                //      "op":"OffChainTransfer",
-                //      "to":"ak_2TccoDkdWZ28yBYZ7QsdqBMAH5DjsVnMnZHBRyUnxPD5z1whYb"
-                //  }]
-                try {
-                    let fupdates: UpdateItem[] = updates as UpdateItem[];
-                    for (let update of fupdates) {
-                        if (update["op"]!=="OffChainTransfer") {
-                            throw new InvalidUpdateOperation(update);
-                        }
-                        if (update["from"]!==this.initiator) {
-                            throw new InvalidUpdateWrongFrom(update);
-                        }
-                        if (update["to"]!==this.address) {
-                            throw new InvalidUpdateWrongTo(update);
-                        }
-                        if ((new BigNumber(update["amount"])).isNegative()) {
-                            throw new InvalidUpdateNegativeAmount(update);
-                        }
-                    }
-                } catch(err) {
-                    console.error(err.toString());
-                    console.error("wont be signed: ", JSON.stringify(updates));
-                    return
+        if (tag === "update_ack") {
+            let fupdates: UpdateItem[] = updates as UpdateItem[];
+            for (let update of fupdates) {
+                if (update["op"]!=="OffChainTransfer") {
+                    throw new InvalidUpdateOperation(update);
+                }
+                if (update["from"]!==this.initiator) {
+                    throw new InvalidUpdateWrongFrom(update);
+                }
+                if (update["to"]!==this.address) {
+                    throw new InvalidUpdateWrongTo(update);
+                }
+                if ((new BigNumber(update["amount"])).isNegative()) {
+                    throw new InvalidUpdateNegativeAmount(update);
                 }
             }
-            if (tag === "shutdown_sign_ack") {
-                const {txType, tx: txData} = unpackTx(tx);
-                this.log("tag: " + tag + ": "+ JSON.stringify(txData));
-                this.log("TX (shutdown): " + (tx.toString()))
+        }
+        if (tag === "shutdown_sign_ack") {
+            const {txType, tx: txData} = unpackTx(tx);
+            this.log("tag: " + tag + ": "+ JSON.stringify(txData));
+            this.log("TX (shutdown): " + (tx.toString()))
+            this.closing = true;
+        }
+        let signed = await this.nodeuser.signTransaction(tx);
+        this.log(tag+ " - signed: "+ signed);
+        return signed;
+    }
+
+    async _initChannel() {
+        let options = this.get_options();
+        if (RECONNECT) {
+            this.client.setChannelOptions(options);
+        }
+        this.log("opts:" + JSON.stringify(options));
+        options["sign"] = async (tag, tx, { updates = {} } = {}) => {
+            try {
+                let result = await this.customSign(tag, tx, { updates });
+                this.saveState();
+                return result;
+            } catch (err) {
+                console.error(err);
+                console.error("wont be signed!");
+                throw err;
             }
-            this.log("");
-            let x = await self.nodeuser.signTransaction(tx)
-            setTimeout(() => {self.saveState();}, 300)
-            return x;
         };
 
         this.channel = await Channel(options);
-        this.channel_id = this.channel.id();
-
         this.channel.on('statusChanged', (status) => {
-            self.onStatusChange(status.toUpperCase());
+            this.onStatusChange(status.toUpperCase());
         });
         this.channel.on('error', (error) => {
-            console.log("channel-error:", error);
+            this.log("channel-error: "+ error);
         });
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
         });
+
         await this.wait_state("OPEN");
+        if (!this.client.isReestablish(options)) {
+            const mca = MerchantCustomerAccepted.CreateInitialDeposit(options, this.Name);
+            await RepoService.save(mca);
+        }
+        this.client.channelId = this.channel.id();
+        this.saveState();
         return this.channel;
     }
 
-    saveState() {
-        const self = this;
+    saveState(delay=100) {
+        setTimeout(() => {this._saveState(5);}, delay);
+    }
+
+    _save_state(s) {
+        if (this.status!=="OPEN")
+            return;
+        if (s==null) {
+            if ((this.client.channelId==null) && (this.client.channelSt==null))
+                return;
+            this.client.channelId = null;
+            this.client.channelSt = null;
+            this.log("removing saved state!");
+        } else {
+            let state = s["signedTx"];
+            if (state===this.client.channelSt)
+                return;
+            this.client.channelSt = state;
+            this.log("client Saving...: "  + state);
+        }
+        return this.client.save();
+    }
+
+    _saveState(retries) {
+        this.log("Saving state...");
         this.channel.state()
             .then((s)=> {
                 let state = s["signedTx"];
-                if (state===self.channel_state) {
-                    setTimeout(() => {self.saveState();}, 300)
+                if (state===this.client.channelSt) {
+                    if (retries>0) {
+                        setTimeout(() => {this._saveState(retries-1);}, 100)
+                    }
                 } else {
                     this.log("STATE: " + JSON.stringify(s));
-                    self.channel_state = state;
+                    return this._save_state(s)
                 }
             })
-            .catch(err => console.error("cant get state:"+err));
+            .catch(err => {
+                console.error("cant get state:");
+                console.error(err);
+            });
     }
 
     onStatusChange(status) {
+        this.last_update = Date.now();
         this.status = status;
         this.log(`[${this.status}]`);
         if (this.status == "OPEN") {
-            this.hb().then(console.log).catch(console.error);
+            this.hb().then(voidf).catch(console.error);
             this.client.setChannel(this);
             ServiceBase.addClient(this.client, this.Name);
         }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
-            if (this.RECONNECT) {
-                this._initChannel().then(voidf)
-                    .catch(err=>console.error("Cannot re init channel:"+err))
+            console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
+            if (!this.disconnect_by_leave) {
+                this._save_state(null);
             }
         }
     }
@@ -353,8 +391,7 @@ export abstract class ServerChannel extends EventEmitter {
     async shutdown() {
         if (this.is_initiator) {
             const self = this;
-            let tx = await this.channel.shutdown(_tx => self.nodeuser.signTransaction(_tx));
-            return tx;
+            return await this.channel.shutdown(_tx => self.nodeuser.signTransaction(_tx));
         }
     }
 
@@ -363,25 +400,44 @@ export abstract class ServerChannel extends EventEmitter {
         return await wait_for(() => self.status === expected);
     }
 
+    is_customer():boolean {
+        return this.Name === "customer";
+    }
+
     async hb() {
         while (this.status == "OPEN") {
             await this.sendMessage({"type": "heartbeat"});
-            await sleep(45 * 1000)
+            await sleep(1 * 1000)
+            if (this.is_customer() && (Date.now()-this.last_update>90*1000)) {
+                break
+            }
+        }
+        if (this.status == "OPEN") {
+            this.leave("after HB");
+        }
+    }
+
+    leave(cause: string) {
+        if (!this.disconnect_by_leave) {
+            this.log("Issuing leave("+cause+")..");
+            this.disconnect_by_leave = true;
+            this.channel.leave()
+                .then( (state) => this._save_state(state))
+                .catch( (err) => console.error("CAnnot leave:"+err));
         }
     }
 
     ///////////////////////////////////////////////////////////
-    async update(_from, _to, amount) {
+    async update(_from, _to, amount, msg="") {
         const self = this;
         try {
             let result = await this.channel.update(_from, _to, amount, async (tx) => {
-                console.log("signing: ", tx.toString())
+                this.log("signing: " +  tx.toString()  +  JSON.stringify(msg))
                 return await self.nodeuser.signTransaction(tx);
             });
             return result;
         } catch(err) {
-            console.log("---------------------------------------------------")
-            console.log("Error on update:", err);
+            this.log("Error on update: " + err);
             return null
         }
     }
@@ -404,37 +460,6 @@ export abstract class ServerChannel extends EventEmitter {
 
 export class CustomerChannel extends ServerChannel {
     readonly Name: Actor = "customer";
-
-    async sendTxRequest(amount) {
-        return await this.update(this.initiator, this.address, amount);
-    }
-
-    // async sign_n_send(tx) {
-    //     console.log("1signing: ", tx.toString())
-    //     let ttx = await this.nodeuser.signTransaction(tx);
-    //     let sent = await this.sendMessage({"type":"signnsend", "tx":ttx})
-    //     await wait_for(() => {return this.my_pending!==null});
-    //     let x = this.my_pending;
-    //     this.my_pending = null;
-    //     return x;
-    // }
-    //
-    //
-    // async custom_update(_from, _to, amount) {
-    //     const self = this;
-    //     try {
-    //         let result = await this.channel.update(_from, _to, amount, async (tx) => {
-    //             console.log("signing: ", tx.toString())
-    //             //return await self.nodeuser.signTransaction(tx);
-    //             return await this.sign_n_send(tx)
-    //         });
-    //         return result;
-    //     } catch(err) {
-    //         console.log("---------------------------------------------------")
-    //         console.log("Error on update:", err);
-    //         return null
-    //     }
-    // }
 }
 
 

@@ -1,7 +1,10 @@
-import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest, MerchantCustomerAccepted} from "./client.entity";
+import {CClient, InvalidCustomer, InvalidMerchant, InvalidRequest} from "./client.entity";
 import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
+import BigNumber from "bignumber.js";
+import {ServerChannel} from "./channel";
+import {MerchantCustomerAccepted} from "./mca.entity";
 const uuidlib = require('uuid');
 
 export class Guid {
@@ -36,7 +39,8 @@ export class MerchantCustomer {
     }
 
     private constructor(readonly merchant: string, readonly customer: string, public msg: object,
-                        id?: string, private _mclient?: CClient, private _cclient?: CClient) {
+                        private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
+        let id = msg["id"];
         if (id != undefined) {
             if (!MerchantCustomer.ValidId(id)) {
                 throw new InvalidRequest("Invalid id:" + id);
@@ -47,29 +51,34 @@ export class MerchantCustomer {
         this.id = id;
         MerchantCustomer.register(this);
 
+        if (typeof msg["info"]["amount"] === "number") {
+            console.error("!!!!  WE RECEIVED A NUMBER: " + (msg["info"]["amount"].toString()) );
+            console.error("!!!!  AT: "+ JSON.stringify(msg));
+        }
         this.original_msg = msg;
+        this.original_msg["info"]["amount"] = new BigNumber(msg["info"]["amount"]).toString(10);
         this._base = {
             "id": this.id,
             "merchant": this.merchant,
             "merchant_name": this.mclient.name,
             "customer": this.customer,
-            "amount": this.original_msg["info"]["amount"],
+            "amount": this.original_msg["info"]["amount"],  // we ensure this is a string
             "something": this.original_msg["info"]["something"],
         }
     }
 
     getEntity(): MerchantCustomerAccepted {
         return MerchantCustomerAccepted.Create(this.merchant, this.customer,
-            this.id, this.amount.toString(),  // XXX
+            this.id, this.amount_str,  // XXX
             this.original_msg["info"]["something"]);
     }
 
-    get amount(): number {
-        return this.original_msg["info"]["amount"];
+    get amount(): BigNumber {
+        return new BigNumber(this.original_msg["info"]["amount"]);
     }
 
     get amount_str(): string {
-        return this.amount.toString();
+        return this.amount.toString(10);
     }
 
     base(): object {
@@ -111,7 +120,7 @@ export class MerchantCustomer {
     }
 
     sendCustomer(msg: object) {
-        this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        this.cust_channel.sendMessage(msg).then(voidf).catch(console.error);
     }
 
     sendMerchant(msg: object) {
@@ -132,21 +141,7 @@ export class MerchantCustomer {
         return this._cclient;
     }
 
-    // static FromMerchantRequest(msg: object): MerchantCustomer {
-    //     let merchant = msg["from"];
-    //     let mclient = ClientService.getClientByAddress(merchant, "merchant");
-    //     if (mclient == null) {
-    //         throw new InvalidMerchant(merchant)
-    //     }
-    //     let customer = msg["info"]["toId"];
-    //     let cclient = ClientService.getClientByAddress(customer, "customer");
-    //     if (cclient == null) {
-    //         throw new InvalidCustomer(customer);
-    //     }
-    //     return new MerchantCustomer(merchant, customer, msg);
-    // }
-
-    static FromRequest(msg: object): MerchantCustomer {
+    static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
         let merchant = msg["info"]["merchant"];
         let mclient = ClientService.getClientByAddress(merchant, "merchant");
         if (mclient == null) {
@@ -157,7 +152,7 @@ export class MerchantCustomer {
         if (cclient == null) {
             throw new InvalidCustomer(customer);
         }
-        return new MerchantCustomer(merchant, customer, msg, msg["id"]);
+        return new MerchantCustomer(merchant, customer, msg, cust_channel, mclient, cclient);
     }
 
     paymentReceived() {
