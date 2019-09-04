@@ -329,17 +329,17 @@ export abstract class ServerChannel extends EventEmitter {
 
     _save_state(s) {
         if (this.status!=="OPEN")
-            return;
+            return this.log("saving status: channel isn't open anymore!!!");
         if (s==null) {
             if ((this.client.channelId==null) && (this.client.channelSt==null))
-                return;
+                return this.log("saving status: unchanged");
             this.client.channelId = null;
             this.client.channelSt = null;
             this.log("removing saved state!");
         } else {
             let state = s["signedTx"];
             if (state===this.client.channelSt)
-                return;
+                return this.log("saving status: unchanged");
             this.client.channelSt = state;
             this.log("client Saving...: "  + state);
         }
