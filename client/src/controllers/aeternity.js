@@ -62,7 +62,13 @@ aeternity.createChannel = async function (params) {
 
   return Channel({
     ...params,
-    sign: aeternity.signFunction
+    sign: async (tag, tx, updates) => {
+      let signedTx = await aeternity.signFunction(tag, tx, updates);
+      if (!signedTx) {
+        throw (new Error("rejected-by-user"));
+      }
+      return signedTx;
+    }
   });
 }
 
@@ -72,7 +78,7 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
   console.log('signFunction with tag: ' + tag);
 
   if (tag === 'initiator_sign') {
-    return aeternity.client.signTransaction(tx);
+    return aeternity.signTransactionEx(tx);
   }
   else if (tag === 'update_ack') {
     if (aeternity.updateHandler === undefined) {
@@ -100,50 +106,31 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
   }
 }
 
+aeternity.leaveChannel = async function (channel) {
+  return channel.leave();
+}
+
+aeternity.signTransactionEx = async function (tx) {
+  try {
+    let signedTx = await aeternity.client.signTransaction(tx);
+    return signedTx;
+  }
+  catch (e) {
+    if (e.toString() === "Rejected by user") {
+      console.warn("Sign Function Rejected by user");
+
+      return null;  // this makes upper exception handler receive Error: Method not found.
+    }
+  }
+}
+
 aeternity.update = async function (channel, fromAddr, toAddr, amount) {
   return channel.update(
     fromAddr,
     toAddr,
     amount,
-    async (tx) => {
-      try {
-        let signedTx = await aeternity.client.signTransaction(tx);
-        return signedTx;
-      }
-      catch (e) {
-        if (e.toString() === "Rejected by user") {
-          console.warn("Sign Function Rejected by user");
-
-          channel.sendMessage({ type: "payment-user-cancel" }, toAddr);
-          return null;  // this makes upper exception handler receive Error: Method not found.
-        }
-      }
-    }
+    async (tx) => await aeternity.signTransactionEx(tx)
   );
-
-      // catch (e) {
-      //   // Was rejected by user ?
-      //   if (e.toString() === "Rejected by user") {
-      //     //
-      //     // There is no way at this time (sep 2019) to reject
-      //     // an update "cleanly".  So we will send another one, forcing  
-      //     // an update conflict, and discarding this round.
-      //     //
-
-      //     console.warn("Updated rejected by user, sending manual conflicting update to discard");
-      //     aeternity.update(channel, fromAddr, toAddr, amount).then(({ accepted, signedTx }) => {
-      //       if (accepted) {
-      //         console.error("Forced Update-conflict expected to fail, but was accepted anyway!");
-      //       } else {
-      //         console.warn("Forced Update-conflict successfully rejected.");
-      //       }
-      //     }).catch(err => {
-      //       console.error("Forced Update-conflict error: " + err.toString());
-      //     })
-      //   }
-      // }
-   // }
-  //);
 }
 
 aeternity.estimateDepositFee = function (gasAmount) {
@@ -156,7 +143,7 @@ aeternity.deposit = async function (channel, amount, onChainTxCallback) {
   }
 
   console.log("Deposit: ", amount);
-  return channel.deposit(amount, async (tx) => aeternity.client.signTransaction(tx),
+  return channel.deposit(amount, async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
       onOwnDepositLocked: () => console.log("OnOwnDepositLocked"),
@@ -166,7 +153,7 @@ aeternity.deposit = async function (channel, amount, onChainTxCallback) {
 
 aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
   console.log("Withdraw: ", amount);
-  return channel.withdraw(amount, async (tx) => aeternity.client.signTransaction(tx),
+  return channel.withdraw(amount, async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
       onOwnWithdrawLocked: () => console.log("OnOwnWithdrawLocked"),
@@ -175,7 +162,7 @@ aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
 }
 
 aeternity.closeChannel = async function (channel, onChainTxCallback) {
-  return channel.shutdown(async (tx) => aeternity.client.signTransaction(tx), {
+  return channel.shutdown(async (tx) => await aeternity.signTransactionEx(tx), {
     onOnChainTx: onChainTxCallback
   });
 }
