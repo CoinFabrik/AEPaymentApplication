@@ -24,7 +24,6 @@ html, body {
 		height: 4vh;
 	}
 
-
 #content {
   height: 100%;
   margin-top: 5%;
@@ -97,7 +96,7 @@ html, body {
 /* QR Scanner */
 #scan_qr_container {
   height: 40vh;
-  width: 40vh;
+  width: 68vh;
   border-radius: 30px;
   border: none !important;
   position: absolute;

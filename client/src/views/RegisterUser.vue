@@ -12,9 +12,10 @@
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
+      label="Enter your name"
       v-model="nameInput"
-      style="border-bottom: 1px solid #CC4040;"
       placeholder="Your name..."
+      class="mt-4"
     />
     <AeLoader v-show="fetchingName" />
 

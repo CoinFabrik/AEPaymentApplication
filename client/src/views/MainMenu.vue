@@ -9,7 +9,7 @@
 
     <ViewButtonSection
       v-if="$isClientAppRole"
-      :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan A Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
+      :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
 
     <ViewButtonSection

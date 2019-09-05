@@ -1,11 +1,8 @@
 <template>
   <b-container class="history-view">
-    <AeText
-      class="title"
-      fill="primary"
-    >
-      Transaction History
-    </AeText>
+    <ViewTitle
+      title="Transaction History"
+    />
     <b-row>
       <div class="column">
         <AeText weight="bold">
@@ -123,11 +120,12 @@
           </div>
         </b-modal>
         <AeButton
-          face="round"
+          class="addButton"
+          face="icon"
           fill="primary"
           @click="addItems(history.length)"
         >
-          +
+          <ae-icon name="plus" />
         </AeButton>
       </AeList>
     </div>
