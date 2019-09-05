@@ -130,7 +130,7 @@ export default {
         }
       } catch (e) {
         this.$displayError(
-          "Oops! We could not connect to zzyour wallet",
+          "Oops! We could not connect to your wallet",
           e.toString()
         );
         this.status = STATUS_INIT;

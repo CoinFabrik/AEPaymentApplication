@@ -78,3 +78,9 @@ UI changes:
 +  restyle AeButton neutral (white) > Cancel Button
 + Wallet Balance widget tweaks
 + History “Add Tx” button > Rounded
+
+0.9.0 (190905)
+--------------
++ New QR Scanner through the base-aepp (Minimum version 0.10.0). Should work on all platforms.
++ Removed Payment Codes fallback.
+

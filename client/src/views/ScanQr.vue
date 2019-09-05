@@ -1,143 +1,64 @@
 <template>
-  <b-container class="scanqrview">
-    <ViewTitle
-      :title="subview === 'pay-with-qr' ? 'Scan the payment request QR code from the merchant\'s device.' : 'Scan the QR code to open the payments channel.'"
-    />
-    <b-row align-h="center">
-      <div v-if="">
-        <AeText weight="500">
-
-        </AeText>
-      </div>
-
-      <!--
-      <div v-if="!isDisabledCodeReader || subview === 'onboarding'" -->
-      <div
-        id="scan_qr_container"
-        @click="onQrClick"
-      >
-      <div v-if="subview === 'pay-with-qr'">
-        <AeText face="sans-s" class="mb-2">Payment Code</AeText>
-        <input
-          id="payment-code-input"
-          type="text"
-          style="background-color: #f7f7f7; padding: 0.4em 0.1em; border: none"
-        />
-        <AeButton
-          class="px-1 ml-1"
-          style="border-radius: 6px"
-          fill="primary"
-          id="load-payment-code"
-          text="Load"
-          @click="loadPaymentCode"
-        >
-          Load Code
-        </AeButton>
-      </div>
-
-        <div
-          id="scan_qr_subcontainer"
-        >
-          <QrCodeReader
-            :key="scanCount"
-            @hasData="onQrHasData"
-            @error="onQrHasError"
-          />
-        </div>
-         <!-- <div v-if="isDisabledCodeReader && subview === 'pay-with-qr'"> -->
-
-      </div>
-
-    </b-row>
-
-    <ViewButtonSection
-      :buttons="[{name: 'Cancel', action: cancel, fill:'neutral'}]"
-    />
-  </b-container>
+  <b-container class="scanqrview"></b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
-
-import QrCodeReader from "../components/QrCodeReader.vue";
-//import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
 import { validatePurchaseQr, validateOnboardingQr } from "../util/validators";
-import { BrowserQRCodeReader } from "@zxing/library/esm5/browser/BrowserQRCodeReader";
 import HubConnection from "../controllers/hub";
+import aeternity from "../controllers/aeternity";
 const uuidv4 = require("uuid/v4");
 
 export default {
   name: "ScanQR",
-  components: {
-		QrCodeReader,
-  },
+  components: {},
   props: {
     subview: String
   },
   data() {
     return {
-      scanCount: 0,
       qrData: null
     };
   },
-  computed: {
-    isDisabledCodeReader() {
-      return parseInt(process.env.VUE_APP_DISABLE_QRCODES) != 0;
+  computed: {},
+  async mounted() {
+    if (this.subview !== "onboarding" && this.subview !== "pay-with-qr") {
+      throw Error("The subview prop must be 'onboarding' or 'pay-with-qr'");
     }
-  },
-  mounted: function() {
-    if (
-      this.subview !== "onboarding" &&
-      this.subview !== "pay-with-qr" &&
-      this.subview !== "scanaddress"
-    ) {
-        console.log(this.$store.state.route.params);
-      throw Error(
-        "The subview prop must be 'onboarding' , 'pay-with-qr' or 'scanaddress'"
-      );
-    }
+    this.openScan();
   },
   methods: {
-    async loadPaymentCode() {
-      const paymentCode = document.getElementById("payment-code-input").value;
+    async openScan() {
+      let scandata;
       try {
-        let hubConnection = new HubConnection(
-          this.$store.state.hubUrl,
-          this.$store.getters.initiatorAddress
+        scandata = await aeternity.readQrCode(
+          this.subview === "pay-with-qr"
+            ? "Scan the payment request QR code from the merchant's device."
+            : "Scan the QR code to open the payments channel.'"
         );
 
-        let res = await hubConnection.fetchProductData(paymentCode);
-        if (!res.success) {
-          throw new Error(res.error);
-        }
-
-        console.log("Got data from payment hub:  " + res.data);
-        this.processPaymentData(res.data, false, true);
-      } catch (e) {
-        this.$displayError(
-          "Oops!",
-          "We could not connect to the payment hub to fetch code" +
-            "Reason: " +
-            e.toString(),
-          () => {
-            this.$router.replace("main-menu");
-          }
-        );
+        await this.onQrHasData(scandata);
+      } catch (err) {
+        console.log(err);
+        if (err.toString() === "Cancelled by user") {
+          this.$router.back();
+        } else this.onQrHasError(err);
       }
     },
-    processPaymentData(data, isFromQr, generateNewUuid) {
+    processPaymentData(data) {
       if (!validatePurchaseQr(data)) {
-        this.$swal.fire({
-          heightAuto: false,
-          type: "info",
-          title: "Oops...",
-          text:
-            "This " + isFromQr
-              ? "QR Code"
-              : "Payment Code" +
-                " does not seem to contain payment information. Please try with another one."
-        });
+        this.$swal
+          .fire({
+            heightAuto: false,
+            type: "info",
+            title: "Oops...",
+            text:
+              "This QR Code  does not seem to contain payment information. Please try with another one."
+          })
+          .then(() => {
+            this.openScan();
+          });
       } else {
         this.qrData = JSON.parse(data);
         if (
@@ -164,69 +85,30 @@ export default {
         this.processPaymentData(scanData, true, false);
       } else if (this.subview === "onboarding") {
         if (!validateOnboardingQr(scanData)) {
-          this.$swal.fire({
-            heightAuto: false,
-            type: "info",
-            title: "Oops...",
-            text:
-              "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
-          }).then ( () => {
-          this.scanCount++;
-          });
-
+          this.$swal
+            .fire({
+              heightAuto: false,
+              type: "info",
+              title: "Oops...",
+              text:
+                "This does not seem to be a correct onboarding QR Code. Please re-scan a new one."
+            })
+            .then(() => {
+              this.openScan();
+            });
         } else {
           this.qrData = JSON.parse(scanData);
           this.navigateOut();
         }
       }
     },
-    onQrHasError(event, error) {
+    onQrHasError(error) {
       this.$displayError(
         "Oops!",
         "The QR Scanning process failed with an unexpected error. Reason is: " +
           error.toString() +
           ".  Please try again with another code"
       );
-    },
-    onQrClick() {
-      //
-      // A click on the QR element box will trigger out a simulated
-      // QR scan if its enabled in the environment settings
-      //
-      if (process.env.VUE_APP_DISABLE_QRCODES === "1") {
-        if (this.subview === "onboarding") {
-          this.qrData = {
-            hub: process.env.VUE_APP_TEST_HUB_IP_PORT
-          };
-
-          console.warn(
-            "VUE_APP_DISABLE_QRCODES active. Setup simulated onboarding QR data: " +
-              this.qrData
-          );
-          this.navigateOut();
-        } else if (this.subview === "scanaddress") {
-          this.qrData = process.env.VUE_APP_TEST_CUSTOMER_ADDRESS;
-          this.navigateOut();
-        } else if (this.subview === "pay-with-qr") {
-          // this.qrData = {
-          //   //
-          //   // Mock payment data
-          //   //
-          //   amount: new BigNumber(0.001234)
-          //     .multipliedBy(new BigNumber(10).exponentiatedBy(18))
-          //     .toString(10),
-          //   merchant: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
-          //   something: "3 BEERS",
-          //   id: uuidv4(),
-          //   type: "payment-request"
-          // };
-          // console.warn(
-          //   "VUE_APP_DISABLE_QRCODES active. Setup simulated payment QR data: " +
-          //     this.qrData
-          // );
-          // this.navigateOut();
-        }
-      }
     },
     async navigateOut() {
       if (this.subview === "onboarding") {
@@ -250,13 +132,13 @@ export default {
       }
     },
     async doOnboardingProcess() {
-      this.$store.commit('loadHubIpAddr', this.qrData.hub);
-      this.$store.commit('setOnboardingQrScan', true);
+      this.$store.commit("loadHubIpAddr", this.qrData.hub);
+      this.$store.commit("setOnboardingQrScan", true);
       this.$router.replace("register-user");
-		},
-		cancel() {
-			this.$router.back()
-		}
+    },
+    cancel() {
+      this.$router.back();
+    }
   }
 };
 </script>

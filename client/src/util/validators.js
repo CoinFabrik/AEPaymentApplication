@@ -41,11 +41,11 @@ export function validatePurchaseQr(qrtext) {
 
     try {
         let obj = JSON.parse(qrtext);
-        if (obj.amount === undefined
-            || obj.something === undefined
-            || obj.id === undefined
-            || obj.merchant === undefined
-            || obj.type === undefined) {
+        if ( !obj.hasOwnProperty('amount')
+            || !obj.hasOwnProperty('something')
+            || !obj.hasOwnProperty('uuid')
+            || !obj.hasOwnProperty('merchant')
+            || !obj.hasOwnProperty('type')) {
             console.error("Payment QR: does not contain required fields");
             return false;
         }
@@ -55,7 +55,7 @@ export function validatePurchaseQr(qrtext) {
             return false;
         }
 
-        if (!validator.isUUID(obj.id, 4)) {
+        if (!validator.isUUID(obj.uuid, 4)) {
             console.error("Payment QR: Invalid UUIDv4 type identifier");
             return false;
         }

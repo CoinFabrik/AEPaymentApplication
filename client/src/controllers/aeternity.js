@@ -34,8 +34,10 @@ aeternity.connectToBaseApp = async function () {
   });
 
   try {
-    let ret = await Promise.race([timeout, Aepp()]);
-    aeternity.client = ret;
+    const aeSdk = Aepp.compose({
+      deepConfiguration: { Ae: { methods: ['readQrCode'] } },
+    })( { parent: window.parent } );
+    aeternity.client = await Promise.race([timeout, aeSdk ])
     console.log("aeternity.client connected. Your address: " + await aeternity.client.address());
     return { status: true, error: null };
   }
@@ -190,5 +192,10 @@ aeternity.setUpdateHandler = function (f) {
 
 aeternity.setAfterUpdateAckSignHandler = function (f) {
   aeternity.afterSignHandler = f;
+}
+
+aeternity.readQrCode = async function (title) {
+  await aeternity.connectToBaseApp();
+  return aeternity.client.readQrCode({ title });
 }
 export default aeternity;
