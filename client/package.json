@@ -16,7 +16,6 @@
   "dependencies": {
     "@aeternity/aepp-components": "git+https://github.com/aeternity/aepp-components.git#develop",
     "@aeternity/aepp-sdk": "^4.5.0",
-    "@zxing/library": "^0.15.1",
     "axios": "^0.19.0",
     "bignumber.js": "^9.0.0",
     "bootstrap": "^4.3.1",
@@ -27,7 +26,6 @@
     "uuid": "^3.3.2",
     "validator": "^11.1.0",
     "vue": "^2.6.10",
-    "vue-qrcode-reader": "^2.0.3",
     "vue-router": "^3.0.3",
     "vue-sweetalert2": "^2.1.1",
     "vuex": "^3.0.1",
