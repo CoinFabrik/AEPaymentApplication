@@ -228,6 +228,10 @@ class MyChannel extends events.EventEmitter {
             throw err;
         }
     }
+
+    async leave() {
+        return await this.sendMessage("leave");
+    }
 }
 
 async function sleep(ms, debug) {

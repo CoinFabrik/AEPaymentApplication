@@ -19,16 +19,17 @@ export class MerchantCustomerAccepted {
 
     @Column()
     action: Actions;
-    @Column()
+
+    @Column({nullable: true})
     on_chain: string;
 
-    @Column()
+    @Column({nullable: true})
     tx_uuid: string;
     @Column()
     timestamp: number;
     @Column()
     amount: string;
-    @Column()
+    @Column({nullable: true})
     item: string;
 
     static Create(merchant, customer, uuid, amount: string, item: object) {

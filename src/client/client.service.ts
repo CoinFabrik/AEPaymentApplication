@@ -20,6 +20,7 @@ export class RepoService {
               await repo.save(m);
               return true;
           } catch (err) {
+              console.log(err)
               idx += 1;
           }
       }
