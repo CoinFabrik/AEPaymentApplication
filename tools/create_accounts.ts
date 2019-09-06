@@ -1,156 +1,48 @@
-import {API_URL, INTERNAL_API_URL} from "../src/config";
-
-const bs58check = require('bs58check');
 import * as fs from "fs";
 import BigNumber from "bignumber.js";
-const {
-    Crypto,
-    Universal
-} = require('@aeternity/aepp-sdk');
+import {getArgv} from "../src/tools";
+import {create_accounts} from "./massive_create";
+import {many2one} from "./many2one.";
+import {cc_wallet, get_node, lc_wallet, to_cc, Users} from "./aehelpers";
+import {node2many, one2many} from "./one2many";
 
+const filename = getArgv(3, "accounts_idx.json");
 
-async function save(an_array) {
-    fs.writeFileSync("accounts_idx.json", JSON.stringify(an_array));
+export async function save(an_array) {
+    fs.writeFileSync(filename, JSON.stringify(an_array));
 }
 
-async function load() {
+export async function load() {
     let accounts=[];
     try {
-        let buf = fs.readFileSync("accounts_idx.json");
+        let buf = fs.readFileSync(filename);
         accounts = JSON.parse(buf.toString("ascii"));
     } catch (err) {
     }
     return accounts;
 }
 
-async function generateSecureWallet(name) {
-  const { secretKey, publicKey } = Crypto.generateKeyPair(true)
-  return { secretKey: hexdump(secretKey), publicKey: buf2addr(publicKey) };
-}
-
-
-function buf2addr(obj: any) {
-    const publicKeyBuffer = Buffer.from(obj,'hex')
-    let xx = Buffer.from(publicKeyBuffer)
-    const pubKeyAddress = bs58check.encode(xx)
-    return `ak_${pubKeyAddress}`;
-}
-
-function pad(n: string, width: number, z = '0') {
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-function hexdump(obj: any) {
-    const publicKeyBuffer = Buffer.from(obj,'hex')
-    let xx = Buffer.from(publicKeyBuffer)
-    let view = new Uint8Array(xx);
-    let hex = Array.from(view).map(v => pad(v.toString(16), 2));
-    return hex.join("");
-}
-
-const Users = [
-    {
-public_key: "ak_2mwRmUeYmfuW93ti9HMSUJzCk1EYcQEfikVSzgo6k2VghsWhgU",
-private_key: "bb9f0b01c8c9553cfbaf7ef81a50f977b1326801ebf7294d1c2cbccdedf27476e9bbf604e611b5460a3b3999e9771b6f60417d73ce7c5519e12f7e127a1225ca"
-    }, {
-public_key: "ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk",
-private_key: "7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d"
-    }, {
-public_key: "ak_tWZrf8ehmY7CyB1JAoBmWJEeThwWnDpU4NadUdzxVSbzDgKjP",
-private_key: "7fa7934d142c8c1c944e1585ec700f671cbc71fb035dc9e54ee4fb880edfe8d974f58feba752ae0426ecbee3a31414d8e6b3335d64ec416f3e574e106c7e5412"
-    }, {
-public_key: "ak_FHZrEbRmanKUe9ECPXVNTLLpRP2SeQCLCT6Vnvs9JuVu78J7V",
-private_key: "1509d7d0e113528528b7ce4bf72c3a027bcc98656e46ceafcfa63e56597ec0d8206ff07f99ea517b7a028da8884fb399a2e3f85792fe418966991ba09b192c91"
-    }, {
-public_key: "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp",
-private_key: "58bd39ded1e3907f0b9c1fbaa4456493519995d524d168e0b04e86400f4aa13937bcec56026494dcf9b19061559255d78deea3281ac649ca307ead34346fa621"
-    }, {
-public_key: "ak_2VvB4fFu7BQHaSuW5EkQ7GCaM5qiA5BsFUHjJ7dYpAaBoeFCZi",
-private_key: "50458d629ae7109a98e098c51c29ec39c9aea9444526692b1924660b5e2309c7c55aeddd5ebddbd4c6970e91f56e8aaa04eb52a1224c6c783196802e136b9459"
-    }, {
-public_key: "ak_286tvbfP6xe4GY9sEbuN2ftx1LpavQwFVcPor9H4GxBtq5fXws",
-private_key: "707881878eacacce4db463de9c7bf858b95c3144d52fafed4a41ffd666597d0393d23cf31fcd12324cd45d4784d08953e8df8283d129f357463e6795b40e88aa"
-    }, {
-public_key: "ak_f9bmi44rdvUGKDsTLp3vMCMLMvvqsMQVWyc3XDAYECmCXEbzy",
-private_key: "9262701814da8149615d025377e2a08b5f10a6d33d1acaf2f5e703e87fe19c83569ecc7803d297fde01758f1bdc9e0c2eb666865284dff8fa39edb2267de70db"
-    }, {
-public_key: "ak_23p6pT7bajYMJRbnJ5BsbFUuYGX2PBoZAiiYcsrRHZ1BUY2zSF",
-private_key: "e15908673cda8a171ea31333538437460d9ca1d8ba2e61c31a9a3d01a8158c398a14cd12266e480f85cc1dc3239ed5cfa99f3d6955082446bebfe961449dc48b"
-    }, {
-public_key: "ak_gLYH5tAexTCvvQA6NpXksrkPJKCkLnB9MTDFTVCBuHNDJ3uZv",
-private_key: "6eb127925aa10d6d468630a0ca28ff5e1b8ad00db151fdcc4878362514d6ae865951b78cf5ef047cab42218e0d5a4020ad34821ca043c0f1febd27aaa87d5ed7"
-    }, {
-public_key: "ak_zPoY7cSHy2wBKFsdWJGXM7LnSjVt6cn1TWBDdRBUMC7Tur2NQ",
-private_key: "36595b50bf097cd19423c40ee66b117ed15fc5ec03d8676796bdf32bc8fe367d82517293a0f82362eb4f93d0de77af5724fba64cbcf55542328bc173dbe13d33"
-    },
-];
-
-
-
-
-async function get_node(keypair) {
-    return await Universal({
-        //networkId: NETWORK_ID,
-        url: API_URL,
-        internalUrl: INTERNAL_API_URL,
-        keypair: keypair,
-    });
-}
-
-async function get_balance(pubkey, node) {
-    try{
-        let balance = await node.balance(pubkey);
-        return new BigNumber(balance);
-    } catch(err) {
-        //console.log(err)
-        //throw err;
-        return null
-    }
-}
-
-async function transfer_all(from_ac, to_ac_publicKey, amount, idx) {
-    let node = await get_node({publicKey:from_ac.public_key, secretKey: from_ac.private_key});
-    console.log(`(${idx}) transferring: ${amount.toString(10)} to: ${to_ac_publicKey}`);
-    return node.spend(amount, to_ac_publicKey);
-}
-
-
 (async function () {
     let accounts=await load();
+
     let max = Number.parseInt(process.argv[2]);
     console.log("Accounts: ", max.toString());
     console.log("Loaded Accounts: ", accounts.length);
 
-    while (accounts.length<max) {
-        let ac = await generateSecureWallet("nr_"+accounts.length.toString() ); //, {password:"1234"});
-        accounts.push(ac);
-				await save(accounts);
-		console.log(JSON.stringify(accounts));
-    }
+    await create_accounts(max, accounts);
+    await save(accounts);
+    console.log(" + creation done");
 
     // merge all funds:
     const min_fee = new BigNumber(2*16840000000000);
     let node = await get_node(null);
-    for(let user of Users) {
-        let balance = await get_balance(user.public_key, node);
-        if ((user===Users[0]) || (balance==null) || balance.isLessThan(min_fee))
-            continue;
-        await transfer_all(user, Users[0].public_key, balance.minus(min_fee), "-");
-    }
+    await  many2one(node, Users.slice(1), Users[0].public_key);
 
     // distribute
-    let full = await get_balance(Users[0].public_key, node);
+    let full = new BigNumber(await node.balance(Users[0].public_key));
     console.log( "->", full.toString(10));
     let each = full.dividedBy(3*max).minus(min_fee);
     console.log("will transfer each -> ", each.toString(10))
 
-    let all_p = [];
-    for (let idx=0;idx<accounts.length;idx++) {
-        let account = accounts[idx.toString()];
-        //all_p.push(transfer_all(Users[0], account.publicKey, each, idx));
-        await transfer_all(Users[0], account.publicKey, each, idx);
-        // if (idx%5===0) {
-        //     Promise.all(all_p).then(console.log).catch(console.error);
-        //     all_p = [];
-        // }
-    }
+    await one2many(Users[0], accounts.map( (cc: cc_wallet)=> cc.publicKey), each);
 })();
