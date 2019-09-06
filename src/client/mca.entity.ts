@@ -12,9 +12,9 @@ export class MerchantCustomerAccepted {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({nullable: true})
     merchant: string;
-    @Column()
+    @Column({nullable: true})
     customer: string;
 
     @Column()
