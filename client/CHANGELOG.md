@@ -83,4 +83,8 @@ UI changes:
 --------------
 + New QR Scanner through the base-aepp (Minimum version 0.10.0). Should work on all platforms.
 + Removed Payment Codes fallback.
++ Registered name cannot be empty
++ Deposit, Withdraw and Purchase Amounts cannot be zero or negative.
+
+KNOWN ISSUES:
 

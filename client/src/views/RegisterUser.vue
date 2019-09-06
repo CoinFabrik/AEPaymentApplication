@@ -1,8 +1,6 @@
 <template>
   <b-container class="register-merch">
-    <ViewTitle
-      title="Identify yourself"
-    />
+    <ViewTitle title="Identify yourself" />
     <ViewDescription
       :first="this.$isMerchantAppRole ? 'Enter the name of your store' : 'Enter your name'"
       customer="This name will allow merchants to identify your payments."
@@ -19,9 +17,7 @@
     />
     <AeLoader v-show="fetchingName" />
 
-    <ViewButtonSection
-      :buttons="[{name: 'Confirm', action: confirm, validator: isValidInput}]"
-    />
+    <ViewButtonSection :buttons="[{name: 'Confirm', action: confirm, disabled: !isValidInput}]" />
   </b-container>
 </template>
 
@@ -29,7 +25,7 @@
 /* eslint-disable no-console */
 
 import HubConnection from "../controllers/hub";
-import aeternity from '../controllers/aeternity'
+import aeternity from "../controllers/aeternity";
 export default {
   name: "RegisterUser",
   data() {
@@ -63,8 +59,7 @@ export default {
         this.nameInput = res.name;
       }
 
-
-        this.fetchingName = false;
+      this.fetchingName = false;
     } catch (e) {
       this.$displayError(
         "Oops!",

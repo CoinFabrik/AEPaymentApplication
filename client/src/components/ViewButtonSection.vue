@@ -131,7 +131,8 @@
 				class="marginal"
 				face="round"
 				extend
-				:fill="buttons[0]['fill'] ? buttons[0]['fill'] : 'neutral'"
+				:disabled="buttons[0]['disabled']"
+				:fill="buttons[0]['fill'] ? buttons[0]['fill'] : 'primary'"
 				@click="buttons[0]['action']"
 			>
 				{{ buttons[0]['name'] }}

@@ -32,6 +32,7 @@
       fill="primary"
       class="margin"
       extend
+      :disabled="!isValidInput"
       @click="confirm()"
     >
       Confirm
@@ -51,6 +52,7 @@
 <script>
 /* eslint-disable no-console */
 import { makePaymentQrData } from "../util/messages";
+import BigNumber from 'bignumber.js'
 
 export default {
   name: "EnterPurchase",
@@ -60,6 +62,11 @@ export default {
       amount: "0.00",
       description: ""
     };
+  },
+  computed: {
+    isValidInput() { 
+      return BigNumber(this.amount).gt(0);
+    }
   },
 
   methods: {

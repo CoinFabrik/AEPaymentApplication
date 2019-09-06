@@ -45,7 +45,7 @@
       </AeText>
     </div>
     <ViewButtonSection
-            :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit}]"
+            :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit, disabled: !isValidInput}]"
     />
   </b-container>
 </template>
@@ -74,6 +74,9 @@ export default {
     };
   },
   computed: {
+    isValidInput() {
+      return BigNumber(this.depositInput.amount).gt(0);
+    },
     merchantInitialDepositAE() {
       return parseInt(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT) / 10 ** 18;
     },
