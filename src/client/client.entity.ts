@@ -46,6 +46,32 @@ export class InvalidCustomer extends InvalidRequest{
 @Index(["address", "kind"], { unique: true })
 export class CClient {
   static OnlineClients = {'customer': {}, 'merchant': {}};
+  private private?: string;
+  public channel: ServerChannel;
+  public amount: string;
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ length: 500 })
+  address: string;
+
+  @Column()
+  kind: Actor;
+
+  @Column({nullable: true})
+  name: string;
+
+  @Column({nullable: true})
+  channelId: string;
+
+  @Column({nullable: true})
+  channelSt: string;
+
+  @Column({nullable: true})
+  channelRn: number;
+
+  private constructor() {}
 
   static async Get(address: string, kind: Actor): Promise<CClient> {
       let client = this.OnlineClients[kind][address];
@@ -85,32 +111,6 @@ export class CClient {
       return client;
   }
 
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ length: 500 })
-  address: string;
-
-  @Column()
-  kind: Actor;
-
-  @Column({nullable: true})
-  name: string;
-
-  @Column({nullable: true})
-  channelId: string;
-
-  @Column({nullable: true})
-  channelSt: string;
-
-  @Column({nullable: true})
-  channelRn: number;
-
-
-  private private?: string;
-  public channel: ServerChannel;
-  public amount: string;
-
   static async FromFile(name: string): Promise<CClient> {
     const client = new CClient();
     client.address = await get_public(name);
@@ -122,21 +122,6 @@ export class CClient {
 
   setChannel(c: ServerChannel) {
       this.channel = c;
-  }
-
-  async get_or_create() {
-      let repo: Repository<CClient> = getRepository<CClient>(CClient);
-      let entity = await repo.findOne({address: this.address, kind: this.kind});
-      if (entity!=undefined) {
-          this.id = entity.id;
-          if ((this.name==undefined) || (this.name.length==0)) {
-              this.name = entity.name;
-              return;
-          } else {
-              entity.name = this.name;
-          }
-      }
-      await this.tsave();
   }
 
   save() {
@@ -164,6 +149,3 @@ export class CClient {
       return (opts["offchainTx"]!=null) && (opts["existingChannelId"]!=null);
   }
 }
-
-
-

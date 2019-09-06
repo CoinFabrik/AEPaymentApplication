@@ -218,7 +218,6 @@ export class ClientService extends ServiceBase {
             this.emit("connect", peer);
         });
         this.on("connect", (peer: ServerChannel) => {
-            peer.client.get_or_create().then(voidf).catch(console.error);
             peer.initChannel();
         });
     }

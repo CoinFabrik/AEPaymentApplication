@@ -35,9 +35,8 @@ abstract class ClientController {
 
   @Get("reset/:address")
   async resetoffline(@Param() params): Promise<any> {
-      let repo = getRepository(CClient);
       let result = "ok";
-      let client = await repo.findOne({address: params.address.toString(), kind: this.kind});
+      let client = await CClient.Get(params.address.toString(), this.kind)
       if (client!=undefined) {
           client.channelSt = null;
           client.channelId = null;
