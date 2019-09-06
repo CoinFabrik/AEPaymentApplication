@@ -79,12 +79,15 @@ UI changes:
 + Wallet Balance widget tweaks
 + History “Add Tx” button > Rounded
 
-0.9.0 (190905)
---------------
-+ New QR Scanner through the base-aepp (Minimum version 0.10.0). Should work on all platforms.
+0.9.0-WIP (190905)
+------------------
+**NOTE** This version requires base-aepp >= 0.10.0.
+
++ New QR Scanner through the base-aepp. Should work on all platforms.
 + Removed Payment Codes fallback.
 + Registered name cannot be empty
 + Deposit, Withdraw and Purchase Amounts cannot be zero or negative.
 
 KNOWN ISSUES:
-
++ Transparent channel reconnection if it goes to DISCONNECT state
++ Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
