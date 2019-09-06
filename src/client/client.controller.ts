@@ -51,10 +51,11 @@ abstract class ClientController {
   @Get(":address/:amount/:name")
   async connectMerchant(@Param() params, @Res() res: Response): Promise<any> {
       try {
-          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString(), params.name.toString());
-            return this.launchClient(client, res);
+          const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString(),
+                                                    params.name.toString());
+          return this.launchClient(client, res);
       } catch (err) {
-              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
+          return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
       }
   }
 
@@ -64,7 +65,7 @@ abstract class ClientController {
           const client = await CClient.GetOrCreate(params.address.toString(), this.kind, params.amount.toString());
           return this.launchClient(client, res);
       } catch (err) {
-              return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
+          return res.status(HttpStatus.FORBIDDEN).json({error: err.toString()});
       }
   }
 
@@ -85,13 +86,16 @@ abstract class ClientController {
 
   @Get(":address")
   async queryClient(@Param() params): Promise<any> {
-      let result = await this.service.queryClient(params.address, this.kind);
+      const result = await CClient.Get(params.address.toString(), this.kind);
       let response = ServerChannel.GetNameInfo();
       let name = null;
+      let channelId = null;
       if (result!=undefined) {
           name = result.name;
+          channelId = result.channelId;
       }
       response["name"] = name;
+      response["channelId"] = channelId;
       return response;
   }
 }

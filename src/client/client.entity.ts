@@ -47,22 +47,27 @@ export class InvalidCustomer extends InvalidRequest{
 export class CClient {
   static OnlineClients = {'customer': {}, 'merchant': {}};
 
-  static async GetOrCreate(address: string, kind: Actor, amount: string, name?: string): Promise<CClient> {
-      let save = false;
-      let update = false;
+  static async Get(address: string, kind: Actor): Promise<CClient> {
       let client = this.OnlineClients[kind][address];
       if (client==null) {
           const repo: Repository<CClient> = getRepository<CClient>(CClient);
           client = await repo.findOne({address, kind});
-          if (client===undefined) {
-              client = new CClient();
-              client.address = address;
-              client.kind = kind;
-              if (name===undefined) {
-                  throw new Error('No name specified!');
-              }
-              save = true;
+      }
+      return client;
+  }
+
+  static async GetOrCreate(address: string, kind: Actor, amount: string, name?: string): Promise<CClient> {
+      let update = false;
+      let client = await this.Get(address, kind);
+      if (client===undefined) {
+          if (name===undefined) {
+              throw new Error('No name specified!');
           }
+          client = new CClient();
+          client.address = address;
+          client.kind = kind;
+          client = await client.tsave();
+          this.OnlineClients[kind][address] = client;
       }
 
       if((name !== undefined) && (name !== client.name)) {
@@ -74,12 +79,8 @@ export class CClient {
           update = true;
       }
 
-      if (save || update) {
-          const result = await client.tsave();
-          if (save) {
-              client = result;
-              this.OnlineClients[kind][address] = result;
-          }
+      if (update) {
+          await client.tsave();
       }
       return client;
   }
