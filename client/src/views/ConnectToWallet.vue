@@ -1,6 +1,9 @@
 <template>
   <b-container class="connectToWallet">
-    <div v-if="isAtInitialState" class="content">
+    <div
+      v-if="isAtInitialState"
+      class="content"
+    >
       <ViewTitle title="Connect your wallet" />
       <ViewDescription
         first="This payments application must be connected to your wallet."
@@ -83,6 +86,8 @@ export default {
     // Clear any previous state
     this.$store.dispatch("resetState");
   },
+  mounted() {
+  },
   methods: {
     async connectToBaseApp() {
       // if (window.parent.location.href !== "https://base.aepps.com") {
@@ -137,8 +142,6 @@ export default {
         this.$bvModal.hide("loadingModal");
       }
     }
-  },
-  mounted() {
   }
 };
 </script>

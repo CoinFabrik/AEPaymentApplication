@@ -1,19 +1,41 @@
 <template>
-  <b-modal id="closeModal" centered hide-footer hide-header>
+  <b-modal
+    id="closeModal"
+    centered
+    hide-footer
+    hide-header
+  >
     <b-container>
       <div class="d-block text-center">
         <b-row>
           <b-col>
-            <AeText face="sans-l" weight="600">{{text}}</AeText>
+            <AeText
+              face="sans-l"
+              weight="600"
+            >
+              {{ text }}
+            </AeText>
           </b-col>
         </b-row>
         <AeDivider />
         <b-row>
           <b-col>
-            <AeButton face="round" fill="neutral" @click="$bvModal.hide('closeModal')">Cancel</AeButton>
+            <AeButton
+              face="round"
+              fill="neutral"
+              @click="$bvModal.hide('closeModal')"
+            >
+              Cancel
+            </AeButton>
           </b-col>
           <b-col>
-            <AeButton face="round" fill="secondary" @click="wrappedConfirm">Confirm</AeButton>
+            <AeButton
+              face="round"
+              fill="secondary"
+              @click="wrappedConfirm"
+            >
+              Confirm
+            </AeButton>
           </b-col>
         </b-row>
       </div>
@@ -30,14 +52,14 @@ export default {
     text: String,
     onConfirm: Function
   },
+  mounted: function() {
+    if (this.alwaysVisible) this.$bvModal.show("CloseModal");
+  },
   methods: {
     wrappedConfirm: function() {
       this.onConfirm();
       $bvModal.hide("closeModal");
     }
-  },
-  mounted: function() {
-    if (this.alwaysVisible) this.$bvModal.show("CloseModal");
   }
 };
 </script>

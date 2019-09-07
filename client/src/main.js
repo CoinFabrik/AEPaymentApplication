@@ -66,3 +66,12 @@ new Vue({
 Vue.use(VueSweetalert2)
 
 sync(store, router)
+
+window.addEventListener('beforeunload', (e) => {
+  console.log("x");
+  e.preventDefault();
+  e.preventDefault();
+  e.returnValue = '';
+  return '';
+  
+})

@@ -2,7 +2,12 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
+    <AeText
+      face="sans-l"
+      fill="primary"
+    >
+      {{ confirmPercent === NaN ? 0 : confirmPercent }}%
+    </AeText>
     <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>

@@ -79,7 +79,7 @@ UI changes:
 + Wallet Balance widget tweaks
 + History “Add Tx” button > Rounded
 
-0.9.0-WIP (190905)
+0.9.0-WIP (190906)
 ------------------
 **NOTE** This version requires base-aepp >= 0.10.0.
 
@@ -87,6 +87,9 @@ UI changes:
 + Removed Payment Codes fallback.
 + Registered name cannot be empty
 + Deposit, Withdraw and Purchase Amounts cannot be zero or negative.
++ After user registration, we'll check if there is a channel opened with saved state to reconnect.
++ If channel opening fails, user will be offered to retry or cancel and open a new channel.
+
 
 KNOWN ISSUES:
 + Transparent channel reconnection if it goes to DISCONNECT state

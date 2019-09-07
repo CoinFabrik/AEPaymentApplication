@@ -1,5 +1,5 @@
 <template>
-  <b-container class="scanqrview"></b-container>
+  <b-container class="scanqrview" />
 </template>
 
 <script>

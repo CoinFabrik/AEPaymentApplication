@@ -45,7 +45,7 @@
       </AeText>
     </div>
     <ViewButtonSection
-            :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit, disabled: !isValidInput}]"
+      :buttons="[{name:'Cancel', action:cancel, fill:'neutral'}, {name:'Deposit', action: deposit, disabled: !isValidInput}]"
     />
   </b-container>
 </template>

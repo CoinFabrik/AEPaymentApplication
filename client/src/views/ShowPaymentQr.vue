@@ -8,7 +8,10 @@
       Amount: {{ message.amount / (10**18) }} AE
     </AeText>
     <br>
-    <AeText face="sans-xs" v-show="message.something.length > 0">
+    <AeText
+      v-show="message.something.length > 0"
+      face="sans-xs"
+    >
       Concept: {{ message.something }}
     </AeText>
 

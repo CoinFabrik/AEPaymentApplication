@@ -59,8 +59,8 @@ aeternity.getAccountBalance = async function () {
 }
 
 aeternity.createChannel = async function (params) {
-  console.log('Initializing channel with params:');
-  console.log(params);
+  //console.log('Initializing channel with params:');
+  //console.log(params);
 
   return Channel({
     ...params,

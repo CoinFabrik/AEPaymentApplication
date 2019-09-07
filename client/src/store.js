@@ -31,7 +31,7 @@ export default new Vuex.Store({
     channelOptions: null,
     initiatorBalance: null,
     responderBalance: null,
-    initiatorAmount: null,
+    initiatorAmount: 0,
     hubBalance: null,
     hubUrl: null,
     hubAddress: null,

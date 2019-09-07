@@ -10,8 +10,8 @@
     <AeInput
       v-show="!fetchingName"
       ref="inputName"
-      label="Enter your name"
       v-model="nameInput"
+      label="Enter your name"
       placeholder="Your name..."
       class="mt-4"
     />
@@ -23,7 +23,7 @@
 
 <script>
 /* eslint-disable no-console */
-
+let hubConnection;
 import HubConnection from "../controllers/hub";
 import aeternity from "../controllers/aeternity";
 export default {
@@ -42,12 +42,12 @@ export default {
   async mounted() {
     try {
       this.fetchingName = true;
-      let hubConnection = new HubConnection(
+      this.hubConnection = new HubConnection(
         this.$store.state.hubUrl,
         await aeternity.getAddress()
       );
-      let res = await hubConnection.getRegisteredName(
-        this.$isClientAppRole ? "client" : "merchant"
+      let res = await this.hubConnection.getRegisteredName(
+        process.env.VUE_APP_ROLE
       );
 
       if (!res.success) {
@@ -78,14 +78,47 @@ export default {
     }
   },
   methods: {
-    confirm() {
+    async confirm() {
+      //
+      // Verify if we got previous channel information
+      //
+      this.fetchingName = false;
+
       this.$store.commit("setUserName", this.nameInput);
-      this.$router.push({
-        name: "deposit",
-        params: {
-          initialDeposit: true
+
+      try {
+        let res = await this.hubConnection.getPrevChannelId(
+          process.env.VUE_APP_ROLE
+        );
+        if (!res.success) {
+          throw new Error(res.error);
         }
-      });
+
+        if (res.channelId) {
+          console.log(
+            "Found Existing reconnection information, we will skip initial deposit..."
+          );
+          this.$router.push("channelopen");
+        } else {
+          console.log(
+            "No reconnection information, going through initial deposit..."
+          );
+          this.$router.push({
+            name: "deposit",
+            params: {
+              initialDeposit: true
+            }
+          });
+        }
+      } catch (e) {
+        this.$displayError(
+          "Oops!",
+          "We could not connect to the payment hub to query channel information. Please try again later. " +
+            "Reason: " +
+            e.toString()
+        );
+        return;
+      }
     }
   }
 };

@@ -79,6 +79,34 @@ class HubConnection {
       throw new Error("Unknown role: ") + role;
     }
   }
+
+  async getPrevChannelId(role) {
+ 
+    if (role === "client" || role === "merchant") {
+      try {
+        let output = await axios.get(this.hubIp + '/' + role + '/' + this.address);
+
+        return { success: true, channelId: output.data.channelId };
+      } catch (error) {
+        return this.handleError(error);
+      }
+    } else {
+      throw new Error("Unknown role: ") + role;
+    }
+  }
+
+  async resetConnectionData(role) {
+    if (role === "client" || role === "merchant") {
+      try {
+        let output = await axios.get(this.hubIp + '/' + role + '/reset/' + this.address);
+        return { success: true, result: output.data.result };
+      } catch (error) {
+        return this.handleError(error);
+      }
+    } else {
+      throw new Error("Unknown role: ") + role;
+    }
+  }
 }
 
 export default HubConnection;

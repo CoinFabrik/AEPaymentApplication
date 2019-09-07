@@ -55,5 +55,7 @@ export default {
     this.$store.state.route &&
       this.$router.replace({ name: this.$store.state.route.name, params: this.$store.state.route.params });
   }
+
+  
 };
 </script>

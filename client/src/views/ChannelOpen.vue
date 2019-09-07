@@ -1,7 +1,7 @@
 <template>
   <div class="channel-open">
     <LoadingModal
-      always-visible
+      v-show="this.isWorking"
       :text="this.getChannelStatusDescriptiveText"
     />
   </div>
@@ -9,32 +9,28 @@
 
 <script>
 /* eslint-disable no-console */
-
-const STATUS_ACK_HUB = 1,
-  STATUS_WORKING = 2,
-  STATUS_STOPPED = 3;
-
+let hub = null;
 import HubConnection from "../controllers/hub";
 import aeternity from "../controllers/aeternity";
 import BigNumber from "bignumber.js";
 import { DisplayUnitsToAE } from "../util/numbers";
+import { createCipher } from "crypto";
 
 export default {
   name: "ChannelOpen",
   props: {},
   data() {
     return {
-      channelStatus: null,
-      viewStatus: STATUS_STOPPED,
-      errorText: null
+      channelStatus: "unknown",
+      isWorking: false
     };
   },
   computed: {
     getChannelStatusDescriptiveText() {
-      if (this.viewStatus === STATUS_ACK_HUB) {
-        return "Communicating with hub...";
-      } else if (this.viewStatus === STATUS_WORKING) {
+      if (this.isWorking) {
         switch (this.channelStatus) {
+          case "opening-hub":
+            return "Opening Hub";
           case "accepted":
             return "Channel connection accepted";
           case "half-signed":
@@ -46,64 +42,22 @@ export default {
           default:
             return "Working...";
         }
-      } else if (this.viewStatus === STATUS_STOPPED) {
-        if (this.channelStatus === "disconnected") {
-          return "Channel has been disconnected!";
-        } else return "Stopped.";
       } else return "Unknown state";
-    },
-    isWorking() {
-      return this.viewStatus === STATUS_WORKING;
-    },
-    isAckHub() {
-      return this.viewStatus === STATUS_ACK_HUB;
-    },
-    isStopped() {
-      return this.viewStatus === STATUS_STOPPED;
-    }
-  },
-  watch: {},
-  mounted: async function() {
-    try {
-      let res = await this.notifyHub();
-      console.log("res: ", res);
-
-      if (!res.success) {
-        this.$displayError(
-          "Oops! There is some problem",
-          "We could not communicate with the payment hub. Please try again later. Reason: " +
-            res.error.toString()
-        );
-        this.$router.replace({
-          name: "deposit",
-          params: { initialDeposit: true }
-        });
-      } else {
-        console.log("Hub Wallet Address: " + res.address);
-        this.$store.commit("loadHubAddress", res.address);
-
-        await this.createChannel();
-      }
-    } catch (e) {
-      this.$displayError(
-        "Oops! There is some problem",
-        "We could not communicate with the payment hub. Please try again later. Reason: " +
-          e.toString()
-      );
-      this.$router.replace({
-        name: "deposit",
-        params: { initialDeposit: true }
-      });
     }
   },
   mounted: async function() {
     window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
 
     try {
+      this.hub = new HubConnection(
+        this.$store.state.hubUrl,
+        await aeternity.getAddress()
+      );
+      this.isWorking = true;
       let res = await this.notifyHub();
-      console.log("res: ", res);
 
       if (!res.success) {
+        this.isWorking = false;
         this.$displayError(
           "Oops! There is some problem",
           "We could not communicate with the payment hub. Please try again later. Reason: " +
@@ -122,6 +76,7 @@ export default {
         await this.createChannel();
       }
     } catch (e) {
+      this.isWorking = false;
       this.$displayError(
         "Oops! There is some problem",
         "We could not communicate with the payment hub. Please try again later. Reason: " +
@@ -137,70 +92,105 @@ export default {
     window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
   },
   methods: {
-    onChannelStatusChange(status) {
-      console.log("Channel status change [" + status + "]");
-      this.channelStatus = status;
-      if (status === "open") {
-        this.$store.commit("setChannelOpenDone", true);
+    onChannelDisconnected() {
+      this.isWorking = false;
+      this.$store.commit("setChannelOpenDone", false);
 
+      // If we were connecting with stored state data, try to do it again
+      // without it, if the user asks again.
+
+      let strExisting =
+        this.$store.state.channelOptions.hasOwnProperty("offchainTx") &&
+        this.$store.state.channelOptions.hasOwnProperty("existingChannelId")
+          ? "existing"
+          : "new";
+
+      this.$swal
+        .fire({
+          heightAuto: false,
+          allowOutsideClick: false,
+          showCancelButton: true,
+          type: "error",
+          title: "Sorry",
+          html:
+            "We could not open your " +
+            strExisting +
+            " payment channel.<br>Do you want to try again?",
+          confirmButtonText: "Retry",
+          cancelButtonText: "Cancel"
+        })
+        .then(async result => {
+          if (result.value) {
+            this.isWorking = true;
+            this.createChannel();
+          } else if (result.dismiss === "cancel") {
+            try {
+              let res = await this.hub.resetConnectionData(
+                process.env.VUE_APP_ROLE
+              );
+              if (!res.success) {
+                throw "Call unsuccessful: " + res.error;
+              }
+            } catch (e) {
+              console.error(
+                "Failed to call endpoint to reset hub connection data: " +
+                  e.toString()
+              );
+            }
+
+            this.$router.replace({
+              name: "deposit",
+              params: {
+                initialDeposit: true
+              }
+            });
+          }
+        });
+    },
+    onChannelOpen() {
+      this.$store.commit("setChannelOpenDone", true);
+
+      this.$store.dispatch("updateChannelBalances").then(() => {
         this.$swal({
           type: "success",
           title: "Success",
           text: this.$isMerchantAppRole
             ? "Every time you get paid, the money will be addressed to your channel. Once you close it, all the funds will be withdrawn to your wallet."
             : "Now your channel balance is " +
-              DisplayUnitsToAE(this.$store.state.initiatorAmount) +
+              DisplayUnitsToAE(this.$store.state.initiatorBalance) +
               " AE. You can deposit more AEs when needed."
         }).then(this.$router.replace("main-menu"));
-      } else if (status === "disconnected") {
-        this.viewStatus = STATUS_STOPPED;
+      });
+    },
+
+    onChannelStatusChange(status) {
+      console.log("Channel status change [" + status + "]");
+      this.channelStatus = status;
+
+      if (status === "disconnected") {
+        this.onChannelDisconnected();
+      } else if (status === "open") {
+        this.onChannelOpen();
       }
     },
     async notifyHub() {
-      this.viewStatus = STATUS_ACK_HUB;
-      let hub = new HubConnection(
-        this.$store.state.hubUrl,
-        await aeternity.getAddress()
-      );
+      this.channelStatus = "opening-hub";
 
-      return hub.notifyUserOnboarding(
+      return this.hub.notifyUserOnboarding(
         this.$store.state.initiatorAmount,
         this.$store.state.userName,
-        this.$isClientAppRole ? "client" : "merchant"
+        process.env.VUE_APP_ROLE
       );
     },
     async createChannel() {
-      this.viewStatus = STATUS_WORKING;
       try {
-        if (!this.$store.state.lastOpenChannelId){
-          console.log("No last opened channel ID stored");
-        } else {
-        console.warn("Found last opened channel ID: " + this.$store.state.lastOpenChannelId);
-        if (this.$store.state.lastOpenChannelState) {
-          console.warn("Found last opened channel state: " + JSON.stringify(this.$store.state.lastOpenChannelState));
-          }
-        }
-
         await this.$store.dispatch("createChannel");
 
         // Channel created -- if we are merchants  suscribe to global
         // payment received notification.
 
         if (this.$isMerchantAppRole) {
-          window.eventBus.$on("payment-complete-ack", e => {
-            console.log("Received COMPLETE ",e);
-            if (e.eventdata === "completed") {
-              this.$swal.fire({
-                text:
-                  "Payment of " +
-                  DisplayUnitsToAE(e.info.amount) +
-                  " AE received from " +
-                  e.info.customer_name,
-                toast: true,
-                position: "top"
-              });
-            }
-          });
+          this.suscribeMerchantPaymentEvent();
         }
       } catch (e) {
         this.$displayError(
@@ -213,6 +203,22 @@ export default {
           params: { initialDeposit: true }
         });
       }
+    },
+    suscribeMerchantPaymentEvent() {
+      window.eventBus.$on("payment-complete-ack", e => {
+        console.log("Received COMPLETE ", e);
+        if (e.eventdata === "completed") {
+          this.$swal.fire({
+            text:
+              "Payment of " +
+              DisplayUnitsToAE(e.info.amount) +
+              " AE received from " +
+              e.info.customer_name,
+            toast: true,
+            position: "top"
+          });
+        }
+      });
     }
   }
 };
