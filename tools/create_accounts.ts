@@ -1,10 +1,10 @@
 import * as fs from "fs";
 import BigNumber from "bignumber.js";
 import {getArgv} from "../src/tools";
-import {create_accounts} from "./massive_create";
-import {many2one} from "./many2one.";
+import {create_accounts} from "./bulk_create";
+import {bulk_many2one} from "./bulk_many2one";
 import {cc_wallet, get_node, lc_wallet, to_cc, Users} from "./aehelpers";
-import {node2many, one2many} from "./one2many";
+import {node2many, bulk_one2many} from "./bulk_one2many";
 
 const filename = getArgv(3, "accounts_idx.json");
 
@@ -36,7 +36,7 @@ export async function load() {
     // merge all funds:
     const min_fee = new BigNumber(2*16840000000000);
     let node = await get_node(null);
-    await  many2one(node, Users.slice(1), Users[0].public_key);
+    await  bulk_many2one(node, Users.slice(1), Users[0].public_key);
 
     // distribute
     let full = new BigNumber(await node.balance(Users[0].public_key));
@@ -44,5 +44,5 @@ export async function load() {
     let each = full.dividedBy(3*max).minus(min_fee);
     console.log("will transfer each -> ", each.toString(10))
 
-    await one2many(Users[0], accounts.map( (cc: cc_wallet)=> cc.publicKey), each);
+    await bulk_one2many(Users[0], accounts.map( (cc: cc_wallet)=> cc.publicKey), each);
 })();

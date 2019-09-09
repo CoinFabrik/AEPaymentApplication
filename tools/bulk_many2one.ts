@@ -17,7 +17,7 @@ async function get_balance_or_null(node: any, pubkey: string): Promise<BigNumber
     }
 }
 
-export async function many2one(node: any, from_users: object, dest_address: string, min_fee?: BigNumber) {
+export async function bulk_many2one(node: any, from_users: object, dest_address: string, min_fee?: BigNumber) {
     if (min_fee == undefined) {
         min_fee = new BigNumber(2 * 16840000000000);
     }
@@ -37,6 +37,6 @@ if(module.parent==undefined) {
         //     }
         // merge all funds:
         let node = await get_node(null);
-        await many2one(node, Users.slice(1), Users[0].public_key);
+        await bulk_many2one(node, Users.slice(1), Users[0].public_key);
     })();
 }

@@ -1,19 +1,15 @@
 import {Get, getEnv, voidf} from "./tools";
 
-//const port = 3001;
 let URL = getEnv('AENODE', '10.10.0.79'); //+ ':' + port;
 if(-1===URL.indexOf(":")) {
     URL = URL + ":3001"
 }
-//let URL = 'localhost:'+port;
-export const API_URL = "http://" + URL;
+export const API_URL =  (-1===URL.indexOf("://")) ? "http://" + URL : URL;
 export const WS_URL = "ws://" + URL;  // http is ok too
 export const INTERNAL_API_URL = API_URL;
-//const compilerURL = 'https://compiler.aepps.com';
 
 export const ACCOUNT = getEnv("ACCOUNT", "hub");
 export const NETWORK_ID = 'ae_devnet';
-
 
 
 export class MoreConfig {

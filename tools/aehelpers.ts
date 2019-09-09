@@ -1,4 +1,7 @@
 import {API_URL, INTERNAL_API_URL} from "../src/config";
+const {
+    Universal
+} = require('@aeternity/aepp-sdk');
 
 export interface lc_wallet {
     public_key: string,

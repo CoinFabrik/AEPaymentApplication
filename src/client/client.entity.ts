@@ -71,6 +71,12 @@ export class CClient {
   @Column({nullable: true})
   channelRn: number;
 
+  @Column({nullable: true})
+  iBalance: string;
+
+  @Column({nullable: true})
+  rBalance: string;
+
   private constructor() {}
 
   static async Get(address: string, kind: Actor): Promise<CClient> {

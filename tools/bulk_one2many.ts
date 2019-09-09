@@ -14,7 +14,7 @@ async function transfer_from_node(node: any, dst_address, amount, idx="") {
     return node.spend(amount, dst_address);
 }
 
-export async function one2many(source: lc_wallet, dst_addresses:string[], amount: BigNumber) {
+export async function bulk_one2many(source: lc_wallet, dst_addresses:string[], amount: BigNumber) {
     let node = await get_node(to_cc(source));
     return node2many(node, dst_addresses, amount);
 }
@@ -36,6 +36,6 @@ if(module.parent==undefined) {
         console.log("total to distribute ->", full.toString(10));
         let each = full.dividedBy(3*accounts.length).minus(min_fee);
         console.log("will transfer each -> ", each.toString(10))
-        await one2many(node, accounts.map( (lc: lc_wallet)=> lc.public_key), each);
+        await bulk_one2many(node, accounts.map( (lc: lc_wallet)=> lc.public_key), each);
     })();
 }

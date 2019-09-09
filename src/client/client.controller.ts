@@ -83,6 +83,20 @@ abstract class ClientController {
       return await this.service.queryClients(this.kind);
   }
 
+  @Get("close/:address")
+  async soloclose(@Param() params): Promise<any> {
+      let result = "ok";
+      let client = await CClient.Get(params.address.toString(), this.kind)
+      // if (client!=undefined) {
+      //     client.channelSt = null;
+      //     client.channelId = null;
+      //     client.save();
+      // } else {
+      //     result = "not found";
+      // }
+      return {result};
+  }
+
   @Get(":address")
   async queryClient(@Param() params): Promise<any> {
       const result = await CClient.Get(params.address.toString(), this.kind);

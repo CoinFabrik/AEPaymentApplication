@@ -16,13 +16,16 @@ export class RepoService {
       let repo = getRepository(MerchantCustomerAccepted);
       let idx = 0;
       while(idx<100) {
+          let the_err;
           try {
               await repo.save(m);
               return true;
           } catch (err) {
-              console.log(err)
+              the_err = err;
               idx += 1;
           }
+          console.log(the_err);
+          console.log("persists!!!!");
       }
       return false;
   }

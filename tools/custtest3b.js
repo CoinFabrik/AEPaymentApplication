@@ -94,16 +94,7 @@ function pick_random(arr) {
 
     async function quit(code) {
         try {
-            //await peer.showBalances("pre-shutdown");
-            console.log("pre leave.")
-            let result = await peer.channel.leave();
-            console.log(result);
-            console.log("");
-            console.log(result);
-            console.log("");
-            console.log(result);
-            console.log("");
-            //await peer.shutdown();
+            await peer.leave();
             await peer.wait_state("DISCONNECTED");
             //await myjschannel.sleep(3*1000);
             //let final = await peer.showBalances("final");

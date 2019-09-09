@@ -293,7 +293,7 @@ export abstract class ServerChannel extends EventEmitter {
         options["sign"] = async (tag, tx, { updates = {} } = {}) => {
             try {
                 let result = await this.customSign(tag, tx, { updates });
-                this.saveState();
+                //this.saveState();
                 return result;
             } catch (err) {
                 console.error(err);
@@ -312,6 +312,14 @@ export abstract class ServerChannel extends EventEmitter {
         this.channel.on('message', (msg) => {
             this.emit("message", msg);
         });
+        this.channel.on('stateChanged', (state) => {
+            //this.client.channelId = this.channel.id();
+            this.client.channelSt = state;
+            this.client.channelRn = this.client.channelRn+1;
+            this._save_state();
+            console.log(this.channel);
+            console.log(JSON.stringify(this.channel))
+        });
 
         await this.wait_state("OPEN");
         if (!this.client.isReestablish(options)) {
@@ -319,52 +327,52 @@ export abstract class ServerChannel extends EventEmitter {
             await RepoService.save(mca);
         }
         this.client.channelId = this.channel.id();
-        this.saveState();
+        //this.saveState();
         return this.channel;
     }
 
-    saveState(delay=100) {
-        setTimeout(() => {this._saveState(5);}, delay);
-    }
-
-    _save_state(s) {
-        if (this.status!=="OPEN")
-            return this.log("saving status: channel isn't open anymore!!!");
-        if (s==null) {
-            if ((this.client.channelId==null) && (this.client.channelSt==null))
-                return this.log("saving status: unchanged");
-            this.client.channelId = null;
-            this.client.channelSt = null;
-            this.log("removing saved state!");
-        } else {
-            let state = s["signedTx"];
-            if (state===this.client.channelSt)
-                return this.log("saving status: unchanged");
-            this.client.channelSt = state;
-            this.log("client Saving...: "  + state);
-        }
+    // saveState(delay=100) {
+    //     setTimeout(() => {this._saveState(5);}, delay);
+    // }
+    //
+    _save_state() {
+        // if (this.status!=="OPEN")
+        //     return this.log("saving status: channel isn't open anymore!!!");
+        // if (s==null) {
+        //     if ((this.client.channelId==null) && (this.client.channelSt==null))
+        //         return this.log("saving status: unchanged");
+        //     this.client.channelId = null;
+        //     this.client.channelSt = null;
+        //     this.log("removing saved state!");
+        // } else {
+        //     let state = s["signedTx"];
+        //     if (state===this.client.channelSt)
+        //         return this.log("saving status: unchanged");
+        //     this.client.channelSt = state;
+        //     this.log("client Saving...: "  + state);
+        // }
         return this.client.save();
     }
-
-    _saveState(retries) {
-        this.log("Saving state...");
-        this.channel.state()
-            .then((s)=> {
-                let state = s["signedTx"];
-                if (state===this.client.channelSt) {
-                    if (retries>0) {
-                        setTimeout(() => {this._saveState(retries-1);}, 100)
-                    }
-                } else {
-                    this.log("STATE: " + JSON.stringify(s));
-                    return this._save_state(s)
-                }
-            })
-            .catch(err => {
-                console.error("cant get state:");
-                console.error(err);
-            });
-    }
+    //
+    // _saveState(retries) {
+    //     this.log("Saving state...");
+    //     this.channel.state()
+    //         .then((s)=> {
+    //             let state = s["signedTx"];
+    //             if (state===this.client.channelSt) {
+    //                 if (retries>0) {
+    //                     setTimeout(() => {this._saveState(retries-1);}, 100)
+    //                 }
+    //             } else {
+    //                 this.log("STATE: " + JSON.stringify(s));
+    //                 return this._save_state(s)
+    //             }
+    //         })
+    //         .catch(err => {
+    //             console.error("cant get state:");
+    //             console.error(err);
+    //         });
+    // }
 
     onStatusChange(status) {
         this.last_update = Date.now();
@@ -379,7 +387,9 @@ export abstract class ServerChannel extends EventEmitter {
             ServiceBase.rmClient(this.client, this.Name);
             console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
             if (!this.disconnect_by_leave) {
-                this._save_state(null);
+                this.client.channelId="";
+                this.client.channelSt="";
+                this._save_state();
             }
         }
     }
@@ -422,7 +432,15 @@ export abstract class ServerChannel extends EventEmitter {
             this.log("Issuing leave("+cause+")..");
             this.disconnect_by_leave = true;
             this.channel.leave()
-                .then( (state) => this._save_state(state))
+                .then( (state) => {
+                    this.client.channelSt = this.channel.id();
+                    this.client.channelSt = state["signedTx"];
+                    let balances = this.channel.balances([this.initiator, this.responder]);
+                    this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
+                    this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
+                    console.log(JSON.stringify(this.client))
+                    this._save_state();
+                })
                 .catch( (err) => console.error("Cannot leave:"+err));
         }
     }

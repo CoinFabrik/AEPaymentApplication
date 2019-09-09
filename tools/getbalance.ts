@@ -12,20 +12,28 @@ const {
 
 const fs = require('fs');
 
-const port = 3001;
 
-let _URL: string = jstools.getEnv("AENODE", jstools.getEnv("NODE", 'localhost'));
-if (-1===_URL.indexOf(":")) {
-    _URL = _URL + ":" +port;
+function get_opts(keypair?: object): object {
+    const port = 3001;
+    let theURL = 'localhost:' + port;
+    theURL = process.env["NODE"] ? process.env["NODE"] : theURL;
+    console.log("Node> ", theURL);
+
+    let temp = "";
+    if(-1===theURL.indexOf("://")) {
+        temp = "http://";
+    }
+    const API_URL = temp + theURL;
+    const INTERNAL_API_URL = API_URL;
+    const compilerURL = 'https://compiler.aepps.com';
+    return {
+        //networkId: NETWORK_ID,
+        url: API_URL,
+        internalUrl: INTERNAL_API_URL,
+        keypair: keypair,
+        compilerUrl: compilerURL
+    }
 }
-//_URL = process.env["NODE"] ? process.env["NODE"] : _URL;
-console.log("Node> ", _URL);
-const API_URL = "http://" + _URL;
-const WS_URL = "ws://" + _URL;  // http is ok too
-const INTERNAL_API_URL = API_URL;
-let STATUS = "";
-const compilerURL = 'https://compiler.aepps.com';
-const NETWORK_ID = 'ae_devnet';
 
 
 async function sleep(ms, debug) {
@@ -95,11 +103,10 @@ async function load(filename) {
         }
     }
 
-    let nodeuser = await Universal({
-        networkId: NETWORK_ID,
-        url: API_URL,
-        internalUrl: INTERNAL_API_URL,
-    });
+    let opts = get_opts();
+    console.log(opts)
+    let nodeuser = await Universal(opts);
+
 
     if (try_file) {
         accounts = await load(_from);

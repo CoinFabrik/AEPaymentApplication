@@ -1,24 +1,37 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
-const Users =  require("aehelpers");
-const jstools = require('jstools');
+import {Users} from "./aehelpers";
+import {recover, sleep} from "../src/tools";
 const readline = require('readline');
 const {
     Universal
 } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
-const port = 3001;
 
-let URL = 'localhost:' + port;
-URL = process.env["NODE"] ? process.env["NODE"] : URL;
-console.log("Node> ", URL);
-const API_URL = "http://" + URL;
-const WS_URL = "ws://" + URL;  // http is ok too
-const INTERNAL_API_URL = API_URL;
-let STATUS = "";
-const compilerURL = 'https://compiler.aepps.com';
-const NETWORK_ID = 'ae_devnet';
+
+
+function get_opts(keypair?: object): object {
+    const port = 3001;
+    let theURL = 'localhost:' + port;
+    theURL = process.env["NODE"] ? process.env["NODE"] : theURL;
+    console.log("Node> ", theURL);
+
+    let temp = "";
+    if(-1===theURL.indexOf("://")) {
+        temp = "http://";
+    }
+    const API_URL = temp + theURL;
+    const INTERNAL_API_URL = API_URL;
+    const compilerURL = 'https://compiler.aepps.com';
+    return {
+        //networkId: NETWORK_ID,
+        url: API_URL,
+        internalUrl: INTERNAL_API_URL,
+        keypair: keypair,
+        compilerUrl: compilerURL
+    }
+}
 
 
 async function my_readline(msg) {
@@ -41,14 +54,16 @@ function show_balance(address, balance, height) {
 
 
 async function transfer(from_ac, to_ac_publicKey, amount) {
-    let nodeuser = await Universal({
-        networkId: NETWORK_ID,
+    let opts = {
+        //networkId: NETWORK_ID,
         url: API_URL,
         internalUrl: INTERNAL_API_URL,
         keypair: from_ac,
         compilerUrl: compilerURL
-    });
-
+    }
+    console.log(opts)
+    let nodeuser = await Universal(opts);
+    console.log("'''''''''''''''''''")
     let height = await nodeuser.height();
     let balance = await nodeuser.balance(from_ac.publicKey);
     show_balance(from_ac.publicKey, balance, height);
@@ -63,14 +78,14 @@ async function transfer(from_ac, to_ac_publicKey, amount) {
     await my_readline("last chance to cancel. shall we continue?");
 
     await nodeuser.spend(amount, to_ac_publicKey);
-    await jstools.sleep(5000);
+    await sleep(5000);
 
     height = await nodeuser.height();
     balance = await nodeuser.balance(to_ac_publicKey);
     show_balance(to_ac_publicKey, balance, height);
 }
 
-async function get_wallet(spec, pwds) {
+async function get_wallet(spec, pwds?: string[]) {
     let last_err;
     const spec_idx = spec.split(":");
     const idx = spec_idx[1];
@@ -89,7 +104,7 @@ async function get_wallet(spec, pwds) {
     for(let fidx=0;fidx<pwds.length; fidx++) {
         try {
             return {publicKey: obj["public_key"],
-                    secretKey: await jstools.recover(pwd, obj)}
+                    secretKey: await recover(pwds[fidx], obj)}
         } catch(err) {
             last_err = err;
             //continue
@@ -104,6 +119,10 @@ async function get_wallet(spec, pwds) {
     let from_ac;
     let to_ac;
 
+    if (process.argv.length<5) {
+        console.error("Missing required arguments: src dst amount");
+        process.exit(-1);
+    }
     if (_from.startsWith("init")) {
         let idx;
         if(_from==="init") {
