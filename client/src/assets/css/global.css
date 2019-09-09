@@ -51,6 +51,34 @@ html, body {
 .ae-text.titleHead {
   /* color: red; */
 }
+/* Tx History */
+/* .history-view {
+  border: 1px solid red;
+} */
+.fixedButton {
+  float: right;
+  position: absolute;
+  right: 1.2em;
+  bottom: 80px;
+}
+.column {
+  flex: 1;
+}
+#progress-el {
+  background-color: #FF0D6A !important;
+}
+.scroll {
+  overflow: scroll;
+  max-height: 50vh;
+  padding-bottom: 20;
+}
+.footer {
+  width: 300px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  margin-left: -150px;
+}
 
 /* sweetalert2 AE Sytles */
 .swal2-styled {
