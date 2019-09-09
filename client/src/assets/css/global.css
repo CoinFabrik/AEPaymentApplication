@@ -51,16 +51,25 @@ html, body {
 .ae-text.titleHead {
   /* color: red; */
 }
-/* sweetalert2 AE Sytles */
 
+/* sweetalert2 AE Sytles */
 .swal2-styled {
-  padding: 0.625em 3em !important;
+  /* padding: 0.625em 3em !important; */
 }
-.swal2-styled.swal2-confirm {
+.swal2-styled {
   border-radius: 32px !important;
-  background-color: #FF0D6A !important;
   color: #fff;
   font-size: 1.0625em;
+}
+.swal2-styled.swal2-confirm {
+  background-color: #FF0D6A !important;
+  border: 2px solid #FF0D6A!important;
+  color: #fff;
+}
+.swal2-styled.swal2-cancel {
+  background-color: #FFF !important;
+  border: 2px solid #FF0D6A!important;
+  color: #FF0D6A!important;
 }
 .swal2-styled:focus {
   outline: none;
