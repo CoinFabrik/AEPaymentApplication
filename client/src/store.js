@@ -10,12 +10,11 @@ export default new Vuex.Store({
   plugins: [createPersistedState({
     paths: ["channel",
       "channelOptions",
-      "lastOpenChannelId",
-      "lastOpenChannelState",
       "hubUrl",
       "hubAddress",
       "hubNode",
       "userName",
+      "initiatorBalance",
       "channelOpenDone",
       "onboardingDone",
       "onboardingQrScan",
@@ -24,8 +23,6 @@ export default new Vuex.Store({
   state: {
     balance: 0,
     channel: null,
-    lastOpenChannelId: null,
-    lastOpenChannelState: null,
     onboardingQrScan: null,
     channelOpenDone: null,
     channelOptions: null,
@@ -54,7 +51,6 @@ export default new Vuex.Store({
     loadChannelOptions(state, params) {
       state.channelOptions = params;
     },
-
     loadHubIpAddr(state, url) {
       state.hubUrl = url;
     },
@@ -89,10 +85,18 @@ export default new Vuex.Store({
       state.onboardingQrScan = f;
     },
     setLastOpenChannelId(state, id) {
-      state.lastOpenChannelId = id;
+      if (!id) {
+        delete state.channelOptions.existingChannelId;
+      } else {
+        state.channelOptions.existingChannelId = id;
+      }
     },
     setLastOpenChannelState(state, chstate) {
-      state.lastOpenChannelState = chstate;
+      if (!chstate) {
+        delete state.channelOptions.offchainTx;
+      } else {
+        state.channelOptions.offchainTx = chstate;
+      }
     }
   },
   actions: {
@@ -123,25 +127,19 @@ export default new Vuex.Store({
         )
     },
     async updateChannelBalances({ dispatch, commit, state, getters }) {
-      // if (state.channel.balances === undefined) {
-      //   console.log("state.channel NULL, re-creating channel ...");
-      //   state.channelOptions.existingChannelId = state.lastOpenChannelId;
-      //   state.channelOptions.offchainTx = state.lastOpenChannelState.signedTx;
-      //   //state.channelOptions.initiatorAmount = 0;
-      //   await dispatch('createChannel');
-      //   console.log("Created new channel");
-      // }
-      const iAddr = getters.initiatorAddress;
-      const rAddr = getters.responderAddress;
-      state.channel.balances([iAddr, rAddr]).then(
-        function (balances) {
-          commit('updateInitiatorBalance', balances[iAddr]);
-          commit('updateResponderBalance', balances[rAddr]);
-        },
-        function (err) {
-          return Promise.reject(err);
-        }
-      )
+      return new Promise((resolve, reject) => {
+        const iAddr = getters.initiatorAddress;
+        const rAddr = getters.responderAddress;
+        state.channel.balances([iAddr, rAddr]).then(
+          function (balances) {
+            commit('updateInitiatorBalance', balances[iAddr]);
+            commit('updateResponderBalance', balances[rAddr]);
+            resolve();
+          },
+          function (err) {
+            return reject(err);
+          });
+      })
     },
     async updateHubBalance({ commit, state, getters }) {
       let hubConnection = new HubConnection(state.hubUrl, getters.initiatorAddress);
@@ -153,8 +151,7 @@ export default new Vuex.Store({
     },
     async openChannel({ dispatch, commit, state }) {
       console.log("action: openChannel");
-      let hub = new HubConnection(state.hubUrl, await aeternity.getAddress()
-      );
+      let hub = new HubConnection(state.hubUrl, await aeternity.getAddress());
 
       let res = await hub.notifyUserOnboarding(
         state.initiatorAmount,
@@ -173,6 +170,12 @@ export default new Vuex.Store({
             commit('setChannel', channel);
             // Broadcast channel messages
 
+            channel.on("error", (error) => {
+              console.error("Global-status-channel-error", error);
+
+              window.eventBus.$emit('channel-error', error);
+            });
+
             channel.on(
               "statusChanged", (status) => {
 
@@ -181,11 +184,16 @@ export default new Vuex.Store({
                   // Save identification information
                   commit('setLastOpenChannelId', channel.id());
                   channel.state().then(s =>
-                    commit('setLastOpenChannelState', s));
+                    commit('setLastOpenChannelState', s.signedTx));
                 }
                 window.eventBus.$emit('channel-status-changed', status);
               }
             );
+
+            channel.on("stateChanged", (state) => {
+              console.warn("Global-state-changed-handler: ", JSON.stringify(state));
+              commit('setLastOpenChannelState', state.offchainTx);
+            })
 
             channel.on(
               "message", (message) => {
@@ -231,7 +239,18 @@ export default new Vuex.Store({
         ).catch(err => reject(err));
       });
     },
-
+    async leaveChannel({ dispatch, commit, state }) {
+      if (state.channel.status() !== "open") {
+        console.warn("Not open! ignored channel LEAVE request (Channel status is: " + state.channel.status() + ")");
+        return;
+      }
+      await dispatch('updateChannelBalances');
+      await aeternity.sendMessage(
+        state.channel,
+        "leave",
+        state.hubAddress
+      );
+    },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
       aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(

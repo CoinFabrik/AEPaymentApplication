@@ -56,9 +56,13 @@ export default {
     //   console.log("error getting balances! " + err);
     // }
     try {
-      await this.$store.dispatch("updateChannelBalances");
+
       await this.$store.dispatch("updateOnchainBalance");
-      await this.$store.dispatch("updateHubBalance");
+
+      if (!this.$isOnDemandMode) {
+        await this.$store.dispatch("updateChannelBalances");
+        await this.$store.dispatch("updateHubBalance");
+      }
     } catch (e) {
       this.$displayError("Oops!", e.toString());
     }

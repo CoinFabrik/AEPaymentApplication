@@ -10,6 +10,9 @@ export default {
         },
         $isClientAppRole: function () {
             return process.env.VUE_APP_ROLE === "client";
+        },
+        $isOnDemandMode: function() {
+            return parseInt(process.env.VUE_APP_ONDEMAND_CONNECTION_MODE) ===  1;
         }
     },
     methods: {

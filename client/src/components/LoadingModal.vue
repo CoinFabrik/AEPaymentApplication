@@ -13,7 +13,7 @@
               face="sans-l"
               weight="600"
             >
-              Loading...
+              {{text ? text : 'Loading...'}}
             </AeText>
             <AeLoader />
           </b-col>
@@ -25,10 +25,16 @@
 
 
 <script>
-	import { AeLoader, AeText } from "@aeternity/aepp-components";
 	export default {
 		name: "LoadingModal",
-		components: { AeLoader, AeText },
+		props: {
+			alwaysVisible: Boolean,
+			text: String
+		},
+		mounted: function() {
+			if(this.alwaysVisible)
+				this.$bvModal.show('loadingModal');
+		}
 	};
 </script>
 
@@ -37,5 +43,3 @@
 		height: 20vh;
 	}
 </style>
-
-

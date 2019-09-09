@@ -2,12 +2,7 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText
-      face="sans-l"
-      fill="primary"
-    >
-      {{ confirmPercent === NaN ? 0 : confirmPercent }}%
-    </AeText>
+    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
     <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
@@ -82,8 +77,11 @@ export default {
       if (this.elapsedBlocks >= WAIT_BLOCKS + 1) {
         // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
 
-        if (this.txKind === "deposit" || this.tx === "withdraw") {
-          //this.$store.state.dispatch("leaveChannel");
+        if (
+          this.$isOnDemandMode &&
+          (this.txKind === "deposit" || this.tx === "withdraw")
+        ) {
+          this.$store.dispatch("leaveChannel");
         }
         this.navigateOut();
       } else {
@@ -153,6 +151,10 @@ export default {
       console.log("Committing DEPOSIT transaction ... ");
 
       try {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("openChannel");
+        }
+
         let r = await aeternity.deposit(
           this.$store.state.channel,
           parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
@@ -168,7 +170,9 @@ export default {
         }
       } catch (e) {
         console.log(e.toString());
-
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("leaveChannel");
+        }
         // HACK: Interpreted as rejected by user
         if (
           e.hasOwnProperty("wsMessage") &&
@@ -218,11 +222,17 @@ export default {
       console.log("Committing CLOSE transaction ... ");
 
       try {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("openChannel");
+        }
         let tx = await aeternity.closeChannel(this.$store.state.channel);
 
         console.log("posted CLOSE Onchain TX: ", tx);
         this.setStatusTrackProgress(tx);
       } catch (e) {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("leaveChannel");
+        }
         // HACK: Interpreted as rejected by user
         if (
           e.hasOwnProperty("wsMessage") &&

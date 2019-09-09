@@ -100,6 +100,12 @@ export default {
   methods: {
     onChannelDisconnected() {
       this.isWorking = false;
+
+      if (this.$store.state.channelOpenDone && this.$isOnDemandMode) {
+        console.log("Ignoring disconnect");
+        return;
+      }
+
       this.$store.commit("setChannelOpenDone", false);
 
       // If we were connecting with stored state data, try to do it again
@@ -168,6 +174,10 @@ export default {
               " AE. You can deposit more AEs when needed."
         }).then(this.$router.replace("main-menu"));
       });
+
+      if (this.$isOnDemandMode) {
+        this.$store.dispatch("leaveChannel");
+      }
     },
 
     onChannelStatusChange(status) {
@@ -190,6 +200,8 @@ export default {
       );
     },
     async createChannel() {
+      
+      this.$store.commit("setChannelOpenDone", false);
       try {
         await this.$store.dispatch("createChannel");
 
