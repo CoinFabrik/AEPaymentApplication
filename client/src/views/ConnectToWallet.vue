@@ -10,7 +10,7 @@
         customer="You will be able to fund the channel and then make payments. You will be asked to confirm every transaction."
         merchant="You will be able to withdraw the AEs you receive and pay fees when needed. You will be asked to confirm every transaction."
       />
-      <ViewButtonSection :buttons="[{name: 'Sure!', action: connectToBaseApp}]" />
+      <ViewButtonSection :buttons="[{name: 'Sure!', action: connectToBaseApp, fill:'primary'}]" />
     </div>
     <LoadingModal />
   </b-container>
