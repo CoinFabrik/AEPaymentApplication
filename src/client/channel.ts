@@ -6,7 +6,7 @@ import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
 import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
 import BigNumber from "bignumber.js";
-import {stringify} from "querystring";
+import {parse, stringify} from 'flatted/esm';
 import {MerchantCustomer} from "./merchantcustomer";
 import {MerchantCustomerAccepted} from "./mca.entity";
 
@@ -438,7 +438,7 @@ export abstract class ServerChannel extends EventEmitter {
                     let balances = this.channel.balances([this.initiator, this.responder]);
                     this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
                     this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
-                    console.log(JSON.stringify(this.client))
+                    console.log(stringify(this.client))
                     this._save_state();
                 })
                 .catch( (err) => console.error("Cannot leave:"+err));

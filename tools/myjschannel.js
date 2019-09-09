@@ -16,11 +16,11 @@ let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
 //const HUBHOST = "localhost";
 const HUBPORT = 3000;
 
-if(-1===URL.indexOf(":")) {
-    URL = URL + ":"+port;
-}
+// if(-1===URL.indexOf(":")) {
+//     URL = URL + ":"+port;
+// }
 
-const API_URL = "http://" + URL;
+const API_URL = -1===URL.indexOf("://") ? "http://" + URL : URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';

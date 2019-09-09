@@ -31,7 +31,8 @@
     "rimraf": "^2.6.2",
     "rxjs": "^6.3.3",
     "sqlite3": "^4.0.9",
-    "typeorm": "^0.2.18"
+    "typeorm": "^0.2.18",
+    "flatted": "latest"
   },
   "devDependencies": {
     "@nestjs/testing": "6.1.1",
