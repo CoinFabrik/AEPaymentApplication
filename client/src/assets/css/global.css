@@ -119,6 +119,10 @@ html, body {
   border: 1px solid #6948a15c;
 }
 
+/* AE Divider  */
+.ae-divider[data-v-328bcfc3] {
+  height: 1px;
+}
 /* Ae Input */
 .ae-input[data-v-103db926] {
   margin: 10px 0 15px 0;

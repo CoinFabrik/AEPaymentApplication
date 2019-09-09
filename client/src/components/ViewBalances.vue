@@ -55,9 +55,3 @@
 		props: ['walletBalance', 'channelBalance'],
 	};
 </script>
-
-<style scoped>
-  .ae-divider[data-v-328bcfc3] {
-    height: 1px;
-  }
-</style>
