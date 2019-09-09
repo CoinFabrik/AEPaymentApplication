@@ -1,9 +1,13 @@
 <template>
   <div class="channel-open">
-    <LoadingModal
+    <!-- <LoadingModal
       v-show="this.isWorking"
       :text="this.getChannelStatusDescriptiveText"
-    />
+    /> -->
+
+    <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText>
+    <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
+    <AeLoader v-show="this.isWorking"/>
   </div>
 </template>
 
@@ -30,7 +34,9 @@ export default {
       if (this.isWorking) {
         switch (this.channelStatus) {
           case "opening-hub":
-            return "Opening Hub";
+            return "Opening Hub...";
+          case "connected":
+            return "Channel connected";
           case "accepted":
             return "Channel connection accepted";
           case "half-signed":
@@ -151,6 +157,7 @@ export default {
       this.$store.commit("setChannelOpenDone", true);
 
       this.$store.dispatch("updateChannelBalances").then(() => {
+        console.log(this.$store.state.initiatorBalance);
         this.$swal({
           type: "success",
           title: "Success",
