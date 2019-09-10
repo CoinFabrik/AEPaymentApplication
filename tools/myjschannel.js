@@ -176,6 +176,7 @@ class MyChannel extends events.EventEmitter {
                 if (info["type"]==="heartbeat") return;
                 this.emit("message", info);
             } catch(err) {
+								console.log(msg)
                 console.log("cant parse info")
             }
         });

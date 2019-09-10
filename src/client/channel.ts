@@ -385,7 +385,7 @@ export abstract class ServerChannel extends EventEmitter {
     async hb() {
         while (this.status == "OPEN") {
             await this.sendMessage({"type": "heartbeat"});
-            await sleep(1 * 1000)
+            await sleep(40 * 1000)
             if (this.is_customer() && (Date.now()-this.last_update>900*1000)) {
                 break
             }

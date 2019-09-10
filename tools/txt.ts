@@ -54,13 +54,7 @@ function show_balance(address, balance, height) {
 
 
 async function transfer(from_ac, to_ac_publicKey, amount) {
-    let opts = {
-        //networkId: NETWORK_ID,
-        url: API_URL,
-        internalUrl: INTERNAL_API_URL,
-        keypair: from_ac,
-        compilerUrl: compilerURL
-    }
+    let opts = get_opts();
     console.log(opts)
     let nodeuser = await Universal(opts);
     console.log("'''''''''''''''''''")

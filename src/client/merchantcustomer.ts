@@ -40,13 +40,15 @@ export class MerchantCustomer {
 
     private constructor(readonly merchant: string, readonly customer: string, public msg: object,
                         private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
-        let id = msg["id"];
-        if (id != undefined) {
-            if (!MerchantCustomer.ValidId(id)) {
-                throw new InvalidRequest("Invalid id:" + id);
-            }
-        } else {
-            id = Guid.generate();
+				let id;
+				try {
+					id = msg["info"]["id"];
+						if (!MerchantCustomer.ValidId(id)) {
+							throw new InvalidRequest("Invalid id:" + id);
+					}
+				}	catch (err) {
+					id = Guid.generate();
+					Hub.Get().log("generating new id: "+id);
         }
         this.id = id;
         MerchantCustomer.register(this);
