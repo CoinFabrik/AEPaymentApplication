@@ -6,6 +6,7 @@ import {Actor, CClient} from "./client.entity";
 import { Response } from 'express';
 import {Hub} from "./hub";
 import {getRepository} from "typeorm";
+import {voidf} from "../tools";
 
 abstract class ClientController {
   constructor(private readonly clientService: ClientService) { }
@@ -87,6 +88,7 @@ abstract class ClientController {
   async soloclose(@Param() params): Promise<any> {
       let result = "ok";
       let client = await CClient.Get(params.address.toString(), this.kind)
+      client.channel.solo().then(voidf).catch(console.error);
       // if (client!=undefined) {
       //     client.channelSt = null;
       //     client.channelId = null;
