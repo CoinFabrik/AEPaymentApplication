@@ -129,8 +129,12 @@ class MyChannel extends events.EventEmitter {
         // }
     }
 
-    async wait_state(expected) {
-        return await wait_for(() => this.STATUS === expected);
+    async wait_open() {
+        return this.wait_state("OPEN", ()=> this.channel.STATUS==="DISCONNECTED");
+    }
+
+    async wait_state(expected, exit_if) {
+        return await wait_for(() => this.STATUS === expected, exit_if);
     }
 
     async initChannel() {
@@ -250,9 +254,12 @@ async function sleep(ms, debug) {
     });
 }
 
-async function wait_for(func) {
+async function wait_for(func, exit_if) {
     while (!func()) {
         await sleep(100);
+        if((exit_if!==undefined)&&(exit_if())) {
+            throw new Error("exit condition met.")
+        }
     }
 }
 

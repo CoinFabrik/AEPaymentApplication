@@ -70,7 +70,7 @@ async function buy(customer, pr, log) {
 			}
 			if (msg["type"] === "payment-request-accepted") {
 				log("sending payment..");
-				newCust.update(pr.amount)
+				customer.update(pr.amount)
 					.then(() => {
 						log("payment sent!")
 					})
@@ -95,7 +95,7 @@ async function run_customer(account, idx, newMerch) {
 	let newCust = await Customer.Init(account);
 	await newCust.init();
 	await newCust.initChannel();
-	await newCust.wait_state("OPEN");
+	await newCust.wait_open();
 
 	try {
 		for (let j = 0; j < 250; j++) {
@@ -110,26 +110,16 @@ async function run_customer(account, idx, newMerch) {
 }
 
 async function main() {
-    let customers = [];
-    let merchants = [];
+	let newMerch = await Merchant.Init(accounts[0]);
+	await newMerch.init();
+	await newMerch.initChannel();
     try {
-        for (let i = 0; i < 3; i++) {
-            newMerch = await Merchant.Init(accounts[i]);
-            await newMerch.init();
-            await newMerch.initChannel();
-            await newMerch.wait_state("OPEN");
-            try {
-                for (let i = 3; i < 4; i++) {
-                	run_customer(accounts[i], i, newMerch).then(console.log).catch(console.error);
-                }
-            } finally {
-                await newMerch.leave();
-            }
-        }
-
+		await newMerch.wait_open();
+		await run_customer(accounts[1], 1, newMerch);
     } catch (err) {
+		await newMerch.leave();
         console.log(err)
     }
 }
 
-main().then(()=>console.log('finish'))
+main().then(()=>console.log('finish')).catch(console.error)
