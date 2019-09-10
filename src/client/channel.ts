@@ -253,7 +253,7 @@ export abstract class ServerChannel extends EventEmitter {
         this.log("tag: " + tag + " " +(tx.toString()));
         try {
             const {txType, tx: txData} = unpackTx(tx);
-            this.log("tag: " + tag + ": "+ JSON.stringify(txData));
+            this.log("tag: " + tag +"/"+txData["round"]+ ": "+ JSON.stringify(txData));
         } catch (err) {
         }
         if (tag === "update_ack") {
