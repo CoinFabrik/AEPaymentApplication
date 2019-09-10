@@ -65,7 +65,7 @@ async function main() {
 	let customers = [];
 	let merchants = [];
 	try {
-		for(let i=0; i<3 i++) {
+		for(let i=0; i<3; i++) {
 			newMerch = await Merchant.Init(accounts[i]);
 			await newMerch.init();
 			await newMerch.initChannel();
