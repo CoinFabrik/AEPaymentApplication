@@ -1,15 +1,9 @@
 import {Get, getEnv, voidf} from "./tools";
 
 let URL = getEnv('AENODE', '10.10.0.79'); //+ ':' + port;
-if(-1===URL.indexOf(":")) {
-    URL = URL + ":3001"
-}
 export const API_URL =  (-1===URL.indexOf("://")) ? "http://" + URL : URL;
-export const WS_URL = "ws://" + URL;  // http is ok too
-export const INTERNAL_API_URL = API_URL;
-
+export const WS_URL = (-1===URL.indexOf("://")) ? "ws://" + URL: "ws"+(URL.slice(4));
 export const ACCOUNT = getEnv("ACCOUNT", "hub");
-export const NETWORK_ID = 'ae_devnet';
 
 
 export class MoreConfig {

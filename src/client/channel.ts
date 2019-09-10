@@ -4,7 +4,7 @@ import {EventEmitter} from 'events';
 import {Account, array_rm, clone, sleep, voidf, wait_for} from "../tools";
 import {Logger} from "@nestjs/common";
 import {Hub} from "./hub";
-import {ACCOUNT, API_URL, INTERNAL_API_URL, MoreConfig, NETWORK_ID, WS_URL} from "../config";
+import {ACCOUNT, API_URL, MoreConfig, WS_URL} from "../config";
 import BigNumber from "bignumber.js";
 import {parse, stringify} from 'flatted/esm';
 import {MerchantCustomer} from "./merchantcustomer";
@@ -105,8 +105,7 @@ export abstract class ServerChannel extends EventEmitter {
 
         if (ServerChannel._nodeuser == undefined) {
             ServerChannel._nodeuser = await Universal({
-                networkId: NETWORK_ID, url: API_URL,
-                internalUrl: INTERNAL_API_URL,
+                url: API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
             });
         }
@@ -128,6 +127,7 @@ export abstract class ServerChannel extends EventEmitter {
         options["initiatorId"] = client.address;
         options["initiatorAmount"] = client.amount;
         options["url"] = "ws"+MoreConfig.USER_NODE+'/channel';  // XXX XXX TODO
+        console.log(1, options["url"])
         options["role"] = "initiator";
         if (RECONNECT) {
             client.setChannelOptions(options);
@@ -221,8 +221,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
-        return clone({
-            // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
+        return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
             responderAmount: 1,
@@ -313,7 +312,6 @@ export abstract class ServerChannel extends EventEmitter {
             this.emit("message", msg);
         });
         this.channel.on('stateChanged', (state) => {
-            //this.client.channelId = this.channel.id();
             this.client.channelSt = state;
             this.client.channelRn = this.client.channelRn+1;
             this._save_state();
@@ -327,52 +325,12 @@ export abstract class ServerChannel extends EventEmitter {
             await RepoService.save(mca);
         }
         this.client.channelId = this.channel.id();
-        //this.saveState();
         return this.channel;
     }
 
-    // saveState(delay=100) {
-    //     setTimeout(() => {this._saveState(5);}, delay);
-    // }
-    //
     _save_state() {
-        // if (this.status!=="OPEN")
-        //     return this.log("saving status: channel isn't open anymore!!!");
-        // if (s==null) {
-        //     if ((this.client.channelId==null) && (this.client.channelSt==null))
-        //         return this.log("saving status: unchanged");
-        //     this.client.channelId = null;
-        //     this.client.channelSt = null;
-        //     this.log("removing saved state!");
-        // } else {
-        //     let state = s["signedTx"];
-        //     if (state===this.client.channelSt)
-        //         return this.log("saving status: unchanged");
-        //     this.client.channelSt = state;
-        //     this.log("client Saving...: "  + state);
-        // }
         return this.client.save();
     }
-    //
-    // _saveState(retries) {
-    //     this.log("Saving state...");
-    //     this.channel.state()
-    //         .then((s)=> {
-    //             let state = s["signedTx"];
-    //             if (state===this.client.channelSt) {
-    //                 if (retries>0) {
-    //                     setTimeout(() => {this._saveState(retries-1);}, 100)
-    //                 }
-    //             } else {
-    //                 this.log("STATE: " + JSON.stringify(s));
-    //                 return this._save_state(s)
-    //             }
-    //         })
-    //         .catch(err => {
-    //             console.error("cant get state:");
-    //             console.error(err);
-    //         });
-    // }
 
     onStatusChange(status) {
         this.last_update = Date.now();
@@ -431,19 +389,77 @@ export abstract class ServerChannel extends EventEmitter {
         if (!this.disconnect_by_leave) {
             this.log("Issuing leave("+cause+")..");
             this.disconnect_by_leave = true;
-            this.channel.leave()
-                .then( (state) => {
-                    this.client.channelSt = this.channel.id();
-                    this.client.channelSt = state["signedTx"];
-                    let balances = this.channel.balances([this.initiator, this.responder]);
-                    this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
-                    this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
-                    console.log(stringify(this.client))
-                    this._save_state();
-                })
-                .catch( (err) => console.error("Cannot leave:"+err));
+            this.a_leave().then(voidf).catch(err=>this.log(err));
         }
     }
+
+    async a_leave() {
+        try {
+            let balances = await this.channel.balances([this.initiator, this.responder]);
+            this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
+            this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
+            this.client.channelSt = this.channel.id();
+            let state = await this.channel.leave();
+            this.client.channelSt = state["signedTx"];
+            this._save_state();
+        } catch(err) {
+            this.log("Cannot leave:"+err);
+        }
+    }
+
+    async solo() {
+
+        const { signedTx } = await this.channel.update(
+          this.opposite, this.address, new BigNumber("1"),
+          tx => this.nodeuser.signTransaction(tx)
+        );
+
+        console.log(signedTx);
+        console.log(99, typeof signedTx);
+
+        const balances = await this.channel.balances([this.address, this.opposite]);
+        const initiatorBalanceBeforeClose = await this.nodeuser.balance(this.opposite);
+        const responderBalanceBeforeClose = await this.nodeuser.balance(this.address);
+
+        let chanid = this.client.channelId;
+
+        console.log(1, this.client.channelSt);
+        const poi = await this.channel.poi({
+          accounts: [this.address, this.opposite]
+        });
+        console.log(2, this.client.channelSt);
+
+        let closeSoloTxFee = await this.nodeuser.channelCloseSoloTx({
+            channelId: chanid,
+            fromId: this.address,
+            poi,
+            payload: this.client.channelSt
+        });
+
+        let r1 = await this.signAndSend(closeSoloTxFee);
+        let r2 = await this.signAndSend(await this.nodeuser.channelSettleTx({
+            channelId: chanid,
+            fromId: this.address,
+            initiatorAmountFinal: balances[this.opposite],
+            responderAmountFinal: balances[this.address],
+        }))
+
+        const initiatorBalanceBeforeClose2 = await this.nodeuser.balance(this.opposite);
+        const responderBalanceBeforeClose2 = await this.nodeuser.balance(this.address);
+        console.log(1, initiatorBalanceBeforeClose);
+        console.log(2, initiatorBalanceBeforeClose2);
+        console.log(3, responderBalanceBeforeClose);
+        console.log(4, responderBalanceBeforeClose2);
+    }
+
+    async signAndSend(tx) {
+        let fee = unpackTx(tx).tx.fee;
+        let signed = await this.nodeuser.signTransaction(tx);
+        let resulsut = await this.nodeuser.sendTransaction(signed, {waitMined: true});
+        console.log("resultsult:", resulsut);
+        return {result: resulsut, fee: fee}
+    }
+
 
     ///////////////////////////////////////////////////////////
     async update(_from, _to, amount, msg="") {

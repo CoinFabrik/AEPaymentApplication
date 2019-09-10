@@ -56,17 +56,19 @@ async function show_hub_balance(peer) {
         return;
     }
 
-    await peer.init();
-    await peer.initChannel();
-    await peer.wait_state("OPEN");
-
     process.once('SIGINT', function() {
         console.log("Caught interrupt signal");
         peer.sendMessage("leave");
         //peer.wait_state("DISCONNECTED");
     });
 
+    await peer.init();
+    await peer.initChannel();
+    await peer.wait_state("OPEN");
     show_hub_balance(peer).then(()=>{}).catch(console.error);
+
+    await peer.wait_state("DISCONNECTED");
+    process.exit(0);
 
 
     // try {

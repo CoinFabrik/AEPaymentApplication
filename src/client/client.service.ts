@@ -124,20 +124,11 @@ export class ServiceBase extends EventEmitter {
         "customer":[], "merchant":[] };
 
     static getClients(kind: Actor): CClient[] {
-        return ServiceBase.getClients(kind);
+        return ServiceBase.clients[kind];
     }
-    // getClientByAddress(address:string, kind: Actor): CClient {
-    //     return ServiceBase.getClientByAddress(address, kind);
-    // }
-    // addClient(c: CClient, kind: Actor): void {
-    //     return ServiceBase.addClient(c, kind);
-    // }
-    // rmClient(c: CClient, kind: Actor): void {
-    //     return ServiceBase.rmClient(c, kind);
-    // }
 
     getClients(kind: Actor): CClient[] {
-        return ServiceBase.clients[kind];
+        return ServiceBase.getClients(kind);
     }
 
     static getClientByAddress(address:string, kind: Actor): CClient {
@@ -150,23 +141,6 @@ export class ServiceBase extends EventEmitter {
             }
         }
         return null;
-    }
-
-    isOnOrPendingClientByAddress(address:string, kind: Actor): boolean {
-        if (address==undefined) {
-            throw new Error("Looking for no client!!!!!!")
-        }
-        for(let cc of ServiceBase.pending[kind]) {
-            if(cc.address==address) {
-                return true;
-            }
-        }
-        for(let cc of ServiceBase.clients[kind]) {
-            if(cc.address==address) {
-                return true;
-            }
-        }
-        return false;
     }
 
     static addPending(c: CClient, kind: Actor): void {
@@ -184,6 +158,23 @@ export class ServiceBase extends EventEmitter {
 
     static rmPending(c: CClient, kind: Actor): void {
         array_rm(ServiceBase.pending[kind], c);
+    }
+
+    static leaveAll() {
+        this.forAll(c => c.channel.leave("global"));
+        // for(let kind of ["merchant", "customer"]) {
+        //     for(let c of ServiceBase.clients[kind] ) {
+        //         c.channel.leave("global");
+        //     }
+        // }
+    }
+
+    static forAll(f) {
+        for(let kind of ["merchant", "customer"]) {
+            for(let c of ServiceBase.clients[kind] ) {
+                f(c, kind);
+            }
+        }
     }
 }
 
@@ -228,14 +219,13 @@ export class ClientService extends ServiceBase {
     static async test() {
     }
 
-    async queryClient(address: string, kind: Actor): Promise<CClient> {
-        let repo = getRepository(CClient);
-        return await repo.findOne({address:address, kind: kind});
-    }
-
+    // async queryClient(address: string, kind: Actor): Promise<CClient> {
+    //     let repo = getRepository(CClient);
+    //     return await repo.findOne({address:address, kind: kind});
+    // }
+    //
     async queryClients(kind: Actor): Promise<CClient[]> {
         let repo = getRepository(CClient);
         return await repo.find({kind: kind});
     }
-
 }

@@ -1,9 +1,10 @@
 import {Controller, Get, HttpStatus, Logger, Param, Query, Res} from '@nestjs/common';
 import { AppService } from './app.service';
 import {CClient} from "./client/client.entity";
-import {ClientService, RepoService} from "./client/client.service";
+import {ClientService, RepoService, ServiceBase} from "./client/client.service";
 import {Response} from "express";
 import {API_URL, MoreConfig} from "./config";
+import {voidf} from "./tools";
 const qr = require('qr-image');
 
 
@@ -61,4 +62,15 @@ export class AppController {
     return RepoService.AllCustomers();
   }
 
+  @Get("/leaveall")
+  async leaveall(@Param() params): Promise<any> {
+    return ServiceBase.leaveAll();
+  }
+
+  @Get("/solo")
+  async solo(@Param() params): Promise<any> {
+    return ServiceBase.forAll((c) => {
+      c.channel.solo().then(voidf).catch(console.error);
+    });
+  }
 }

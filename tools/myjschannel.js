@@ -130,8 +130,7 @@ class MyChannel extends events.EventEmitter {
     }
 
     async wait_state(expected) {
-        const self = this;
-        return await wait_for(() => self.STATUS === expected);
+        return await wait_for(() => this.STATUS === expected);
     }
 
     async initChannel() {
@@ -162,6 +161,7 @@ class MyChannel extends events.EventEmitter {
                 this.launch_hb();
             }
             if (this.STATUS === "DISCONNECTED") {
+                console.log("switching to disconnected...")
                 //process.exit(0);
             }
         });
