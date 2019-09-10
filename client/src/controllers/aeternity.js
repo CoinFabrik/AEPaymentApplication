@@ -10,6 +10,7 @@ import Aepp from '@aeternity/aepp-sdk/es/ae/aepp';
 const { TxBuilder: { calculateFee, unpackTx } } = require('@aeternity/aepp-sdk')
 
 import { setTimeout } from 'timers'
+import { sleep } from '../util/tools.js'
 
 const aeternity = {
   client: null,
@@ -36,8 +37,8 @@ aeternity.connectToBaseApp = async function () {
   try {
     const aeSdk = Aepp.compose({
       deepConfiguration: { Ae: { methods: ['readQrCode'] } },
-    })( { parent: window.parent } );
-    aeternity.client = await Promise.race([timeout, aeSdk ])
+    })({ parent: window.parent });
+    aeternity.client = await Promise.race([timeout, aeSdk])
     console.log("aeternity.client connected. Your address: " + await aeternity.client.address());
     return { status: true, error: null };
   }
@@ -167,6 +168,18 @@ aeternity.closeChannel = async function (channel, onChainTxCallback) {
   return channel.shutdown(async (tx) => await aeternity.signTransactionEx(tx), {
     onOnChainTx: onChainTxCallback
   });
+}
+
+aeternity.waitForChannelOpen = async function (channel, timeout) {
+  const POLL_INTERVAL = 250;
+  let passed = 0;
+  while (channel.status() !== "open") {
+    await sleep(POLL_INTERVAL);
+    passed += POLL_INTERVAL;
+    if (passed > timeout) {
+      throw new Error("Timeout waiting for channel open");
+    }
+  }
 }
 
 aeternity.sendMessage = async function (channel, message, address) {

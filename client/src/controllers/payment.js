@@ -25,6 +25,7 @@ export default class PaymentProcessor extends EventEmitter {
   }
 
   send() {
+    console.log(this.channel);
     var that = this;
     this.paymentData["customer"] = this.customerAddress;
     let paymentRequestMessage = this.paymentData;

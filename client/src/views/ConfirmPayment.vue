@@ -1,80 +1,37 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText
-      weight="bold"
-      align="center"
-      face="sans-l"
-    >
-      Check your payment
-    </AeText>
+    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Merchant
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Merchant</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ registeredMerchantName }}
-          </AeText>
+          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Amount
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Amount</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ amountAE }} AE
-          </AeText>
+          <AeText face="mono-base">{{ amountAE }} AE</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Concept
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ paymentData.something }}
-          </AeText>
+          <AeText face="mono-base">{{ paymentData.something }}</AeText>
         </div>
       </div>
     </div>
     <AeDivider />
-    <AeButton
-      class="margin"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      class="margin"
-      face="round"
-      fill="secondary"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+    <AeButton class="margin" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="margin" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -85,7 +42,7 @@ import BigNumber from "bignumber.js";
 import { clearInterval, setInterval } from "timers";
 import HubConnection from "../controllers/hub";
 import PaymentProcessor from "../controllers/payment";
-import aeternity from '../controllers/aeternity';
+import aeternity from "../controllers/aeternity";
 const uuidv4 = require("uuid/v4");
 let paymentProcessor;
 
@@ -130,10 +87,10 @@ export default {
       }
     },
     async triggerPayment() {
-      this.paymentData.id = uuidv4();
-      console.warn(
-        "REMEMBER TO NOT OVERWRITE UUID -- this is only for testing!"
-      );
+      // this.paymentData.id = uuidv4();
+      // console.warn(
+      //   "REMEMBER TO NOT OVERWRITE UUID -- this is only for testing!"
+      // );
       paymentProcessor = new PaymentProcessor(
         this.$store.getters.initiatorAddress,
         this.$store.getters.responderAddress,
@@ -161,7 +118,10 @@ export default {
                   title: "Thank you",
                   html: "Your payment has been successfully submitted."
                 })
-                .then(() => {
+                .then(async () => {
+                  if (this.$isOnDemandMode) {
+                    await this.$store.dispatch("leaveChannel");
+                  }
                   this.$router.replace("main-menu");
                 });
             });
@@ -175,7 +135,10 @@ export default {
                   html:
                     "The Payment Hub timed out your payment request <br> Please try again later"
                 })
-                .then(() => {
+                .then(async () => {
+                  if (this.$isOnDemandMode) {
+                    await this.$store.dispatch("leaveChannel");
+                  }
                   this.$router.replace("main-menu");
                 });
             });
@@ -185,10 +148,12 @@ export default {
                 .fire({
                   heightAuto: false,
                   type: "info",
-                  html:
-                    "You have cancelled your payment."
+                  html: "You have cancelled your payment."
                 })
-                .then(() => {
+                .then(async () => {
+                  if (this.$isOnDemandMode) {
+                    await this.$store.dispatch("leaveChannel");
+                  }
                   this.$router.replace("main-menu");
                 });
             });
@@ -205,7 +170,10 @@ export default {
                       "The Payment Hub has rejected your payment <br> Please try again later <br><br> Reason: " +
                       paymentRejectInfo
                   })
-                  .then(() => {
+                  .then(async () => {
+                    if (this.$isOnDemandMode) {
+                      await this.$store.dispatch("leaveChannel");
+                    }
                     this.$router.replace("main-menu");
                   });
               }
@@ -220,7 +188,10 @@ export default {
                   html:
                     "The transfer of funds over the channel has been rejected  <br> Please try again later"
                 })
-                .then(() => {
+                .then(async () => {
+                  if (this.$isOnDemandMode) {
+                    await this.$store.dispatch("leaveChannel");
+                  }
                   this.$router.replace("main-menu");
                 });
             });
@@ -230,76 +201,29 @@ export default {
         })
         .then(result => {
           if (result.dismiss === "timer") {
-            this.$swal.fire({
-              heightAuto: false,
-              type: "error",
-              title: "Oops!",
-              html:
-                "Your payment submission has timed out. This may indicate connection problems. <br> Please try again later"
-            });
+            this.$swal
+              .fire({
+                heightAuto: false,
+                type: "error",
+                title: "Oops!",
+                html:
+                  "Your payment submission has timed out. This may indicate connection problems. <br> Please try again later"
+              })
+              .then(async () => {
+                if (this.$isOnDemandMode) {
+                  await this.$store.dispatch("leaveChannel");
+                }
+              });
           }
         });
     },
     cancel() {
       this.$router.replace("main-menu");
     },
-    async ensureConnection() {
-      let timerInterval;
-      if (this.$store.state.channel.status() === "disconnected") {
-        console.warn(
-          "We are offline (state is DISCONNECTED), trying to reconnect... "
-        );
-
-        let hub = new HubConnection(
-          this.$store.state.hubUrl,
-          await aeternity.getAddress()
-        );
-
-        let res = hub.notifyUserOnboarding(
-          this.$store.state.initiatorAmount,
-          this.$store.state.userName,
-          this.$isClientAppRole ? "client" : "merchant"
-        );
-
-        await this.$store.dispatch("storeChannelOptions", res.options);
-        await this.$store.dispatch("connectChannel");
+    async ensureConnectionOpen() {
+      if (this.$isOnDemandMode) {
+        await this.$store.dispatch("openChannel");
       }
-
-      //   this.$swal
-      //     .fire({
-      //       type: "warning",
-      //       title: "You are offline",
-      //       text: "Please wait while reconnecting...",
-      //       heightAuto: false,
-      //       showConfirmButton: false,
-      //       allowOutsideClick: false,
-      //       timer: process.env.CHANNEL_RECONNECT_TIMEOUT,
-      //       onBeforeOpen: () => {
-      //         this.$swal.showLoading();
-
-      //         timerInterval = setInterval(() => {
-      //           if (this.$store.state.channel.status === "open") {
-      //             this.$swal.close();
-      //           }
-      //         }, 500);
-      //       },
-      //       onClose: () => {
-      //         clearInterval(timerInterval);
-      //       }
-      //     })
-      //     .then(result => {
-      //       if (result.dismiss === "timer") {
-      //         this.$swal.fire({
-      //           heightAuto: false,
-      //           type: "error",
-      //           html:
-      //             "We could not go online mode. This may indicate connection problems. <br> <br>" +
-      //             "<ul><li>Re-try again in a moment or,</li>" +
-      //             "<li>Ask the merchant to process the offline payment for you instead</li></ul>"
-      //         });
-      //       }
-      //     });
-      // }
     },
     async confirm() {
       var that = this;
@@ -326,11 +250,33 @@ export default {
             });
           });
       } else {
-        // are we connected ?
-        this.ensureConnection();
-        if (this.$store.state.channel.status() === "open") {
-          await this.triggerPayment();
+        if (this.$isOnDemandMode) {
+          this.$swal.fire({
+            text: "Opening channel...",
+            onBeforeOpen: () => {
+             this.$swal.showLoading();
+            },
+            allowOutsideClick: false
+          });
         }
+        try {
+          await this.ensureConnectionOpen();
+        } catch (e) {
+          this.$swal
+            .fire({
+              heightAuto: false,
+              type: "error",
+              title: "Oops!",
+              html:
+                "There was a problem opening your channel. Reason is: " +
+                e.toString() + "<br>Please try again later"
+            })
+            .then(() => {
+              this.$router.replace("main-menu");
+            });
+        }
+        this.$swal.close();
+        this.triggerPayment();
       }
     }
   }

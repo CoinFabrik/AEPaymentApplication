@@ -161,12 +161,14 @@ export default new Vuex.Store({
 
       commit("loadHubAddress", res.address);
       await dispatch("storeChannelOptions", res.options);
-      await dispatch("createChannel");
+      const channel = await dispatch("createChannel");
+      await aeternity.waitForChannelOpen(channel, 2500);
     },
     async createChannel({ commit, state }) {
       return new Promise((resolve, reject) => {
         aeternity.createChannel(state.channelOptions).then(
           function (channel) {
+            console.log("Channel created successfully.")
             commit('setChannel', channel);
             // Broadcast channel messages
 
