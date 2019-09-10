@@ -212,7 +212,9 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     update_clash() {
-        this.update(this.opposite, this.address, 1, "triggering update conflict.")
+        let msg = "triggering update conflict.";
+        this.log(msg);
+        this.update(this.opposite, this.address, 1, msg)
             .then((result)=> this.log("clash-update()= "  + result + JSON.stringify(result)))
             .catch((err)=>{ this.log("update clash failed: "+err)});
     }
@@ -386,7 +388,7 @@ export abstract class ServerChannel extends EventEmitter {
         while (this.status == "OPEN") {
             await this.sendMessage({"type": "heartbeat"});
             await sleep(40 * 1000)
-            if (this.is_customer() && (Date.now()-this.last_update>900*1000)) {
+            if (this.is_customer() && (Date.now()-this.last_update>90000*1000)) {
                 break
             }
         }

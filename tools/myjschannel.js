@@ -171,14 +171,19 @@ class MyChannel extends events.EventEmitter {
         });
 
         this.channel.on('message', (msg) => {
+            let info;
             try {
-                let info = JSON.parse(msg["info"]);
-                if (info["type"]==="heartbeat") return;
-                this.emit("message", info);
+                info = JSON.parse(msg["info"]);
             } catch(err) {
-								console.log(msg)
-                console.log("cant parse info")
+                console.log(err)
+                console.log("msg");
+                console.log(msg);
+                console.log("ms");
+                console.log(msg["info"]);
+                console.log("cant parse info");
             }
+            if (info["type"]==="heartbeat") return;
+            this.emit("message", info);
         });
         return this.channel;
     }

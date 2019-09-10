@@ -1,4 +1,4 @@
-import {API_URL, INTERNAL_API_URL} from "../src/config";
+import {API_URL} from "../src/config";
 const {
     Universal
 } = require('@aeternity/aepp-sdk');
@@ -13,8 +13,18 @@ export interface cc_wallet {
     privateKey: string,
 }
 
+export interface cc_wallet_sk {
+    publicKey: string,
+    secretKey: string,
+}
+
+
 export function to_cc(wallet: lc_wallet): cc_wallet {
     return { publicKey: wallet.public_key, privateKey: wallet.private_key};
+}
+
+export function to_cc_sk(wallet: lc_wallet): cc_wallet_sk {
+    return { publicKey: wallet.public_key, secretKey: wallet.private_key};
 }
 
 export function to_lc(wallet: cc_wallet): lc_wallet {
@@ -58,11 +68,9 @@ export const Users: lc_wallet[] = [
     },
 ];
 
-export async function get_node(keypair: cc_wallet) {
+export async function get_node(keypair: cc_wallet_sk) {
     return await Universal({
-        //networkId: NETWORK_ID,
         url: API_URL,
-        internalUrl: INTERNAL_API_URL,
         keypair: keypair,
     });
 }

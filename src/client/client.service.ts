@@ -162,11 +162,6 @@ export class ServiceBase extends EventEmitter {
 
     static leaveAll() {
         this.forAll(c => c.channel.leave("global"));
-        // for(let kind of ["merchant", "customer"]) {
-        //     for(let c of ServiceBase.clients[kind] ) {
-        //         c.channel.leave("global");
-        //     }
-        // }
     }
 
     static forAll(f) {
