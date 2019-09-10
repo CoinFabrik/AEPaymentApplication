@@ -74,6 +74,7 @@ export abstract class ServerChannel extends EventEmitter {
     private disconnect_by_leave = false;
     pending_mcs: MerchantCustomer[] = [];
     private closing = false;
+    private died = false;
 
 
     pendingPayment(mc: MerchantCustomer) {
@@ -341,10 +342,13 @@ export abstract class ServerChannel extends EventEmitter {
             this.client.setChannel(this);
             ServiceBase.addClient(this.client, this.Name);
         }
+        if (this.status.startsWith("DIED")) {
+            this.died = true;
+        }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
             console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
-            if (!this.disconnect_by_leave) {
+            if ((!this.disconnect_by_leave) && !(this.died)) {
                 this.client.channelId="";
                 this.client.channelSt="";
                 this._save_state();
@@ -408,14 +412,14 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async solo() {
-
-        const { signedTx } = await this.channel.update(
-          this.opposite, this.address, new BigNumber("1"),
-          tx => this.nodeuser.signTransaction(tx)
-        );
-
-        console.log(signedTx);
-        console.log(99, typeof signedTx);
+        //
+        // const { signedTx } = await this.channel.update(
+        //   this.opposite, this.address, new BigNumber("1"),
+        //   tx => this.nodeuser.signTransaction(tx)
+        // );
+        //
+        // console.log(signedTx);
+        // console.log(99, typeof signedTx);
 
         const balances = await this.channel.balances([this.address, this.opposite]);
         const initiatorBalanceBeforeClose = await this.nodeuser.balance(this.opposite);
