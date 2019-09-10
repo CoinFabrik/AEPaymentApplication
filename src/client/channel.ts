@@ -313,11 +313,17 @@ export abstract class ServerChannel extends EventEmitter {
             this.emit("message", msg);
         });
         this.channel.on('stateChanged', (state) => {
-            this.client.channelSt = state;
-            this.client.channelRn = this.client.channelRn+1;
-            this._save_state();
-            console.log(this.channel);
-            console.log(JSON.stringify(this.channel))
+            this.channel.balances([this.initiator, this.responder]).then( (balances) => {
+                this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
+                this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
+                this.client.channelSt = state;
+                this.client.channelRn = this.client.channelRn+1;
+                this._save_state();
+            }).catch(err => {
+                this.client.channelSt = state;
+                this.client.channelRn = this.client.channelRn+1;
+                this._save_state();
+            })
         });
 
         await this.wait_state("OPEN");
@@ -347,8 +353,8 @@ export abstract class ServerChannel extends EventEmitter {
         }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
-            console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
             if ((!this.disconnect_by_leave) && !(this.died)) {
+                console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
                 this.client.channelId="";
                 this.client.channelSt="";
                 this._save_state();
