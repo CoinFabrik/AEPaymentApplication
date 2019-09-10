@@ -7,7 +7,7 @@
       Generate Payment
     </AeText>
     <br>
-    <AeText face="mono-s">
+    <AeText face="sans-s">
       Please set the amount of the payment. A new QR code will be generated.
     </AeText>
     <br>
@@ -39,7 +39,7 @@
     </AeButton>
     <AeButton
       face="round"
-      fill="secondary"
+      fill="neutral"
       class="margin"
       extend
       @click="cancel()"
@@ -64,7 +64,7 @@ export default {
     };
   },
   computed: {
-    isValidInput() { 
+    isValidInput() {
       return BigNumber(this.amount).gt(0);
     }
   },
@@ -84,14 +84,3 @@ export default {
   }
 };
 </script>
-
-<style>
-	.small-input {
-		min-height: 0px;
-		height: 40px;
-
-	}
-	.margin {
-		margin-top: 5px;
-	}
-</style>

@@ -80,6 +80,22 @@ html, body {
   margin-left: -150px;
 }
 
+/* Merchant views */
+.small-input {
+  min-height: 0px;
+  height: 40px;
+
+}
+.margin {
+  margin-top: 5px;
+}
+
+canvas {
+  width: 70%
+}
+	.margin {
+		margin-top: 10px;
+	}
 /* sweetalert2 AE Sytles */
 .swal2-styled {
   /* padding: 0.625em 3em !important; */
