@@ -1,12 +1,17 @@
 <template>
   <b-container class="enterpurchase">
-    <AeText
+    <ViewTitle
+      title="Generate Payment"
+      class="mb-2"
+    />
+    <!-- <AeText
+      class="mb-2"
       face="sans-l"
       weight="bold"
     >
       Generate Payment
-    </AeText>
-    <br>
+    </AeText> -->
+
     <AeText face="sans-s">
       Please set the amount of the payment. A new QR code will be generated.
     </AeText>
@@ -26,26 +31,34 @@
       label="Concept (optional)"
       placeholder="Description..."
     />
-    <br>
-    <AeButton
-      face="round"
-      fill="primary"
-      class="margin"
-      extend
-      :disabled="!isValidInput"
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      face="round"
-      fill="neutral"
-      class="margin"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+
+    <!-- <div class="footer buttonsection"> -->
+      <b-row class="mt-2">
+        <b-col>
+          <AeButton
+            face="round"
+            fill="neutral"
+            class="margin"
+            extend
+            @click="cancel()"
+          >
+            Cancel
+          </AeButton>
+        </b-col>
+        <b-col>
+          <AeButton
+            face="round"
+            fill="primary"
+            class="margin"
+            extend
+            :disabled="!isValidInput"
+            @click="confirm()"
+          >
+            Confirm
+          </AeButton>
+        </b-col>
+      </b-row>
+    <!-- </div> -->
   </b-container>
 </template>
 

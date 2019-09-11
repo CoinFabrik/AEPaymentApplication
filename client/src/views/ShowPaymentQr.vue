@@ -1,25 +1,24 @@
 <template>
   <b-container class="show-payment-qr">
-    <AeText weight="bold">
-      Show this payment QR to your customer
-    </AeText>
-    <br>
-    <AeText face="sans-s">
-      Amount: <b>{{ amountAE }} AE</b>
-    </AeText>
-    <AeText
-      v-show="message.something.length > 0"
-      face="sans-s"
-    >
-      Concept: <b>{{ message.something }}</b>
-    </AeText>
+    <ViewTitle
+      title="Show this payment QR to your customer"
+    />
 
-    <div class="my-3">
+    <div class="mt-3">
+      <AeText face="sans-s">
+        Amount: <b>{{ amountAE }} AE</b>
+      </AeText>
+      <AeText
+        v-show="message.something.length > 0"
+        face="sans-s"
+      >
+        Concept: <b>{{ message.something }}</b>
+      </AeText>
+    </div>
+    <div class="mt-2">
       <AeQRCode :value="messageString" />
-      <div v-if="this.$isOnDemandMode && waitingPayment">
-        <AeText face="sans-xs">
-          Waiting for payment ... {{ timeRemaining }} s
-        </AeText>
+       <div v-if="this.$isOnDemandMode && waitingPayment">
+        <AeText face="sans-xs">Waiting for payment ... {{ timeRemaining }} s</AeText>
         <AeLoader />
       </div>
     </div>
@@ -27,7 +26,7 @@
     <AeButton
       face="round"
       fill="primary"
-      class="margin"
+      class="mt-2"
       extend
       @click="done()"
     >
