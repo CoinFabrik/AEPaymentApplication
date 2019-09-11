@@ -17,10 +17,7 @@
       :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
     />
 
-    <CloseModal
-      text="Close channel?"
-      :on-confirm="this.closeChannel"
-    />
+    <CloseModal text="Close channel?" :on-confirm="this.closeChannel" />
   </b-container>
 </template>
 
@@ -31,8 +28,8 @@ export default {
   name: "MainMenu",
   computed: {
     getName: function() {
-			return this.$store.state.userName;
-		},
+      return this.$store.state.userName;
+    },
     getAddress: function() {
       return this.$store.getters.initiatorId;
     },
@@ -40,37 +37,31 @@ export default {
       return this.$store.state.initiatorBalance / 10 ** 18;
     },
     getMyWalletBalance: function() {
-      return ((this.$store.state.balance / 10 ** 18) * 1.0);
+      return (this.$store.state.balance / 10 ** 18) * 1.0;
     },
     getMyPendingHubBalance: function() {
-      return ((this.$store.state.hubBalance / 10 ** 18) * 1.0);
+      return (this.$store.state.hubBalance / 10 ** 18) * 1.0;
     }
   },
   async mounted() {
-    // // Report error !
-    // try {
-    //   setInterval(() => {
-    //     this.$store.dispatch("updateChannelBalances");
-    //   }, 1000);
-    // } catch (err) {
-    //   console.log("error getting balances! " + err);
-    // }
     try {
-
       await this.$store.dispatch("updateOnchainBalance");
+
+      if (this.$isMerchantAppRole) {
+        await this.$store.dispatch("updateHubBalance");
+      }
 
       if (!this.$isOnDemandMode) {
         await this.$store.dispatch("updateChannelBalances");
-        await this.$store.dispatch("updateHubBalance");
       }
     } catch (e) {
       this.$displayError("Oops!", e.toString());
     }
   },
   methods: {
-		popUpCloseModal: function() {
-			this.$bvModal.show('closeModal');
-		},
+    popUpCloseModal: function() {
+      this.$bvModal.show("closeModal");
+    },
     withdraw: function() {
       this.$router.push("withdraw");
     },
@@ -84,11 +75,11 @@ export default {
       this.$router.push("enterpurchase");
     },
     closeChannel: function() {
-			this.$router.replace({
+      this.$router.replace({
         name: "commit-and-wait-tx",
         params: { txKind: "close" }
       });
-		},
+    },
     history: function() {
       this.$router.push("history");
     }
@@ -102,15 +93,15 @@ export default {
   padding-bottom: 20px;
 }
 .button-group {
-	margin-top:30px;
+  margin-top: 30px;
 }
 .column {
   flex: 50%;
 }
 .margin {
-	margin-top: 10px;
+  margin-top: 10px;
 }
 .amount {
-	font-weight: bold !important;
+  font-weight: bold !important;
 }
 </style>
