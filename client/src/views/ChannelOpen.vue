@@ -4,8 +4,12 @@
       v-show="this.isWorking"
       :text="this.getChannelStatusDescriptiveText"
     /> -->
-
-    <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText>
+    <ViewTitle
+      title="Opening payment channel, please wait..."
+      v-show="this.isWorking"
+    />
+    <!-- <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText> -->
+    <br>
     <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
     <AeLoader v-show="this.isWorking"/>
   </div>
@@ -200,7 +204,7 @@ export default {
       );
     },
     async createChannel() {
-      
+
       this.$store.commit("setChannelOpenDone", false);
       try {
         await this.$store.dispatch("createChannel");
@@ -211,7 +215,7 @@ export default {
         // Channel created -- if we are merchants  suscribe to global
         // payment received toast notification on always-connected mode.
         //
-        // On-demand mode payment receipt is done while QR is shown. 
+        // On-demand mode payment receipt is done while QR is shown.
         // (see ShowPaymentQr.vue)
           this.suscribeMerchantPaymentEvent();
         }
