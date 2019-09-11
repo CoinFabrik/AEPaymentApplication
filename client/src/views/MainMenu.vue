@@ -8,14 +8,23 @@
     />
 
     <ViewButtonSection
-      v-if="$isClientAppRole"
+      v-if="$isClientAppRole && !isOnDemandMode"
       :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
-
+     <ViewButtonSection
+      v-if="$isClientAppRole && isOnDemandMode"
+      :buttons="[{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
+    />
+    
     <ViewButtonSection
-      v-if="$isMerchantAppRole"
+      v-if="$isMerchantAppRole && $isOnDemandMode"
+      :buttons="[{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
+    />
+    <ViewButtonSection
+      v-if="$isMerchantAppRole && !$isOnDemandMode" 
       :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
     />
+
 
     <CloseModal text="Close channel?" :on-confirm="this.closeChannel" />
   </b-container>
