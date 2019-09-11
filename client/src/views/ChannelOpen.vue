@@ -205,10 +205,14 @@ export default {
       try {
         await this.$store.dispatch("createChannel");
 
-        // Channel created -- if we are merchants  suscribe to global
-        // payment received notification.
 
-        if (this.$isMerchantAppRole) {
+        if (this.$isMerchantAppRole && !this.$isOnDemandMode) {
+
+        // Channel created -- if we are merchants  suscribe to global
+        // payment received toast notification on always-connected mode.
+        //
+        // On-demand mode payment receipt is done while QR is shown. 
+        // (see ShowPaymentQr.vue)
           this.suscribeMerchantPaymentEvent();
         }
       } catch (e) {

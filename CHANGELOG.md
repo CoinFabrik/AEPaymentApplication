@@ -79,18 +79,26 @@ UI changes:
 + Wallet Balance widget tweaks
 + History “Add Tx” button > Rounded
 
-0.9.0-WIP (190906)
+0.9.5 (190910)
 ------------------
 **NOTE** This version requires base-aepp >= 0.10.0.
 
++ A new operation mode is available: OnDemand connection, where channels are not kept open but used on-demand by leave/connection operations.  Application can be built using this mode using **VUE_APP_ONDEMAND_CONNECTION_MODE=1** in `.env` file or environment variable.  Ondemand mode should work until all reconnection/restablish/leave/disconnect operation issues are ironed out (see for example issue #651 in aepp-js-sdk).
+
++ Merchant in OnDemand Mode will wait for customer scanning and processing of payment; after a timeout it will go disconnected again.
 + New QR Scanner through the base-aepp. Should work on all platforms.
 + Removed Payment Codes fallback.
 + Registered name cannot be empty
 + Deposit, Withdraw and Purchase Amounts cannot be zero or negative.
 + After user registration, we'll check if there is a channel opened with saved state to reconnect.
 + If channel opening fails, user will be offered to retry or cancel and open a new channel.
-
++ Fixed channel open status display.
++ More UI tweaks.
 
 KNOWN ISSUES:
-+ Transparent channel reconnection if it goes to DISCONNECT state
-+ Cancelling transactions through Base-Aepp dialog may enter inconsistent state.
+
++ Merchant funds may not updated.
++ Transaction history for customer may not show entries.
++ Deposit/Withdrawal are BROKEN in Connect Ondemand Mode https://www.pivotaltracker.com/n/projects/2124891/stories/167944617
++ Page refresh is BROKEN in always-connected mode due to channel object "rehydration" issues (ref:  issue #651 in aepp-js-sdk); also in Merchant app while waiting for payment, Refresh will doom current open channel object!
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.

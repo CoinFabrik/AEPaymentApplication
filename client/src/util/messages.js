@@ -8,7 +8,6 @@ export function makePaymentQrData(price, items, merchant) {
     }
 
     return {
-        "id": uuidv4(),
         "amount": ((new BigNumber(price)).multipliedBy(new BigNumber(10).exponentiatedBy(18))).toString(10),
         "something": items,
         "merchant": merchant,

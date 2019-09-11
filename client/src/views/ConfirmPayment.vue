@@ -87,10 +87,10 @@ export default {
       }
     },
     async triggerPayment() {
-      // this.paymentData.id = uuidv4();
-      // console.warn(
-      //   "REMEMBER TO NOT OVERWRITE UUID -- this is only for testing!"
-      // );
+      
+      this.paymentData.id = uuidv4();
+      console.log("Generated Payment Identifier: " + this.paymentData.id);
+  
       paymentProcessor = new PaymentProcessor(
         this.$store.getters.initiatorAddress,
         this.$store.getters.responderAddress,

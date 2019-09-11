@@ -43,7 +43,6 @@ export function validatePurchaseQr(qrtext) {
         let obj = JSON.parse(qrtext);
         if ( !obj.hasOwnProperty('amount')
             || !obj.hasOwnProperty('something')
-            || !obj.hasOwnProperty('uuid')
             || !obj.hasOwnProperty('merchant')
             || !obj.hasOwnProperty('type')) {
             console.error("Payment QR: does not contain required fields");
@@ -52,11 +51,6 @@ export function validatePurchaseQr(qrtext) {
 
         if (new BigNumber(obj.amount).isLessThanOrEqualTo(0)) {
             console.error("Payment QR: Amount field less than or equal to 0");
-            return false;
-        }
-
-        if (!validator.isUUID(obj.uuid, 4)) {
-            console.error("Payment QR: Invalid UUIDv4 type identifier");
             return false;
         }
 

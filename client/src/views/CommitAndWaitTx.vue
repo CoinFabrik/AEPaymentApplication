@@ -95,10 +95,18 @@ export default {
             type: "success",
             title: "Success",
             text: "Your deposit transaction has been successfully confirmed. ",
-            onClose: () => {
+            onClose: async () => {
+              // This is a HACK!
+              // (after deposit the channel will die by a bug, so we need to re-query the balances
+              //  to properly display them in the main menu ....)
+              
+              await this.$store.dispatch("openChannel");
+              await this.$store.dispatch("updateChannelBalances");
+              await this.$store.dispatch("leaveChannel");
               this.$router.replace("main-menu");
             }
           });
+
           break;
 
         case "withdraw":
@@ -106,7 +114,13 @@ export default {
             type: "success",
             title: "Success",
             text: "Your withdraw transaction has been successfully confirmed. ",
-            onClose: () => {
+            onClose: async () => {
+              // This is a HACK!
+              // (after withdraw the channel will die by a bug, so we need to re-query the balances
+              //  to properly display them in the main menu ....)
+              await this.$store.dispatch("openChannel");
+              await this.$store.dispatch("updateChannelBalances");
+              await this.$store.dispatch("leaveChannel");
               this.$router.replace("main-menu");
             }
           });
@@ -143,6 +157,9 @@ export default {
         type: "info",
         text: "You cancelled your request.",
         onClose: async () => {
+          if (this.$isOnDemandMode) {
+            await this.$store.dispatch("leaveChannel");
+          }
           await this.$router.replace("main-menu");
         }
       });
@@ -190,6 +207,9 @@ export default {
       console.log("Committing WITHDRAW transaction ... ");
 
       try {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("openChannel");
+        }
         let accepted = await aeternity.withdraw(
           this.$store.state.channel,
           parseInt(this.txParams.amountAettos),
@@ -205,6 +225,9 @@ export default {
           throw new Error("Withdraw transaction has been rejected");
         }
       } catch (e) {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("leaveChannel");
+        }
         // HACK: Interpreted as rejected by user
         if (
           e.hasOwnProperty("wsMessage") &&
