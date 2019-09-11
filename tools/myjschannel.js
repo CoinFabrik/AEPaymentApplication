@@ -24,7 +24,7 @@ const API_URL = -1===URL.indexOf("://") ? "http://" + URL : URL;
 const WS_URL = "ws://" + URL;  // http is ok too
 const INTERNAL_API_URL = API_URL;
 const compilerURL = 'https://compiler.aepps.com';
-const NETWORK_ID = 'ae_devnet';
+const NETWORK_ID = jstools.getEnv("NET", 'ae_uat');
 
 const INITIATOR_MIN_BALANCE = "1000000000000000";
 
