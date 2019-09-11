@@ -1,15 +1,36 @@
 <template>
   <b-container class="show-payment-qr">
-    <AeText weight="bold">Show this payment QR to your customer</AeText>
-    <AeText face="sans-xs">Amount: {{ message.amount / (10**18) }} AE</AeText>
-    <AeText v-show="message.something.length > 0" face="sans-xs">Concept: {{ message.something }}</AeText>
+    <AeText weight="bold">
+      Show this payment QR to your customer
+    </AeText>
+    <br>
+    <AeText face="sans-s">
+      Amount: <b>{{ message.amount / (10**18) }} AE</b>
+    </AeText>
+    <AeText
+      v-show="message.something.length > 0"
+      face="sans-s"
+    >
+      Concept: <b>{{ message.something }}</b>
+    </AeText>
 
-    <AeQRCode :value="messageString" />
-    <AeButton face="round" fill="primary" class="margin" extend @click="done()">Done</AeButton>
-    <div v-if="this.$isOnDemandMode && waitingPayment">
+    <div class="my-3">
+      <AeQRCode :value="messageString" />
+       <div v-if="this.$isOnDemandMode && waitingPayment">
       <AeText face="sans-xs">Waiting for payment ... {{ timeRemaining }} s</AeText>
       <AeLoader />
     </div>
+    </div>
+
+    <AeButton
+      face="round"
+      fill="primary"
+      class="margin"
+      extend
+      @click="done()"
+    >
+      Done
+    </AeButton>
   </b-container>
 </template>
 
@@ -109,12 +130,3 @@ export default {
   }
 };
 </script>
-
-<style>
-canvas {
-  width: 60%;
-}
-.margin {
-  margin-top: 10px;
-}
-</style>

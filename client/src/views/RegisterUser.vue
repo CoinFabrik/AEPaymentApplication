@@ -17,7 +17,7 @@
     />
     <AeLoader v-show="fetchingName" />
 
-    <ViewButtonSection :buttons="[{name: 'Confirm', action: confirm, disabled: !isValidInput}]" />
+    <ViewButtonSection :buttons="[{name: 'Confirm', action: confirm, fill:'primary', disabled: !isValidInput}]" />
   </b-container>
 </template>
 

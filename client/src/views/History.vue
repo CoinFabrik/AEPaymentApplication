@@ -5,17 +5,17 @@
     />
     <b-row>
       <div class="column">
-        <AeText weight="bold">
+        <AeText weight="500" face="sans-s">
           Date
         </AeText>
       </div>
       <div class="column">
-        <AeText weight="bold">
+        <AeText weight="500" face="sans-s">
           Name
         </AeText>
       </div>
       <div class="column">
-        <AeText weight="bold">
+        <AeText weight="500" face="sans-s">
           Amount
         </AeText>
       </div>
@@ -119,19 +119,20 @@
             </b-row>
           </div>
         </b-modal>
-        <AeButton
-          class="addButton"
-          face="icon"
-          fill="primary"
-          @click="addItems(history.length)"
-        >
-          <ae-icon name="plus" />
-        </AeButton>
       </AeList>
+    </div>
+    <div class="fixedButton">
+      <AeButton
+        face="icon"
+        fill="primary"
+        @click="addItems(history.length)"
+      >
+        <ae-icon name="plus" />
+      </AeButton>
     </div>
     <ViewButtonSection
       v-if="isIOS()"
-      :buttons="[{name:'Cancel', action: goBack, cancel:true}]"
+      :buttons="[{name:'Back', action: goBack, cancel:true}]"
     />
   </b-container>
 </template>
@@ -177,24 +178,3 @@
     }
   };
 </script>
-
-<style>
-  .column {
-    flex: 1;
-  }
-	#progress-el {
-		background-color: #FF0D6A !important;
-	}
-	.scroll {
-		overflow: scroll;
-		max-height: 50vh;
-		padding-bottom: 20;
-	}
-	.footer {
-    width: 300px;
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    margin-left: -150px;
-	}
-</style>
