@@ -30,7 +30,7 @@
       extend
       @click="done()"
     >
-      Done
+      {{ this.waitingPayment ? "Cancel" : "Done" }}
     </AeButton>
   </b-container>
 </template>
@@ -63,7 +63,17 @@ export default {
         this.waitingPayment = false;
         this.showPaymentReceived(e);
       });
-      await this.$store.dispatch("openChannel");
+      try {
+        await this.$store.dispatch("openChannel");
+      }
+      catch(e) {
+        this.$swal.fire({ type: 'error', 
+          title: 'Sorry', 
+          text: 'We could not open your channel.  Reason is ' + e.toString()}).then(
+
+      () => { this.$router.replace("main-menu"); }
+          )
+      }
       this.waitingPayment = true;
       this.waitEvent();
     }
@@ -74,6 +84,8 @@ export default {
   methods: {
 
     done() {
+
+      this.waitingPayment = false;
       this.$router.replace("main-menu");
     },
     showPaymentReceived(e) {

@@ -4,7 +4,7 @@
     <ViewBalances
       style="margin-top:4vh;"
       :wallet-balance="getMyWalletBalance.toFixed(2)"
-      :channel-balance="$isMerchantAppRole ? (getMyChannelBalance + getMyPendingHubBalance).toFixed(2) : getMyChannelBalance.toFixed(2)"
+      :channel-balance="$isMerchantAppRole ? getTotalBalance.toFixed(2) : getMyChannelBalance.toFixed(2)"
     />
 
     <ViewButtonSection
@@ -46,6 +46,9 @@ export default {
     },
     getAddress: function() {
       return this.$store.getters.initiatorId;
+    },
+    getTotalBalance: function() {
+       return this.getMyChannelBalance.plus(this.getMyPendingHubBalance)
     },
     getMyChannelBalance: function() {
       return BigNumber(this.$store.state.initiatorBalance).dividedBy(10 ** 18);

@@ -79,7 +79,7 @@ export default {
       return BigNumber(this.depositInput.amount).gt(0);
     },
     merchantInitialDepositAE() {
-      return DisplayUnitsToAE(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT);
+      return DisplayUnitsToAE(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT, 5);
     },
     balance() {
       return DisplayUnitsToAE(this.$store.state.balance);
