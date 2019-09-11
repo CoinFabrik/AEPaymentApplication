@@ -5,7 +5,7 @@
     </AeText>
     <br>
     <AeText face="sans-s">
-      Amount: <b>{{ message.amount / (10**18) }} AE</b>
+      Amount: <b>{{ amountAE }} AE</b>
     </AeText>
     <AeText
       v-show="message.something.length > 0"
@@ -16,10 +16,12 @@
 
     <div class="my-3">
       <AeQRCode :value="messageString" />
-       <div v-if="this.$isOnDemandMode && waitingPayment">
-      <AeText face="sans-xs">Waiting for payment ... {{ timeRemaining }} s</AeText>
-      <AeLoader />
-    </div>
+      <div v-if="this.$isOnDemandMode && waitingPayment">
+        <AeText face="sans-xs">
+          Waiting for payment ... {{ timeRemaining }} s
+        </AeText>
+        <AeLoader />
+      </div>
     </div>
 
     <AeButton
@@ -50,9 +52,28 @@ export default {
   computed: {
     messageString: function() {
       return JSON.stringify(this.message);
+    },
+    amountAE() {
+      return DisplayUnitsToAE(this.message.amount);
     }
   },
+  async mounted() {
+    if (this.$isOnDemandMode) {
+      this.timeRemaining = PAYMENT_TIMEOUT_SECONDS;
+      window.eventBus.$once("payment-complete-ack", e => {
+        this.waitingPayment = false;
+        this.showPaymentReceived(e);
+      });
+      await this.$store.dispatch("openChannel");
+      this.waitingPayment = true;
+      this.waitEvent();
+    }
+  },
+  beforeDestroy() {
+    this.waitingPayment = false;
+  },
   methods: {
+
     done() {
       this.$router.replace("main-menu");
     },
@@ -112,21 +133,6 @@ export default {
         }
       }
     }
-  },
-  async mounted() {
-    if (this.$isOnDemandMode) {
-      this.timeRemaining = PAYMENT_TIMEOUT_SECONDS;
-      window.eventBus.$once("payment-complete-ack", e => {
-        this.waitingPayment = false;
-        this.showPaymentReceived(e);
-      });
-      await this.$store.dispatch("openChannel");
-      this.waitingPayment = true;
-      this.waitEvent();
-    }
-  },
-  beforeDestroy() {
-    this.waitingPayment = false;
   }
 };
 </script>

@@ -14,7 +14,7 @@ export default {
   name: "ScanQR",
   components: {},
   props: {
-    subview: String
+    subview: { type: String, default: "onboarding" }
   },
   data() {
     return {

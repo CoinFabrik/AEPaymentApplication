@@ -57,6 +57,7 @@ const STATUS_USER_INPUT = 0,
   STATUS_QUERY_BALANCE = 1;
 import BigNumber from "bignumber.js";
 import aeternity from "../controllers/aeternity";
+import { DisplayUnitsToAE } from "../util/numbers"
 
 export default {
   name: "Deposit",
@@ -78,10 +79,10 @@ export default {
       return BigNumber(this.depositInput.amount).gt(0);
     },
     merchantInitialDepositAE() {
-      return parseInt(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT) / 10 ** 18;
+      return DisplayUnitsToAE(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT);
     },
     balance() {
-      return (BigNumber(this.$store.state.balance).dividedBy(10**18)).toFixed(2, BigNumber.ROUND_DOWN);
+      return DisplayUnitsToAE(this.$store.state.balance);
     },
     isWaitingUserInput() {
       return this.viewState == STATUS_USER_INPUT;
@@ -93,7 +94,7 @@ export default {
       return aeternity.estimateDepositFee(500000);
     },
     estimatedFeeAE() {
-      return this.estimatedFee / 10 ** 18;
+      return BigNumber(this.estimatedFee).dividedBy(10 ** 18).toFixed(7);
     }
 	},
 	mounted() {

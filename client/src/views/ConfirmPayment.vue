@@ -1,37 +1,80 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
+    <AeText
+      weight="bold"
+      align="center"
+      face="sans-l"
+    >
+      Check your payment
+    </AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText fill="secondary" face="sans-base">Merchant</AeText>
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Merchant
+          </AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="column">
-          <AeText fill="secondary" face="sans-base">Amount</AeText>
-        </div>
-        <div class="column">
-          <AeText face="mono-base">{{ amountAE }} AE</AeText>
+          <AeText face="mono-base">
+            {{ registeredMerchantName }}
+          </AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText fill="secondary" face="sans-base">Concept</AeText>
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Amount
+          </AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ paymentData.something }}</AeText>
+          <AeText face="mono-base">
+            {{ amountAE }} AE
+          </AeText>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="column">
+          <AeText
+            fill="secondary"
+            face="sans-base"
+          >
+            Concept
+          </AeText>
+        </div>
+        <div class="column">
+          <AeText face="mono-base">
+            {{ paymentData.something }}
+          </AeText>
         </div>
       </div>
     </div>
     <AeDivider />
-    <AeButton class="margin" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
-    <AeButton class="margin" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
+    <AeButton
+      class="margin"
+      face="round"
+      fill="primary"
+      extend
+      @click="confirm()"
+    >
+      Confirm
+    </AeButton>
+    <AeButton
+      class="margin"
+      face="round"
+      fill="secondary"
+      extend
+      @click="cancel()"
+    >
+      Cancel
+    </AeButton>
   </b-container>
 </template>
 

@@ -11,7 +11,7 @@
       v-if="$isClientAppRole && !isOnDemandMode"
       :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
-     <ViewButtonSection
+    <ViewButtonSection
       v-if="$isClientAppRole && isOnDemandMode"
       :buttons="[{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
@@ -26,12 +26,17 @@
     />
 
 
-    <CloseModal text="Close channel?" :on-confirm="this.closeChannel" />
+    <CloseModal
+      text="Close channel?"
+      :on-confirm="this.closeChannel"
+    />
   </b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
+
+import BigNumber from 'bignumber.js'
 
 export default {
   name: "MainMenu",
@@ -43,13 +48,13 @@ export default {
       return this.$store.getters.initiatorId;
     },
     getMyChannelBalance: function() {
-      return this.$store.state.initiatorBalance / 10 ** 18;
+      return BigNumber(this.$store.state.initiatorBalance).dividedBy(10 ** 18);
     },
     getMyWalletBalance: function() {
-      return (this.$store.state.balance / 10 ** 18) * 1.0;
+      return BigNumber(this.$store.state.balance).dividedBy(10 ** 18);
     },
     getMyPendingHubBalance: function() {
-      return (this.$store.state.hubBalance / 10 ** 18) * 1.0;
+      return BigNumber(this.$store.state.hubBalance).dividedBy(10 ** 18);
     }
   },
   async mounted() {

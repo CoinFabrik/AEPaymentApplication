@@ -5,17 +5,26 @@
     />
     <b-row>
       <div class="column">
-        <AeText weight="500" face="sans-s">
+        <AeText
+          weight="500"
+          face="sans-s"
+        >
           Date
         </AeText>
       </div>
       <div class="column">
-        <AeText weight="500" face="sans-s">
+        <AeText
+          weight="500"
+          face="sans-s"
+        >
           Name
         </AeText>
       </div>
       <div class="column">
-        <AeText weight="500" face="sans-s">
+        <AeText
+          weight="500"
+          face="sans-s"
+        >
           Amount
         </AeText>
       </div>

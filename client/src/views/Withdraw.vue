@@ -25,12 +25,7 @@
       <AeText>Please wait while Checking your account balance</AeText>
       <AeLoader />
     </div>
-    <!--
-    <div v-else>
-      <AeText face="sans-xs">Estimated Fee: {{ estimatedFee / (10**18) }} AE</AeText>
-    </div>
-    -->
-
+   
     <div class="button-group">
       <AeButton
         face="round"

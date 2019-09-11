@@ -102,3 +102,15 @@ KNOWN ISSUES:
 + Deposit/Withdrawal are BROKEN in Connect Ondemand Mode https://www.pivotaltracker.com/n/projects/2124891/stories/167944617
 + Page refresh is BROKEN in always-connected mode due to channel object "rehydration" issues (ref:  issue #651 in aepp-js-sdk); also in Merchant app while waiting for payment, Refresh will doom current open channel object!
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
+
+0.9.6 WIP (190911)
+------------------
+**NOTE** This version requires base-aepp >= 0.10.1.
+
++ Merchant funds query fix at Main Menu.
++ Touches on UI.
+
+KNOWN ISSUES:
+
++ When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
+

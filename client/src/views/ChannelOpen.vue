@@ -5,9 +5,19 @@
       :text="this.getChannelStatusDescriptiveText"
     /> -->
 
-    <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText>
-    <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
-    <AeLoader v-show="this.isWorking"/>
+    <AeText
+      v-show="this.isWorking"
+      face="sans-l"
+    >
+      Opening payment channel, please wait...
+    </AeText>
+    <AeText
+      v-show="this.isWorking"
+      face="sans-s"
+    >
+      {{ this.getChannelStatusDescriptiveText }}
+    </AeText>
+    <AeLoader v-show="this.isWorking" />
   </div>
 </template>
 
