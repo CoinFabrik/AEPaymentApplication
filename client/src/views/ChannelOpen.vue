@@ -3,15 +3,17 @@
     <!-- <LoadingModal
       v-show="this.isWorking"
       :text="this.getChannelStatusDescriptiveText"
-    /> -->
-    <ViewTitle
-      title="Opening payment channel, please wait..."
-      v-show="this.isWorking"
-    />
+    />-->
+    <ViewTitle title="Opening payment channel, please wait..." v-show="this.isWorking" />
     <!-- <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText> -->
-    <br>
+    <br />
     <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
-    <AeLoader v-show="this.isWorking"/>
+    <AeLoader v-show="this.isWorking" />
+
+    <div v-show="this.isWorking">
+      <br />
+      <AeButton extend fill="primary" @click="cancel">Cancel</AeButton>
+    </div>
   </div>
 </template>
 
@@ -102,6 +104,16 @@ export default {
     window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
   },
   methods: {
+    async cancel() {
+      //this.$swal.fire({ title: "Are you sure?)
+      await this.$store.state.channel.disconnect();
+      this.$router.replace({
+        name: "deposit",
+        params: {
+          initialDeposit: true
+        }
+      });
+    },
     onChannelDisconnected() {
       this.isWorking = false;
 
@@ -204,19 +216,16 @@ export default {
       );
     },
     async createChannel() {
-
       this.$store.commit("setChannelOpenDone", false);
       try {
         await this.$store.dispatch("createChannel");
 
-
         if (this.$isMerchantAppRole && !this.$isOnDemandMode) {
-
-        // Channel created -- if we are merchants  suscribe to global
-        // payment received toast notification on always-connected mode.
-        //
-        // On-demand mode payment receipt is done while QR is shown.
-        // (see ShowPaymentQr.vue)
+          // Channel created -- if we are merchants  suscribe to global
+          // payment received toast notification on always-connected mode.
+          //
+          // On-demand mode payment receipt is done while QR is shown.
+          // (see ShowPaymentQr.vue)
           this.suscribeMerchantPaymentEvent();
         }
       } catch (e) {

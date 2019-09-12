@@ -20,7 +20,6 @@ const aeternity = {
 }
 
 aeternity.connectToBaseApp = async function () {
-
   if (aeternity.client != null) {
     return { status: true, error: null };
   }
@@ -38,8 +37,9 @@ aeternity.connectToBaseApp = async function () {
     const aeSdk = Aepp.compose({
       deepConfiguration: { Ae: { methods: ['readQrCode'] } },
     })({ parent: window.parent });
-    aeternity.client = await Promise.race([timeout, aeSdk])
-    console.log("aeternity.client connected. Your address: " + await aeternity.client.address());
+    aeternity.client = await Promise.race([timeout, aeSdk]);
+
+    console.log("aeternity.client connected. Your address: " + await aeternity.client.address() + " Your network id:" + await aeternity.client.getNetworkId());
     return { status: true, error: null };
   }
   catch (err) {
@@ -170,14 +170,14 @@ aeternity.closeChannel = async function (channel, onChainTxCallback) {
   });
 }
 
-aeternity.waitForChannelOpen = async function (channel, timeout) {
+aeternity.waitForChannelStatus = async function (channel, status, timeout) {
   const POLL_INTERVAL = 250;
   let passed = 0;
-  while (channel.status() !== "open") {
+  while (channel.status() !== status) {
     await sleep(POLL_INTERVAL);
     passed += POLL_INTERVAL;
     if (passed > timeout) {
-      throw new Error("Timeout waiting for channel open");
+      throw new Error("Timeout waiting for channel " + status);
     }
   }
 }

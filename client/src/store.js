@@ -162,7 +162,7 @@ export default new Vuex.Store({
       commit("loadHubAddress", res.address);
       await dispatch("storeChannelOptions", res.options);
       const channel = await dispatch("createChannel");
-      await aeternity.waitForChannelOpen(channel, 2500);
+      await aeternity.waitForChannelStatus(channel, "open", 10000);
     },
     async createChannel({ commit, state }) {
       return new Promise((resolve, reject) => {
@@ -252,6 +252,7 @@ export default new Vuex.Store({
         "leave",
         state.hubAddress
       );
+      await aeternity.waitForChannelStatus(state.channel, "died", 10000);
     },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
