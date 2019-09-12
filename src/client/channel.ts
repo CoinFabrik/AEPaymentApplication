@@ -59,7 +59,6 @@ export abstract class ServerChannel extends EventEmitter {
     is_initiator: boolean;
     channel: any;
     status: string;
-    private service: ServiceBase;
     public client: CClient;
 
     static _nodeuser: any;
@@ -359,6 +358,11 @@ export abstract class ServerChannel extends EventEmitter {
             ServiceBase.rmClient(this.client, this.Name);
             if ((!this.disconnect_by_leave) && !(this.died)) {
                 console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
+                this.client.channelId="";
+                this.client.channelSt="";
+                this._save_state();
+            }
+            if(this.closing) {
                 this.client.channelId="";
                 this.client.channelSt="";
                 this._save_state();

@@ -80,6 +80,37 @@ function pick_random(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
+
+async function buy(customer, pr, log) {
+	return new Promise((resolve, reject)=> {
+		customer.on("message", (msg) => {
+			if (msg["type"] === "payment-request-rejected") {
+				log("payment canceled:" + JSON.stringify(msg));
+				reject(msg);
+			}
+			if (msg["type"] === "payment-request-accepted") {
+				log("sending payment..");
+				customer.update(pr.amount)
+					.then(() => {
+						log("payment sent!")
+					})
+					.catch((err)=>reject(err));
+			}
+			if (msg["type"] === "payment-request-completed") {
+				log("payment completed!")
+				resolve();
+			}
+			if (msg["type"] === "payment-request-canceled") {
+				log("payment request canceled is unexpected! :-o !")
+				reject(msg);
+			}
+		});
+		customer.sendMessage(pr).then(()=>{}).catch(reject);
+	});
+}
+
+
+
 (async function () {
     let arg2 = jstools.getArgv(2)
     let merchant=null;
@@ -103,6 +134,8 @@ function pick_random(arr) {
             process.exit(-1);
         }
         merchant = pick_random(merchants);
+    } else {
+        merchant = { name: "un-named", address: merchant }
     }
 
     let peer = await Customer.Init(account);
@@ -130,37 +163,17 @@ function pick_random(arr) {
         quit(0).then(()=>{}).catch(console.error);
     });
 
-    let idx = 2;
-    while (idx>0) {
-        await peer.update(2);
-        await myjschannel.sleep(5000);
-        idx-=1;
-    }
+    await myjschannel.sleep(1000);
 
-    peer.on("message", (msg) => {
-        if(msg["type"]==="payment-request-rejected") {
-            console.log("payment canceled:", JSON.stringify(msg));   //msg["msg"]);
-        }
-        if(msg["type"]==="payment-request-accepted") {
-            console.log("sending payment..");
-            peer.update(pr.amount)
-                .then(()=>{console.log("payment sent!")})
-                .catch(console.error);
-        }
-        if(msg["type"]==="payment-request-completed") {
-            console.log("payment completed!")
-        }
-        if(msg["type"]==="payment-request-canceled") {
-            console.log("payment request canceled is unexpected! :-o !")
-        }
-    });
 
     let pr = Message.PaymentRequest(
         merchant.address, merchant.name, peer.pubkey, "1",
         [{what:"beer", amount:"1"}]);
-    await peer.sendPayment(pr);
 
-    await myjschannel.sleep(1000);
+    await buy(peer, pr, console.log);
+
+
+    await myjschannel.sleep(20000);
     await peer.leave();
     await peer.wait_state("DISCONNECTED");
 })();
