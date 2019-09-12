@@ -160,8 +160,20 @@ export class ServiceBase extends EventEmitter {
         array_rm(ServiceBase.pending[kind], c);
     }
 
-    static leaveAll() {
-        this.forAll(c => c.channel.leave("global"));
+    static async leaveAll() {
+        return await this.aForAll(c => c.channel.leave("global"));
+    }
+
+    static async aForAll(f) {
+        for(let kind of ["merchant", "customer"]) {
+            for(let c of ServiceBase.clients[kind] ) {
+                try {
+                    await f(c, kind);
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
     }
 
     static forAll(f) {
@@ -222,5 +234,12 @@ export class ClientService extends ServiceBase {
     async queryClients(kind: Actor): Promise<CClient[]> {
         let repo = getRepository(CClient);
         return await repo.find({kind: kind});
+    }
+
+    onApplicationShutdown(signal: string) {
+        console.log(signal); // e.g. "SIGINT"
+        ServiceBase.leaveAll()
+            .then(()=>{})
+            .catch(console.error);
     }
 }
