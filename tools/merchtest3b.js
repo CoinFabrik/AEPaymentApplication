@@ -56,31 +56,18 @@ async function show_hub_balance(peer) {
         return;
     }
 
+
+    await peer.init();
+    await peer.initChannel();
+    await peer.wait_state("OPEN");
+
     process.once('SIGINT', function() {
         console.log("Caught interrupt signal");
         peer.sendMessage("leave");
         //peer.wait_state("DISCONNECTED");
     });
-
-    await peer.init();
-    await peer.initChannel();
-    await peer.wait_state("OPEN");
     show_hub_balance(peer).then(()=>{}).catch(console.error);
 
     await peer.wait_state("DISCONNECTED");
     process.exit(0);
-
-
-    // try {
-    //     let customer;
-    //     console.log("requesting buy from:", customer)
-    //     await myjschannel.sleep(2000);
-    //     await peer.buyRequest(customer, [{"what":"beer", "quantity": 2}],  5*(10**5));
-    //     //await myjschannel.sleep(10000);
-    //     //await peer.update(10);
-    // } catch (err) {
-    //     console.log(err)
-    // }
-
-    // await peer.update(10);
 })();

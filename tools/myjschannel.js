@@ -199,7 +199,7 @@ class MyChannel extends events.EventEmitter {
     async hb() {
         while (1) {
             await this.sendMessage("beep beep");
-            await sleep(46 * 1000, true);
+            await sleep(40 * 1000, true);
         }
     }
 

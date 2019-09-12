@@ -128,7 +128,6 @@ export abstract class ServerChannel extends EventEmitter {
         options["initiatorId"] = client.address;
         options["initiatorAmount"] = client.amount;
         options["url"] = "ws"+MoreConfig.USER_NODE+'/channel';  // XXX XXX TODO
-        console.log(1, options["url"])
         options["role"] = "initiator";
         if (RECONNECT) {
             client.setChannelOptions(options);
@@ -224,6 +223,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
+        let MIN_DEPTH = 3;
         return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
@@ -232,6 +232,7 @@ export abstract class ServerChannel extends EventEmitter {
             host: "localhost",
             port: 3001,
             lockPeriod: 1,
+            timeoutFundingLock: 2*1000*60*3*MIN_DEPTH,
         });
     }
 
