@@ -86,7 +86,7 @@ export default {
           this.$isOnDemandMode &&
           (this.txKind === "deposit" || this.tx === "withdraw")
         ) {
-          this.$store.dispatch("leaveChannel");
+          await this.$store.dispatch("leaveChannel");
         }
         this.navigateOut();
       } else {
