@@ -12,13 +12,7 @@ const port=3001;
 //NODE=165.22.18.138:3001 HUB=165.22.76.228:3001
 let URL = jstools.getEnv("AENODE", jstools.getEnv("NODE", '165.22.18.138'));
 let HUBADDR = jstools.getEnv("HUB", '165.22.76.228');
-
-//const HUBHOST = "localhost";
-const HUBPORT = 3000;
-
-// if(-1===URL.indexOf(":")) {
-//     URL = URL + ":"+port;
-// }
+let HUBPORT = Number.parseInt(jstools.getEnv("HUBPORT", '3000'));
 
 const API_URL = -1===URL.indexOf("://") ? "http://" + URL : URL;
 const WS_URL = "ws://" + URL;  // http is ok too
