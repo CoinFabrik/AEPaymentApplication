@@ -1,5 +1,4 @@
 const fs = require('fs');
-//const { Account } = require('./../src/tools');
 const jstools = require('./jstools');
 const accounts = JSON.parse(fs.readFileSync('./accounts_idx.json', 'utf-8'));
 const myjschannel = require("./myjschannel");
