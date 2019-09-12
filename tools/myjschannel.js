@@ -250,6 +250,47 @@ class MyChannel extends events.EventEmitter {
     }
 }
 
+async function buy(customer, pr, log) {
+	return new Promise((resolve, reject)=> {
+		customer.on("message", (msg) => {
+			if (msg["type"] === "payment-request-rejected") {
+				log("payment canceled:" + JSON.stringify(msg));
+				reject(msg);
+			}
+			if (msg["type"] === "payment-request-accepted") {
+				log("sending payment..");
+				customer.update(pr.amount)
+					.then(() => {
+						log("payment sent!")
+					})
+					.catch((err)=>reject(err));
+			}
+			if (msg["type"] === "payment-request-completed") {
+				log("payment completed!")
+				resolve();
+			}
+			if (msg["type"] === "payment-request-canceled") {
+				log("payment request canceled is unexpected! :-o !")
+				reject(msg);
+			}
+		});
+		customer.sendMessage(pr).then(()=>{}).catch(reject);
+	});
+}
+
+class Message {
+    static PaymentRequest(merchant, merchant_name, customer, amount, something) {
+        return {
+            type: "payment-request",
+            id: jstools.genUUID(),
+            merchant: merchant,
+            customer: customer,
+            amount: amount,
+            something: something
+        }
+    }
+}
+
 async function sleep(ms, debug) {
     return new Promise((resolve, reject) => {
         try {
@@ -271,6 +312,8 @@ async function wait_for(func, exit_if) {
 
 module.exports = {
     MyChannel,
+    buy,
+    Message,
     get,
     sleep,
     INITIATOR_MIN_BALANCE,
