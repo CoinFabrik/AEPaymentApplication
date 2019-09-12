@@ -75,7 +75,7 @@ export class Hub extends EventEmitter {
             setTimeout( () => {
 	       this.log_mc_state(mc, "accepted");
                mc.sendCustomer(mc.msgPaymentAccepted());
-	    }, 4000);
+	    }, 1000);
         });
         this.on("wait-payment", (mc, pre_balance) => {
             this.log_mc_state(mc, "waiting");
@@ -105,6 +105,7 @@ export class Hub extends EventEmitter {
         this.on("payment-request-canceled", (mc) => {
             this.log_mc_state(mc, "canceled");
             mc.sendCustomer(mc.msgPaymentRequestCanceled());
+            mc.sendMerchant(mc.msgPaymentRequestCanceled());
         });
 
     }
