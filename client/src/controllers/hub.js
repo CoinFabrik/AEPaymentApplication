@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import axios from 'axios'
+import { getShortDate, getLongDate } from '../util/tools'
 
 class HubConnection {
   constructor(hubIp, userAddress) {
@@ -81,7 +82,7 @@ class HubConnection {
   }
 
   async getPrevChannelId(role) {
- 
+
     if (role === "client" || role === "merchant") {
       try {
         let output = await axios.get(this.hubIp + '/' + role + '/' + this.address);
@@ -100,6 +101,30 @@ class HubConnection {
       try {
         let output = await axios.get(this.hubIp + '/' + role + '/reset/' + this.address);
         return { success: true, result: output.data.result };
+      } catch (error) {
+        return this.handleError(error);
+      }
+    } else {
+      throw new Error("Unknown role: ") + role;
+    }
+  }
+
+  async getTxHistory(role, from) {
+    if (role === "client" || role === "merchant") {
+      try {
+        let res;
+        if (from === undefined)
+          res = await axios.get(
+            this.hubIp + '/' + role + "/history/" + this.address + "/"
+          );
+        else
+          res = await axios.get(
+            this.hubIp + '/' + role + "/history/" + this.address + "/" + from
+          );
+        const dataWithDate = res.data.map(element => { element.shortDate = getShortDate(element.timestamp); element.longDate = getLongDate(element.timestamp); return element; });
+        return {
+          success: true, txhistory: dataWithDate.map(element => { element.item = JSON.parse(element.item); return element; })
+        }
       } catch (error) {
         return this.handleError(error);
       }
