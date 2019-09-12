@@ -81,41 +81,50 @@ function pick_random(arr) {
 }
 
 (async function () {
-    let account = await jstools.get_account(
-        jstools.getArgv(2,
-            jstools.getEnv("CUSTOMER",
-                jstools.getEnv("ACCOUNT"))
-            ), "1234");
+    let arg2 = jstools.getArgv(2)
+    let merchant=null;
+    let account=null;
+
+    if (arg2.startsWith("ak_")) {
+        merchant = arg2;
+    } else {
+        account = arg2;
+    }
+
+    account = await jstools.get_account(jstools.getEnv("CUSTOMER",
+                jstools.getEnv("ACCOUNT", account)), "1234");
     console.log(JSON.stringify(account))
+
+    if (merchant==null) {
+        let merchants = await myjschannel.get_("merchant");
+        console.log("merchants online:", JSON.stringify(merchants))
+        if (merchants.length===0) {
+            console.log("no merchants online. come back later!");
+            process.exit(-1);
+        }
+        merchant = pick_random(merchants);
+    }
+
     let peer = await Customer.Init(account);
     if (peer==null)
         return;
     await peer.init();
+    await peer.showBalances("init");
+    await peer.initChannel();
+    await peer.wait_state("OPEN");
 
     async function quit(code) {
         try {
-            //await peer.showBalances("pre-shutdown");
-            console.log("pre leave.")
-            let result = await peer.leave();
-            await peer.wait_state("DISCONNECTED");
+            if(peer.STATUS==="OPEN") {
+                console.log("pre leave.")
+                await peer.leave();
+            }
         } finally {
             console.log("exit...");
             process.exit(code);
         }
     }
 
-
-    await peer.showBalances("init");
-    let merchants = await peer.get_("merchant");
-    console.log("merchants online:", JSON.stringify(merchants))
-    if (merchants.length===0) {
-        console.log("no merchants online. come back later!");
-        process.exit(-1);
-    }
-    let merchant = pick_random(merchants);
-
-    await peer.initChannel();
-    await peer.wait_state("OPEN");
     process.on('SIGINT', function() {
         console.log("Caught interrupt signal");
         quit(0).then(()=>{}).catch(console.error);
@@ -151,8 +160,7 @@ function pick_random(arr) {
         [{what:"beer", amount:"1"}]);
     await peer.sendPayment(pr);
 
-    await myjschannel.sleep(5000);
+    await myjschannel.sleep(1000);
     await peer.leave();
     await peer.wait_state("DISCONNECTED");
-
 })();

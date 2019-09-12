@@ -53,9 +53,9 @@ export class MerchantCustomerAccepted {
         }
 
         if (role==="merchant") {
-            mca.merchant = options["initiatorAddress"];
-        } else if (role==="customer") {
-            mca.customer = options["initiatorAddress"];
+            mca.merchant = options["initiatorId"];
+        } else {
+            mca.customer = options["initiatorId"];
         }
         mca.amount = options["initiatorAmount"];
         return mca;

@@ -332,6 +332,7 @@ export abstract class ServerChannel extends EventEmitter {
         await this.wait_state("OPEN");
         if (!this.client.isReestablish(options)) {
             const mca = MerchantCustomerAccepted.CreateInitialDeposit(options, this.Name);
+            console.log(9, JSON.stringify(mca))
             await RepoService.save(mca);
         }
         this.client.channelId = this.channel.id();

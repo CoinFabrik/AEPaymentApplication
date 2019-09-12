@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Actor, CClient} from "./client.entity";
 import {CustomerChannel, MerchantChannel, ServerChannel} from "./channel";
 import {EventEmitter} from 'events';
-import {array_rm, voidf} from "../tools";
+import {array_rm, sleep, voidf} from "../tools";
 import {FindManyOptions, getManager, getRepository} from "typeorm";
 import BigNumber from "bignumber.js";
 import {Hub} from "./hub";
@@ -23,9 +23,10 @@ export class RepoService {
           } catch (err) {
               the_err = err;
               idx += 1;
+              await sleep(100*idx);
           }
+          console.log("Persist error:");
           console.log(the_err);
-          console.log("persists!!!!");
       }
       return false;
   }

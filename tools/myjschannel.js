@@ -58,6 +58,12 @@ async function get(url) {
 }
 
 
+async function get_(actor) {
+    let url = (actor==="merchant") ? "/merchant" : "/client";
+    return JSON.parse(await get(url+"/all"));
+}
+
+
 class MyChannel extends events.EventEmitter {
     async get_(actor) {
         let url = (actor==="merchant") ? "/merchant" : "/client";
