@@ -108,7 +108,11 @@ KNOWN ISSUES:
 **NOTE** This version requires base-aepp >= 0.10.1.
 
 + Merchant funds query fix at Main Menu.
++ Merchant transaction history fix.
++ Main Menu fixes in OnDemand mode.
++ 
 + Touches on UI.
+
 
 KNOWN ISSUES:
 
