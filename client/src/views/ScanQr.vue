@@ -42,7 +42,14 @@ export default {
       } catch (err) {
         console.log("Scan Error: " + err);
         if (err.toString() === "Cancelled by user") {
-          this.$router.back();
+          if (this.subview === "onboarding") {
+            this.$router.replace("/");
+          } else if (this.subview === "pay-with-qr") {
+            this.$router.replace("main-menu");
+          } else {
+            console.log("ScanQR.vue: Cancelled, Falling back to main...");
+            this.$router.replace("/");
+          }
         } else this.onQrHasError(err);
       }
     },
