@@ -103,15 +103,16 @@ KNOWN ISSUES:
 + Page refresh is BROKEN in always-connected mode due to channel object "rehydration" issues (ref:  issue #651 in aepp-js-sdk); also in Merchant app while waiting for payment, Refresh will doom current open channel object!
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 
-0.9.6 WIP (190911)
+0.9.7 (190912)
 ------------------
 **NOTE** This version requires base-aepp >= 0.10.1.
 
 + Merchant funds query fix at Main Menu.
 + Merchant transaction history fix.
 + Main Menu fixes in OnDemand mode.
-+ 
-+ Touches on UI.
++ Channel Opening can be cancelled by user in mid of operation.
++ Leave operation request now properly waits for final DISCONNECTED state.
++ More Touches on UI.
 
 
 KNOWN ISSUES:

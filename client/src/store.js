@@ -252,7 +252,7 @@ export default new Vuex.Store({
         "leave",
         state.hubAddress
       );
-      await aeternity.waitForChannelStatus(state.channel, "died", 10000);
+      await aeternity.waitForChannelStatus(state.channel, "disconnected", 10000);
     },
     triggerUpdate({ dispatch, state, getters }, amount) {
       console.log('ACTION: triggerUpdate');
