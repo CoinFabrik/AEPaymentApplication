@@ -16,7 +16,7 @@ export class AppController {
 
   @Get("/")
   getHome(@Res() res: Response) {
-    res.send('Point app to this:<br/><iframe width="200" height="200" src="/qr" frameborder="0"></iframe>')
+    res.send('Point app at this:<br/>Onboarding Code<br/><iframe width="200" height="200" src="/qr" frameborder="0"></iframe>')
   }
 
   @Get("/qr")  //?data=:data
