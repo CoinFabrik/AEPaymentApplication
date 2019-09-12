@@ -14,7 +14,7 @@ export default {
   name: "ScanQR",
   components: {},
   props: {
-    subview: { type: String, default: "onboarding" }
+    subview: String
   },
   data() {
     return {
@@ -40,7 +40,7 @@ export default {
 
         await this.onQrHasData(scandata);
       } catch (err) {
-        console.log(err);
+        console.log("Scan Error: " + err);
         if (err.toString() === "Cancelled by user") {
           this.$router.back();
         } else this.onQrHasError(err);
@@ -118,16 +118,6 @@ export default {
         this.$router.push({
           name: "confirm-payment",
           params: { paymentData: this.qrData }
-        });
-      } else if (this.subview === "scanaddress") {
-        await this.doProcessAddress();
-      }
-    },
-    doProcessAddress() {
-      if (this.$isMerchantAppRole) {
-        this.$router.push({
-          name: "enterpurchase",
-          params: { customerAddress: this.qrData }
         });
       }
     },

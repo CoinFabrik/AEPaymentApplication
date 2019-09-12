@@ -63,9 +63,7 @@ export default {
     } catch (e) {
       this.$displayError(
         "Oops!",
-        "We could not connect to the payment hub to query your name. Please try again later. " +
-          "Reason: " +
-          e.toString(),
+        "We could not connect to the payment hub to query your name. Please try again later. ",
         () => {
           this.$router.replace({
             name: "scanqr",

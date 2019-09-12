@@ -60,29 +60,7 @@ export default {
         "Application cannot start. Set proper application role to either MERCHANT or CLIENT"
       );
     }
-    // Let's check if we were previously onboarded on refresh cases.
-
-    if (this.$store.state.onboardingDone) {
-      if (
-        this.$store.state.channelReconnectInfo === null ||
-        this.$store.state.channelReconnectInfo.channelId === null ||
-        this.$store.state.channelReconnectInfo.offchainTx === null
-      ) {
-        console.warn(
-          "Reconnect-on-refresh: Onboarding done, but no channel reconnection information was available."
-        );
-      } else {
-        console.log(
-          "Reconnect-on-refresh: Onboarding already done. Reconnecting to Channel Id" +
-            this.$store.state.channeReconnectInfo.channelId
-        );
-        this.$store.dispatch("reconnectChannel").then(channel => {
-          "statusChanged", this.onChannelStatusChange;
-          this.$router.replace("main-menu");
-        });
-      }
-    }
-
+    
     // Clear any previous state
     this.$store.dispatch("resetState");
   },
