@@ -66,7 +66,7 @@ export default class PaymentProcessor extends EventEmitter {
           // an update "cleanly".  So we will send another one, forcing  
           // an update conflict, and discarding this round.
           //
-          aeternity.sendMessage(this.channel, { type: "payment-user-cancel" }, this.hubAddress);
+          aeternity.sendMessage(this.channel, { type: "payment-user-cancel", id: this.paymentData.id }, this.hubAddress);
       
           this.status = PAYMENT_STATE_REJECTED_BY_USER;
           this.emit("payment-update-rejected-by-user")
