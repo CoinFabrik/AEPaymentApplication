@@ -17,6 +17,9 @@ export class MerchantCustomerAccepted {
     @Column({nullable: true})
     customer: string;
 
+    @Column({nullable: true})
+    channelId: string;
+
     @Column()
     action: Actions;
 
@@ -32,12 +35,13 @@ export class MerchantCustomerAccepted {
     @Column({nullable: true})
     item: string;
 
-    static Create(merchant, customer, uuid, amount: string, item: object) {
+    static Create(merchant, customer, channelId: string, uuid, amount: string, item: object) {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
         mca.action = "purchase";
         mca.merchant = merchant;
         mca.customer = customer;
+        mca.channelId = channelId;
         mca.amount = amount;
         mca.tx_uuid = uuid;
         mca.item = JSON.stringify(item);

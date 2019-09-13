@@ -38,7 +38,7 @@ export class MerchantCustomer {
         return this.all[id] == undefined;
     }
 
-    private constructor(readonly merchant: string, readonly customer: string, public msg: object,
+    private constructor(readonly merchant: string, readonly customer: string, readonly channelId: string, public msg: object,
                         private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
 				let id;
 				try {
@@ -70,7 +70,7 @@ export class MerchantCustomer {
     }
 
     getEntity(): MerchantCustomerAccepted {
-        return MerchantCustomerAccepted.Create(this.merchant, this.customer,
+        return MerchantCustomerAccepted.Create(this.merchant, this.customer, this.channelId,
             this.id, this.amount_str,  // XXX
             this.original_msg["info"]["something"]);
     }
@@ -154,7 +154,7 @@ export class MerchantCustomer {
         if (cclient == null) {
             throw new InvalidCustomer(customer);
         }
-        return new MerchantCustomer(merchant, customer, msg, cust_channel, mclient, cclient);
+        return new MerchantCustomer(merchant, customer, cclient.channelId, msg, cust_channel, mclient, cclient);
     }
 
     paymentReceived() {
