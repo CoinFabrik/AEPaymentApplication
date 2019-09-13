@@ -124,3 +124,12 @@ KNOWN ISSUES:
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
 + Do not switch subaccounts except before channel opening.
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
+
+0.9.8 (190913)
+--------------
+**NOTE** This version requires base-aepp >= 0.10.1.
+
++ Based on SDK 4.7.0
++ Fixes handling the user request of Cancelling channel open process.
++ On Open and Close, Tx Hash is available on screen. Can be copied to clipboard by clicking on it.
++ Main Menu shows "loader" while querying balances.
