@@ -25,7 +25,7 @@ enum PaymentState {
 
 export class MerchantCustomer {
     readonly id: string;
-    static all: { [key: string]: MerchantCustomer } = {};
+    static getall: { [key: string]: MerchantCustomer } = {};
     readonly original_msg: object;
     readonly _base: object;
     state: PaymentState = PaymentState.Waiting;
@@ -145,7 +145,7 @@ export class MerchantCustomer {
     }
 
     static Get(mc_id): MerchantCustomer {
-        return this.all[mc.id];
+        return this.all[mc_id];
     }
 
     static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
