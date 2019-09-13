@@ -309,6 +309,7 @@ module.exports = {
     buy,
     Message,
     get,
+    get_,
     sleep,
     INITIATOR_MIN_BALANCE,
     NETWORK_ID,

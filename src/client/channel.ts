@@ -215,7 +215,6 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
-        let MIN_DEPTH = 3;
         return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
@@ -224,7 +223,8 @@ export abstract class ServerChannel extends EventEmitter {
             host: "localhost",
             port: 3001,
             lockPeriod: 1,
-            timeoutFundingLock: 2*1000*60*3*MIN_DEPTH,
+            minimum_depth: MoreConfig.MinimumDepth,
+            timeoutFundingLock: 2*1000*60*3*MoreConfig.MinimumDepth,
         });
     }
 
