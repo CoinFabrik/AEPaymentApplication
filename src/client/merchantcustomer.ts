@@ -25,7 +25,7 @@ enum PaymentState {
 
 export class MerchantCustomer {
     readonly id: string;
-    static getall: { [key: string]: MerchantCustomer } = {};
+    static all: { [key: string]: MerchantCustomer } = {};
     readonly original_msg: object;
     readonly _base: object;
     state: PaymentState = PaymentState.Waiting;
