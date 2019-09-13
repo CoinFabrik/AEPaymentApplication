@@ -224,7 +224,7 @@ export abstract class ServerChannel extends EventEmitter {
             port: 3001,
             lockPeriod: 1,
             minimum_depth: MoreConfig.MinimumDepth,
-            timeoutFundingLock: 2*1000*60*3*MoreConfig.MinimumDepth,
+            timeoutFundingLock: 3*1000*60*3*MoreConfig.MinimumDepth,
         });
     }
 
