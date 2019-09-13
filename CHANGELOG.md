@@ -131,5 +131,11 @@ KNOWN ISSUES:
 
 + Based on SDK 4.7.0
 + Fixes handling the user request of Cancelling channel open process.
++ Fixes several bugs when the user canceled a purchase.
 + On Open and Close, Tx Hash is available on screen. Can be copied to clipboard by clicking on it.
 + Main Menu shows "loader" while querying balances.
++ Fixed My Activity back to Main Menu nav.
++ Fixed My Activity showing "loader" while querying TXs.
++ Fixed My Activity showing message if there are not transactions in channel.
++ Fixed detecting a timeout during LEAVE request in purchase operation
++ Fixed sending heartbeat_ack response when websocket was in CLOSING state
