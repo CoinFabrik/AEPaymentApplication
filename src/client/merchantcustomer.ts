@@ -3,7 +3,7 @@ import {clone, sleep, voidf} from "../tools";
 import {ClientService, RepoService} from "./client.service";
 import {Hub} from "./hub";
 import BigNumber from "bignumber.js";
-import {ServerChannel} from "./channel";
+import {Pending, ServerChannel} from "./channel";
 import {MerchantCustomerAccepted} from "./mca.entity";
 const uuidlib = require('uuid');
 
@@ -29,6 +29,7 @@ export class MerchantCustomer {
     readonly original_msg: object;
     readonly _base: object;
     state: PaymentState = PaymentState.Waiting;
+    public pending: Pending;
 
     static register(mc: MerchantCustomer) {
         this.all[mc.id] = mc;
@@ -143,6 +144,10 @@ export class MerchantCustomer {
         return this._cclient;
     }
 
+    static Get(mc_id): MerchantCustomerAccepted {
+        return this.all[mc.id]
+    }
+
     static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
         let merchant = msg["info"]["merchant"];
         let mclient = ClientService.getClientByAddress(merchant, "merchant");
@@ -187,4 +192,13 @@ export class MerchantCustomer {
         }
     }
 
+    reject(): boolean {
+        if(this.pending) {
+            let pending = this.pending;
+            this.pending = null;
+            pending.reject();
+            return true;
+        }
+        return false;
+    }
 }

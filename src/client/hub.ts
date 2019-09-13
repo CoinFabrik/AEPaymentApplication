@@ -5,6 +5,7 @@ import {PaymentTimeout} from "./client.entity";
 import {ClientService, RepoService} from "./client.service";
 import {MerchantCustomer} from "./merchantcustomer";
 import BigNumber from "bignumber.js";
+import {MerchantCustomerAccepted} from "./mca.entity";
 
 
 const WAIT_PAYMENT_TIMEOUT = 60;
@@ -57,6 +58,13 @@ export class Hub extends EventEmitter {
     // }
 
     private setup() {
+        this.on("user-payment-user-cancel", (msg, emitter_channel) => {
+            let mc = MerchantCustomer.Get(msg["info"]["id"]);
+            if (!mc.reject()) {
+                this.log("Pending not fouund for:" +  msg["info"]["id"])
+            }
+        });
+
         this.on("user-payment-request", (msg, emitter_channel) => {
             this.payment_request(msg, emitter_channel)
                 .then((mc) => {

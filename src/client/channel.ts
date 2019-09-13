@@ -54,7 +54,7 @@ const info = "info";
 
 const RECONNECT = true;
 
-interface Pending {
+export interface Pending {
     mc: MerchantCustomer,
     resolve: any,
     reject: any,
@@ -189,9 +189,9 @@ export abstract class ServerChannel extends EventEmitter {
                 this.last_update = Date.now();
                 try {
                     msg[info] = JSON.parse(msg[info]);
-                    if(msg[info]["type"]==="payment-user-cancel") {
-                        return this.update_clash();
-                    }
+                    // if(msg[info]["type"]==="payment-user-cancel") {
+                    //     return this.update_clash();
+                    // }
                     this.hub.emit("user-"+msg[info]["type"], msg, self);
                 } catch(err) {
                     this.log(err);
@@ -518,6 +518,7 @@ export abstract class ServerChannel extends EventEmitter {
                     resolve();
                 }
             }, reject, timeout};
+            mc.pending = pending;
             this.pending_mcs.push(pending);
         });
     }
