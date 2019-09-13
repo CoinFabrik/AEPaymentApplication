@@ -32,24 +32,31 @@ export class MerchantCustomer {
     public pending: Pending;
 
     static register(mc: MerchantCustomer) {
+        this.log(" ** REG: "+ mc.id)
         this.all[mc.id] = mc;
     }
 
     static ValidId(id: string): boolean {
+        this.log(" ** QUERY: "+ mc.id)
         return this.all[id] == undefined;
+    }
+
+    static Get(mc_id): MerchantCustomer {
+        this.log(" ** GET: "+ mc_id)
+        return this.all[mc_id];
     }
 
     private constructor(readonly merchant: string, readonly customer: string, public msg: object,
                         private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
-				let id;
-				try {
-					id = msg["info"]["id"];
-						if (!MerchantCustomer.ValidId(id)) {
-							throw new InvalidRequest("Invalid id:" + id);
-					}
-				}	catch (err) {
-					id = Guid.generate();
-					Hub.Get().log("generating new id: "+id);
+        let id;
+        try {
+            id = msg["info"]["id"];
+                if (!MerchantCustomer.ValidId(id)) {
+                    throw new InvalidRequest("Invalid id:" + id);
+            }
+        }	catch (err) {
+            id = Guid.generate();
+            Hub.Get().log("generating new id: "+id);
         }
         this.id = id;
         MerchantCustomer.register(this);
@@ -142,10 +149,6 @@ export class MerchantCustomer {
             this._cclient = ClientService.getClientByAddress(this.customer, "customer");
         }
         return this._cclient;
-    }
-
-    static Get(mc_id): MerchantCustomer {
-        return this.all[mc_id];
     }
 
     static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
