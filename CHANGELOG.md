@@ -104,18 +104,23 @@ KNOWN ISSUES:
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 
 0.9.7 (190912)
-------------------
+--------------
 **NOTE** This version requires base-aepp >= 0.10.1.
 
-+ Merchant funds query fix at Main Menu.
-+ Merchant transaction history fix.
-+ Main Menu fixes in OnDemand mode.
-+ Channel Opening can be cancelled by user in mid of operation.
-+ Leave operation request now properly waits for final DISCONNECTED state.
-+ More Touches on UI.
++ First version compliant for Node V5.0.0 
++ Balance in favor of Merchant peer now displayed properly at Main Menu.
++ Fixes in "My Activity" section for Merchants.
++ Main Menu  button fixes in OnDemand mode.
++ Channel opening sequence can be cancelled by user.
++ In On-demand Mode, Leave operation request now properly waits for final DISCONNECTED state.
++ Touches and little fixes on UI and navigation.
 
 
 KNOWN ISSUES:
 
++ Scrolling seems to be locked by container iframe, causing keyboard to display over the UI.  Switch to floating keyboard if possible to address this.
++ In some screens you may not be able to enter payment concept due to space constraints.
 + When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
-
++ Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
++ Do not switch subaccounts except before channel opening.
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
