@@ -190,7 +190,6 @@ aeternity.sendMessage = async function (channel, message, address) {
 aeternity.getTxConfirmations = async function (tx) {
   await aeternity.connectToBaseApp();
   const txData = await aeternity.client.tx(tx);
-  console.log("txData=" + txData);
   const txHeight = txData.blockHeight;
   console.log("TxHeight=" + txHeight);
   if (txHeight > 0) {

@@ -1,18 +1,25 @@
 <template>
   <div class="channel-open">
-    <!-- <LoadingModal
-      v-show="this.isWorking"
-      :text="this.getChannelStatusDescriptiveText"
-    />-->
     <ViewTitle title="Opening payment channel, please wait..." v-show="this.isWorking" />
-    <!-- <AeText v-show="this.isWorking" face="sans-l">Opening payment channel, please wait...</AeText> -->
     <br />
     <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
     <AeLoader v-show="this.isWorking" />
 
+    <AeText face="sans-xs" v-show="this.txHash !== ''">
+      <br/>
+      Channel creation TX Hash (click to copy) 
+      <b :style="{ color: hashColor }" @click="copyHash">{{ this.txHash }}</b>
+    </AeText>
+    
     <div v-show="this.isWorking">
       <br />
-      <AeButton extend fill="primary" @click="cancel">Cancel</AeButton>
+      <AeButton
+        face="round"
+        extend
+        fill="primary"
+        @click="cancel"
+        :disabled="this.channelStatus === 'opening-hub' || this.channelStatus === 'cancelling'"
+      >Cancel</AeButton>
     </div>
   </div>
 </template>
@@ -24,7 +31,8 @@ import HubConnection from "../controllers/hub";
 import aeternity from "../controllers/aeternity";
 import BigNumber from "bignumber.js";
 import { DisplayUnitsToAE } from "../util/numbers";
-import { createCipher } from "crypto";
+import { TxBuilder } from "@aeternity/aepp-sdk";
+import copy from "copy-to-clipboard";
 
 export default {
   name: "ChannelOpen",
@@ -32,7 +40,10 @@ export default {
   data() {
     return {
       channelStatus: "unknown",
-      isWorking: false
+      isWorking: false,
+      userCancel: false,
+      txHash: "",
+      hashCopied: false
     };
   },
   computed: {
@@ -51,10 +62,15 @@ export default {
             return "Channel opening transaction signed by both parties";
           case "open":
             return "Channel successfully opened";
+          case "cancelling":
+            return "Cancelling operation";
           default:
             return "Working...";
         }
       } else return "Unknown state";
+    },
+    hashColor () {
+      return this.hashCopied ? '#e4416f' : '#000000'
     }
   },
   mounted: async function() {
@@ -101,12 +117,32 @@ export default {
     }
   },
   beforeDestroy() {
+    window.eventBus.$off("channel-onchain-tx", this.onChainTx);
     window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
   },
   methods: {
+    async copyHash() {
+      if (copy(this.txHash)) {
+        this.hashCopied = true;
+      }
+    },
     async cancel() {
-      //this.$swal.fire({ title: "Are you sure?)
-      await this.$store.state.channel.disconnect();
+      this.channelStatus = "cancelling";
+      this.userCancel = true;
+      try {
+        await this.$store.state.channel.disconnect();
+        await aeternity.waitForChannelStatus(
+          this.$store.state.channel,
+          "disconnected",
+          5000
+        );
+      } catch (e) {
+        this.$swal.fire({
+          type: "error",
+          text: "Cancel operation failed. Reason is " + e.toString()
+        });
+      }
+
       this.$router.replace({
         name: "deposit",
         params: {
@@ -114,11 +150,19 @@ export default {
         }
       });
     },
+    async onChainTx(tx) {
+      this.txHash = TxBuilder.buildTxHash(tx);
+      console.log("Obtained TX Hash: ", this.txHash);
+    },
     onChannelDisconnected() {
       this.isWorking = false;
 
+      if (this.userCancel) {
+        return;
+      }
+
       if (this.$store.state.channelOpenDone && this.$isOnDemandMode) {
-        console.log("Ignoring disconnect");
+        console.log("Ignoring handler (disconnect by on-demand LEAVE)");
         return;
       }
 
@@ -228,6 +272,7 @@ export default {
           // (see ShowPaymentQr.vue)
           this.suscribeMerchantPaymentEvent();
         }
+        window.eventBus.$on("channel-onchain-tx", this.onChainTx);
       } catch (e) {
         this.$displayError(
           "Oops! There is some problem",

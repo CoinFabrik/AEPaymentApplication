@@ -197,6 +197,10 @@ export default new Vuex.Store({
               commit('setLastOpenChannelState', state.offchainTx);
             })
 
+            channel.on("onChainTx", (tx) => {
+              window.eventBus.$emit('channel-onchain-tx', tx);
+            })
+
             channel.on(
               "message", (message) => {
                 console.warn("Global-message-handler: ", message);

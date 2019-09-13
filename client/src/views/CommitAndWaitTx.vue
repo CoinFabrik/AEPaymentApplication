@@ -2,12 +2,16 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText
-      face="sans-l"
-      fill="primary"
-    >
-      {{ confirmPercent === NaN ? 0 : confirmPercent }}%
+    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
+    <br />
+    <AeText face="sans-xs" v-show="this.transactionHash !== null">
+      <br />Channel creation TX Hash (click to copy)
+      <b
+        :style="{ color: hashColor }"
+        @click="copyHash"
+      >{{ this.transactionHash }}</b>
     </AeText>
+    <br />
     <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
@@ -21,6 +25,8 @@ const STATUS_INITIALIZED = 0,
 import aeternity from "../controllers/aeternity";
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
+import { sleep } from "../util/tools";
+import copy from "copy-to-clipboard";
 
 export default {
   name: "CommitAndWaitTx",
@@ -34,7 +40,8 @@ export default {
       viewStatus: STATUS_INITIALIZED,
       errorText: null,
       transaction: null,
-      transactionHash: null
+      transactionHash: null,
+      hashCopied: false
     };
   },
   computed: {
@@ -42,6 +49,9 @@ export default {
       return Math.round(
         Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100)
       );
+    },
+    hashColor() {
+      return this.hashCopied ? "#e4416f": "#000000"
     }
   },
   watch: {},
@@ -69,6 +79,11 @@ export default {
     }
   },
   methods: {
+    copyHash() {
+      if (copy(this.transactionHash)) {
+        this.hashCopied = true;
+      }
+    },
     async trackTxProgress() {
       if (this.transaction != null && this.transactionHash == null) {
         this.transactionHash = TxBuilder.buildTxHash(this.transaction);
@@ -79,8 +94,8 @@ export default {
         this.transactionHash
       );
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
-      if (this.elapsedBlocks >= WAIT_BLOCKS + 1) {
-        // Yes, we do wait until WAIT_BLOCKS + 1 to show 100% for a little while ...
+      if (this.elapsedBlocks >= WAIT_BLOCKS) {
+        await sleep(1000); // keep 100% for a while
 
         if (
           this.$isOnDemandMode &&
@@ -104,7 +119,7 @@ export default {
               // This is a HACK!
               // (after deposit the channel will die by a bug, so we need to re-query the balances
               //  to properly display them in the main menu ....)
-              
+
               await this.$store.dispatch("openChannel");
               await this.$store.dispatch("updateChannelBalances");
               await this.$store.dispatch("leaveChannel");
@@ -270,7 +285,7 @@ export default {
           return;
         }
         throw new Error(
-          "Cannot commit WITHDRAW transaction. Reason: " + e.toString()
+          "Cannot commit CLOSE transaction. Reason: " + e.toString()
         );
       }
     },
