@@ -13,7 +13,7 @@
           </AeText>
         </b-col>
         <b-col>
-          <ae-amount
+          <ae-amount v-show="!loading"
             class="amount"
             align="left"
             :value="walletBalance"
@@ -21,6 +21,7 @@
             size="small"
             clear="right"
           />
+          <AeLoader v-show="loading" />
         </b-col>
       </b-row>
       <AeDivider />
@@ -36,12 +37,14 @@
           </AeText>
         </b-col>
         <b-col>
-          <ae-amount
+          
+          <ae-amount v-show="!loading"
             class="amount"
             :value="channelBalance"
             unit="Æ"
             size="small"
           />
+          <AeLoader v-show="loading" />
         </b-col>
       </b-row>
     </AePanel>
@@ -52,6 +55,6 @@
 <script>
 	export default {
 		name: "ViewBalances",
-		props: ['walletBalance', 'channelBalance'],
+		props: ['walletBalance', 'channelBalance', 'loading'],
 	};
 </script>

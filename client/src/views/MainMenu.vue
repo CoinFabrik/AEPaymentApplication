@@ -5,6 +5,7 @@
       style="margin-top:4vh;"
       :wallet-balance="getMyWalletBalance.toFixed(2)"
       :channel-balance="$isMerchantAppRole ? getTotalBalance.toFixed(2) : getMyChannelBalance.toFixed(2)"
+      :loading="balanceLoading"
     />
 
     <ViewButtonSection
@@ -25,7 +26,6 @@
       :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
     />
 
-
     <CloseModal
       text="Close channel?"
       :on-confirm="this.closeChannel"
@@ -40,6 +40,9 @@ import BigNumber from 'bignumber.js'
 
 export default {
   name: "MainMenu",
+  data() {
+    return { balanceLoading: true }
+  },
   computed: {
     getName: function() {
       return this.$store.state.userName;
@@ -61,6 +64,7 @@ export default {
     }
   },
   async mounted() {
+    this.balanceLoading = true;
     try {
       await this.$store.dispatch("updateOnchainBalance");
 
@@ -71,8 +75,11 @@ export default {
       if (!this.$isOnDemandMode) {
         await this.$store.dispatch("updateChannelBalances");
       }
+
+      this.balanceLoading = false;
     } catch (e) {
-      this.$displayError("Oops!", e.toString());
+      this.$displayError("Sorry", "We could not query your balances. Reason is " + e.toString());
+      
     }
   },
   methods: {
