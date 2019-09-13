@@ -54,6 +54,13 @@ const info = "info";
 
 const RECONNECT = true;
 
+interface Pending {
+    mc: MerchantCustomer,
+    resolve: any,
+    reject: any,
+    timeout: any,
+}
+
 export abstract class ServerChannel extends EventEmitter {
     private static readonly xlogger = new Logger("Channel");
     is_initiator: boolean;
@@ -71,23 +78,9 @@ export abstract class ServerChannel extends EventEmitter {
     private last_update: number;
     private last_ping: number = null;
     private disconnect_by_leave = false;
-    pending_mcs: MerchantCustomer[] = [];
+    private pending_mcs: Pending[] = [];
     private closing = false;
     private died = false;
-
-
-    pendingPayment(mc: MerchantCustomer) {
-        this.pending_mcs.push(mc);
-    }
-
-    checkPayment(amount: BigNumber) {
-        this.pending_mcs.forEach((mc)=> {
-           if (amount.isEqualTo(mc.amount)) {
-                mc.paymentReceived();
-                array_rm(this.pending_mcs, mc);
-           }
-        });
-    }
 
     log(msg: string) {
         if (this.logger==undefined) {
@@ -272,6 +265,12 @@ export abstract class ServerChannel extends EventEmitter {
                 }
                 if ((new BigNumber(update["amount"])).isNegative()) {
                     throw new InvalidUpdateNegativeAmount(update);
+                }
+                for (let pending of this.pending_mcs) {
+                    if(pending.mc.amount.isEqualTo(new BigNumber(update["amount"]))) {
+                        this.removePending(pending);
+                        pending.resolve();
+                    }
                 }
             }
         }
@@ -506,6 +505,26 @@ export abstract class ServerChannel extends EventEmitter {
             this.log(`deposit sign: ${tx}`);
             return this.nodeuser.signTransaction(tx);
         });
+    }
+
+    async pendingPayment(mc: MerchantCustomer, cb, timeout_ms) {
+        return new Promise((resolve,reject) => {
+            let timeout = setTimeout(reject, timeout_ms);
+            let pending = {mc, resolve: () => {
+                clearTimeout(timeout);
+                try {
+                    cb();
+                } finally {
+                    resolve();
+                }
+            }, reject, timeout};
+            this.pending_mcs.push(pending);
+        });
+    }
+
+    private removePending(pending: Pending) {
+        clearTimeout(pending.timeout);
+        array_rm(this.pending_mcs, pending);
     }
 }
 

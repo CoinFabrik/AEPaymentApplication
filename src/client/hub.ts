@@ -80,7 +80,7 @@ export class Hub extends EventEmitter {
         this.on("wait-payment", (mc, pre_balance) => {
             this.log_mc_state(mc, "waiting");
 
-            if (this.polling) {
+            if (0) { //this.polling
                 this.wait_payment_polling(mc, pre_balance)
                     .then(() => {
                         this.emit("payment-request-completed", mc)
@@ -89,12 +89,13 @@ export class Hub extends EventEmitter {
                         this.emit("payment-request-canceled", mc)
                     });
             } else {
-                setTimeout(()=>{
-                    mc.paymentTimedout();
-                }, WAIT_PAYMENT_TIMEOUT * 1000);
                 this.wait_payment_non_polling(mc, pre_balance)
-                    .then(voidf)
-                    .catch(console.error);
+                    .then(() => {
+                        this.emit("payment-request-completed", mc)
+                    })
+                    .catch(() => {
+                        this.emit("payment-request-canceled", mc)
+                    });
             }
         });
         this.on("payment-request-completed", (mc) => {
@@ -111,7 +112,14 @@ export class Hub extends EventEmitter {
     }
 
     async wait_payment_non_polling(mc: MerchantCustomer, pre_balance) {
-        return mc.cclient.channel.pendingPayment(mc);
+        return mc.cclient.channel.pendingPayment(mc,
+            () => {this._save(mc)},
+            WAIT_PAYMENT_TIMEOUT * 1000);
+    }
+
+    async _save(mc) {
+        const mca = mc.getEntity();
+        await RepoService.save(mca);
     }
 
     async wait_payment_polling(mc: MerchantCustomer, pre_balance) {
@@ -122,9 +130,7 @@ export class Hub extends EventEmitter {
             let sum = pre_balance.plus(mc.amount);
             this.log(`check balance..: ${pre_balance.toString(10)} ${last_balance.toString(10)} to ${sum.toString(10)} ..`);
             if (last_balance.isGreaterThanOrEqualTo(pre_balance.plus(mc.amount))) {
-                const mca = mc.getEntity();
-                await RepoService.save(mca);
-                return
+                return this._save(mc)
             }
             await sleep(100);
         }
