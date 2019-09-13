@@ -4,6 +4,17 @@
 
 AEHub
 
+### parameters
+
+`AENODE`: node to be used by hub itself.
+`MIN_DEPTH`: amount of blocks to wait for channel confirmation. default: `3`
+`USER_NODE`: url without protocol for client connection to node. Example: `s://anode.server`
+`QR_HUB_URL`: hub url to be used inside qr-code at https://server/
+
+`PORT`: port hub will listen. default: `3000` 
+`HOST`: host-ip to listen in. default: `0.0.0.0`
+
+
 ## Installation
 
 ```bash

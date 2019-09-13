@@ -329,7 +329,6 @@ export abstract class ServerChannel extends EventEmitter {
         await this.wait_state("OPEN");
         if (!this.client.isReestablish(options)) {
             const mca = MerchantCustomerAccepted.CreateInitialDeposit(options, this.Name);
-            console.log(9, JSON.stringify(mca))
             await RepoService.save(mca);
         }
         this.client.channelId = this.channel.id();
@@ -355,7 +354,6 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
             if ((!this.disconnect_by_leave) && !(this.died)) {
-                console.log("STATE AT DISCONNECT:", JSON.stringify(this.channel.state));
                 this.client.channelId="";
                 this.client.channelSt="";
                 this._save_state();
@@ -430,20 +428,15 @@ export abstract class ServerChannel extends EventEmitter {
         //   tx => this.nodeuser.signTransaction(tx)
         // );
         //
-        // console.log(signedTx);
-        // console.log(99, typeof signedTx);
-
         const balances = await this.channel.balances([this.address, this.opposite]);
         const initiatorBalanceBeforeClose = await this.nodeuser.balance(this.opposite);
         const responderBalanceBeforeClose = await this.nodeuser.balance(this.address);
 
         let chanid = this.client.channelId;
 
-        console.log(1, this.client.channelSt);
         const poi = await this.channel.poi({
           accounts: [this.address, this.opposite]
         });
-        console.log(2, this.client.channelSt);
 
         let closeSoloTxFee = await this.nodeuser.channelCloseSoloTx({
             channelId: chanid,
@@ -462,17 +455,12 @@ export abstract class ServerChannel extends EventEmitter {
 
         const initiatorBalanceBeforeClose2 = await this.nodeuser.balance(this.opposite);
         const responderBalanceBeforeClose2 = await this.nodeuser.balance(this.address);
-        console.log(1, initiatorBalanceBeforeClose);
-        console.log(2, initiatorBalanceBeforeClose2);
-        console.log(3, responderBalanceBeforeClose);
-        console.log(4, responderBalanceBeforeClose2);
     }
 
     async signAndSend(tx) {
         let fee = unpackTx(tx).tx.fee;
         let signed = await this.nodeuser.signTransaction(tx);
         let resulsut = await this.nodeuser.sendTransaction(signed, {waitMined: true});
-        console.log("resultsult:", resulsut);
         return {result: resulsut, fee: fee}
     }
 
