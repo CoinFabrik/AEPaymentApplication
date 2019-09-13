@@ -1,80 +1,37 @@
 <template>
   <b-container class="confirm-payment">
-    <AeText
-      weight="bold"
-      align="center"
-      face="sans-l"
-    >
-      Check your payment
-    </AeText>
+    <AeText weight="bold" align="center" face="sans-l">Check your payment</AeText>
     <div class="paymentinfo">
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Merchant
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Merchant</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ registeredMerchantName }}
-          </AeText>
+          <AeText face="mono-base">{{ registeredMerchantName }}</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Amount
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Amount</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ amountAE }} AE
-          </AeText>
+          <AeText face="mono-base">{{ amountAE }} AE</AeText>
         </div>
       </div>
 
       <div class="row">
         <div class="column">
-          <AeText
-            fill="secondary"
-            face="sans-base"
-          >
-            Concept
-          </AeText>
+          <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">
-            {{ paymentData.something }}
-          </AeText>
+          <AeText face="mono-base">{{ paymentData.something }}</AeText>
         </div>
       </div>
     </div>
     <AeDivider />
-    <AeButton
-      class="margin"
-      face="round"
-      fill="primary"
-      extend
-      @click="confirm()"
-    >
-      Confirm
-    </AeButton>
-    <AeButton
-      class="margin"
-      face="round"
-      fill="secondary"
-      extend
-      @click="cancel()"
-    >
-      Cancel
-    </AeButton>
+    <AeButton class="margin" face="round" fill="primary" extend @click="confirm()">Confirm</AeButton>
+    <AeButton class="margin" face="round" fill="secondary" extend @click="cancel()">Cancel</AeButton>
   </b-container>
 </template>
 
@@ -130,10 +87,9 @@ export default {
       }
     },
     async triggerPayment() {
-      
       this.paymentData.id = uuidv4();
       console.log("Generated Payment Identifier: " + this.paymentData.id);
-  
+
       paymentProcessor = new PaymentProcessor(
         this.$store.getters.initiatorAddress,
         this.$store.getters.responderAddress,
@@ -162,9 +118,7 @@ export default {
                   html: "Your payment has been successfully submitted."
                 })
                 .then(async () => {
-                  if (this.$isOnDemandMode) {
-                    await this.$store.dispatch("leaveChannel");
-                  }
+                  await this.connectionLeaveIfRequired();
                   this.$router.replace("main-menu");
                 });
             });
@@ -179,9 +133,7 @@ export default {
                     "The Payment Hub timed out your payment request <br> Please try again later"
                 })
                 .then(async () => {
-                  if (this.$isOnDemandMode) {
-                    await this.$store.dispatch("leaveChannel");
-                  }
+                  await this.connectionLeaveIfRequired();
                   this.$router.replace("main-menu");
                 });
             });
@@ -194,9 +146,7 @@ export default {
                   html: "You have cancelled your payment."
                 })
                 .then(async () => {
-                  if (this.$isOnDemandMode) {
-                    await this.$store.dispatch("leaveChannel");
-                  }
+                  await this.connectionLeaveIfRequired();
                   this.$router.replace("main-menu");
                 });
             });
@@ -214,9 +164,7 @@ export default {
                       paymentRejectInfo
                   })
                   .then(async () => {
-                    if (this.$isOnDemandMode) {
-                      await this.$store.dispatch("leaveChannel");
-                    }
+                    await this.connectionLeaveIfRequired();
                     this.$router.replace("main-menu");
                   });
               }
@@ -232,9 +180,7 @@ export default {
                     "The transfer of funds over the channel has been rejected  <br> Please try again later"
                 })
                 .then(async () => {
-                  if (this.$isOnDemandMode) {
-                    await this.$store.dispatch("leaveChannel");
-                  }
+                  await this.connectionLeaveIfRequired();
                   this.$router.replace("main-menu");
                 });
             });
@@ -253,15 +199,33 @@ export default {
                   "Your payment submission has timed out. This may indicate connection problems. <br> Please try again later"
               })
               .then(async () => {
-                if (this.$isOnDemandMode) {
-                  await this.$store.dispatch("leaveChannel");
-                }
+                await this.connectionLeaveIfRequired();
               });
           }
         });
     },
     cancel() {
       this.$router.replace("main-menu");
+    },
+    async connectionLeaveIfRequired() {
+      try {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("leaveChannel");
+        }
+      } catch (e) {
+        this.$swal
+          .fire({
+            heightAuto: false,
+            type: "error",
+            title: "Oops!",
+            html:
+              "There was a problem leaving your channel. Reason is: " +
+              e.toString()
+          })
+          .then(() => {
+            this.$router.replace("main-menu");
+          });
+      }
     },
     async ensureConnectionOpen() {
       if (this.$isOnDemandMode) {
@@ -297,7 +261,7 @@ export default {
           this.$swal.fire({
             text: "Opening channel...",
             onBeforeOpen: () => {
-             this.$swal.showLoading();
+              this.$swal.showLoading();
             },
             allowOutsideClick: false
           });
@@ -312,7 +276,8 @@ export default {
               title: "Oops!",
               html:
                 "There was a problem opening your channel. Reason is: " +
-                e.toString() + "<br>Please try again later"
+                e.toString() +
+                "<br>Please try again later"
             })
             .then(() => {
               this.$router.replace("main-menu");
