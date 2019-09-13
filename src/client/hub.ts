@@ -6,6 +6,7 @@ import {ClientService, RepoService} from "./client.service";
 import {MerchantCustomer} from "./merchantcustomer";
 import BigNumber from "bignumber.js";
 import {MerchantCustomerAccepted} from "./mca.entity";
+import {Pending} from "./channel";
 
 
 const WAIT_PAYMENT_TIMEOUT = 60;
@@ -58,10 +59,10 @@ export class Hub extends EventEmitter {
     // }
 
     private setup() {
-        this.on("user-payment-user-cancel", (msg, emitter_channel) => {
+        this.on("user-payment-user-cancel", (msg) => {
             let mc = MerchantCustomer.Get(msg["info"]["id"]);
             if (!mc.reject()) {
-                this.log("Pending not fouund for:" +  msg["info"]["id"])
+                this.log("Pending not found for:" +  msg["info"]["id"])
             }
         });
 
@@ -79,32 +80,29 @@ export class Hub extends EventEmitter {
             emitter_channel.sendMessage(err_msg).then(voidf).catch(console.error);
         });
         this.on("payment-request-accepted", (mc) => {
-	       this.log_mc_state(mc, "pre-accepted");
+            this.log_mc_state(mc, "pre-accepted");
             setTimeout( () => {
-	       this.log_mc_state(mc, "accepted");
+	           this.log_mc_state(mc, "accepted");
                mc.sendCustomer(mc.msgPaymentAccepted());
 	    }, 1000);
         });
         this.on("wait-payment", (mc, pre_balance) => {
-            this.log_mc_state(mc, "waiting");
-
-            if (0) { //this.polling
-                this.wait_payment_polling(mc, pre_balance)
-                    .then(() => {
-                        this.emit("payment-request-completed", mc)
-                    })
-                    .catch(() => {
-                        this.emit("payment-request-canceled", mc)
-                    });
+            let p;
+            if (0) {
+                p = this.wait_payment_polling(mc, pre_balance)
             } else {
-                this.wait_payment_non_polling(mc, pre_balance)
-                    .then(() => {
-                        this.emit("payment-request-completed", mc)
-                    })
-                    .catch(() => {
-                        this.emit("payment-request-canceled", mc)
-                    });
+                p = this.wait_payment_non_polling(mc, pre_balance)
             }
+            this.log_mc_state(mc, "waiting");
+            p.then(() => {
+                mc.cclient.channel.removePending(mc);
+                this._save(mc);
+                this.emit("payment-request-completed", mc)
+            })
+            .catch(() => {
+                mc.cclient.channel.removePending(mc);
+                this.emit("payment-request-canceled", mc)
+            });
         });
         this.on("payment-request-completed", (mc) => {
             this.log_mc_state(mc, "completed");
@@ -121,7 +119,7 @@ export class Hub extends EventEmitter {
 
     async wait_payment_non_polling(mc: MerchantCustomer, pre_balance) {
         return mc.cclient.channel.pendingPayment(mc,
-            () => {this._save(mc)},
+            () => {},  //this._save(mc)
             WAIT_PAYMENT_TIMEOUT * 1000);
     }
 
@@ -138,7 +136,7 @@ export class Hub extends EventEmitter {
             let sum = pre_balance.plus(mc.amount);
             this.log(`check balance..: ${pre_balance.toString(10)} ${last_balance.toString(10)} to ${sum.toString(10)} ..`);
             if (last_balance.isGreaterThanOrEqualTo(pre_balance.plus(mc.amount))) {
-                return this._save(mc)
+                return //this._save(mc)
             }
             await sleep(100);
         }

@@ -82,7 +82,7 @@ function pick_random(arr) {
 
     account = await jstools.get_account(jstools.getEnv("CUSTOMER",
                 jstools.getEnv("ACCOUNT", account)), "1234");
-    console.log(JSON.stringify(account))
+    console.log(JSON.stringify(account));
 
     if (merchant==null) {
         let merchants = await myjschannel.get_("merchant");

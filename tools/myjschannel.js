@@ -109,6 +109,15 @@ class MyChannel extends events.EventEmitter {
         return this.is_initiator? "initiator" : "responder";
     }
 
+    static async anode() {
+        return await Universal({
+            networkId: NETWORK_ID,
+            url: API_URL,
+            internalUrl: INTERNAL_API_URL,
+            compilerUrl: compilerURL
+        });
+    }
+
     async init() {
         this.nodeuser = await Universal({
             networkId: NETWORK_ID,

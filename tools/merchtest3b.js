@@ -4,6 +4,7 @@
 const myjschannel = require("./myjschannel");
 const MyChannel = myjschannel.MyChannel;
 const jstools = require('./jstools');
+const BigNumber = require('bignumber.js');
 
 
 class Merchant extends MyChannel {
@@ -20,6 +21,12 @@ class Merchant extends MyChannel {
     }
 
     static async Init(account) {
+        let node = await MyChannel.anode();
+        let balance = await node.balance(account.publicKey);
+        if (new BigNumber(balance).isLessThan(new BigNumber(myjschannel.INITIATOR_MIN_BALANCE))) {
+            console.log("WARNING: not enough balance: "+balance.toString(10) + " - required: "+myjschannel.INITIATOR_MIN_BALANCE)
+        }
+
         let sdata = await MyChannel.register("merchant",
                             account.publicKey, myjschannel.INITIATOR_MIN_BALANCE,
                             "dave's beer");
@@ -53,6 +60,7 @@ async function show_hub_balance(peer) {
         peer = await Merchant.Init(account);
     } catch(err) {
         console.log("cant connect!");
+        console.log(err);
         return;
     }
 

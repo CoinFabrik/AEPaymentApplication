@@ -268,7 +268,6 @@ export abstract class ServerChannel extends EventEmitter {
                 }
                 for (let pending of this.pending_mcs) {
                     if(pending.mc.amount.isEqualTo(new BigNumber(update["amount"]))) {
-                        this.removePending(pending);
                         pending.resolve();
                     }
                 }
@@ -523,8 +522,13 @@ export abstract class ServerChannel extends EventEmitter {
         });
     }
 
-    private removePending(pending: Pending) {
-        clearTimeout(pending.timeout);
+    private removePending(mc: MerchantCustomer) {
+        let pending = mc.pending;
+        mc.pending = null;
+        try{
+            clearTimeout(pending.timeout);
+        }
+        catch(err) {}
         array_rm(this.pending_mcs, pending);
     }
 }
