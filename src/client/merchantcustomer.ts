@@ -144,8 +144,8 @@ export class MerchantCustomer {
         return this._cclient;
     }
 
-    static Get(mc_id): MerchantCustomerAccepted {
-        return this.all[mc.id]
+    static Get(mc_id): MerchantCustomer {
+        return this.all[mc.id];
     }
 
     static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
