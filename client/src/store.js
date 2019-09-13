@@ -215,7 +215,7 @@ export default new Vuex.Store({
                 // accepted/rejected are treated as payment-request-ack
                 // completed/canceled are treated as payment-complete-ack
                 let eventname, eventdata, info;
-                if (infoObj.type === "heartbeat") {
+                if (infoObj.type === "heartbeat" && state.channel.status() === "open") {
                   state.channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
                   return;
                 }
