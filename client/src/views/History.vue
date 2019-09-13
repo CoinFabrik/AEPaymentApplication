@@ -1,7 +1,14 @@
 <template>
   <b-container class="history-view">
     <ViewTitle title="Transaction History" />
-    <b-row>
+    <div v-show="isLoading">
+      <AeText>Loading...</AeText>
+      <AeLoader />
+    </div>
+    <div v-show="!isLoading && history.length === 0">
+      <AeText>You don't have any channel transactions yet</AeText>
+    </div>
+    <b-row v-show="!isLoading && history.length > 0">
       <div class="column">
         <AeText weight="500" face="sans-s">Date</AeText>
       </div>
@@ -80,12 +87,15 @@ export default {
   data: () => {
     return {
       history: [],
-      modal: {}
+      modal: {},
+      isLoading: true
     };
   },
   async mounted() {
+    this.isLoading = true;
     hub = new HubConnection(this.$store.state.hubUrl, await aeternity.getAddress());
     await this.addItems();
+    this.isLoading = false;
   },
   methods: {
     addItems: async function(to, from) {
