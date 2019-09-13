@@ -123,7 +123,7 @@ export default {
       }
     },
     goBack: function() {
-      this.$router.back();
+      this.$router.replace("main-menu");
     },
     isIOS: function() {
       if (/iPhone/i.test(navigator.userAgent)) {
