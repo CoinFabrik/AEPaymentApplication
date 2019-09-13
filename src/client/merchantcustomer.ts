@@ -32,17 +32,17 @@ export class MerchantCustomer {
     public pending: Pending;
 
     static register(mc: MerchantCustomer) {
-        this.log(" ** REG: "+ mc.id)
+        console.log(" ** REG: "+ mc.id)
         this.all[mc.id] = mc;
     }
 
     static ValidId(id: string): boolean {
-        this.log(" ** QUERY: "+ mc.id)
+        console.log(" ** QUERY: "+ mc.id)
         return this.all[id] == undefined;
     }
 
     static Get(mc_id): MerchantCustomer {
-        this.log(" ** GET: "+ mc_id)
+        console.log(" ** GET: "+ mc_id)
         return this.all[mc_id];
     }
 
