@@ -97,7 +97,9 @@ export class Hub extends EventEmitter {
             p.then(() => {
                 mc.cclient.channel.removePending(mc);
                 this._save(mc);
-                this.emit("payment-request-completed", mc)
+                setTimeout(() => {
+                    this.emit("payment-request-completed", mc);
+                }, 400);
             })
             .catch(() => {
                 mc.cclient.channel.removePending(mc);
