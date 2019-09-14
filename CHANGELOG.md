@@ -125,7 +125,7 @@ KNOWN ISSUES:
 + Do not switch subaccounts except before channel opening.
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 
-0.9.8 (190913)
+0.9.8 (190914)
 --------------
 **NOTE** This version requires base-aepp >= 0.10.1.
 
@@ -139,3 +139,13 @@ KNOWN ISSUES:
 + Fixed My Activity showing message if there are not transactions in channel.
 + Fixed detecting a timeout during LEAVE request in purchase operation
 + Fixed sending heartbeat_ack response when websocket was in CLOSING state
+
+KNOWN ISSUES
+
++ Scrolling seems to be locked by container iframe, causing keyboard to display over the UI.  Switch to floating keyboard if possible to address this.
++ In some screens you may not be able to enter payment concept due to space constraints.
++ When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
++ On-Chain-TX info may not be shown under Node 5.X testnet (see https://forum.aeternity.com/t/onchaintx-event-with-create-channel-tx-differences-between-node-versions/4729)
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
++ Do not switch subaccounts except before channel opening.
++ Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
