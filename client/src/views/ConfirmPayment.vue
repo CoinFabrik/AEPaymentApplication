@@ -229,6 +229,7 @@ export default {
     },
     async ensureConnectionOpen() {
       if (this.$isOnDemandMode) {
+        console.log("Waiting for channel to open...");
         await this.$store.dispatch("openChannel");
       }
     },
@@ -268,6 +269,7 @@ export default {
         }
         try {
           await this.ensureConnectionOpen();
+          this.triggerPayment();
         } catch (e) {
           this.$swal
             .fire({
@@ -283,8 +285,7 @@ export default {
               this.$router.replace("main-menu");
             });
         }
-        this.$swal.close();
-        this.triggerPayment();
+        //this.$swal.close();
       }
     }
   }
