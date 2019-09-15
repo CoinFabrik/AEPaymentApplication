@@ -110,7 +110,7 @@ export class RepoService {
                         '"mca"."tx_uuid" AS "uuid" ' +
                     'FROM "merchant_customer_accepted" "mca" ' +
                     'LEFT JOIN "c_client" "client" ON "client"."address" = peer ' +
-                    'WHERE '+kind+' = ?  AND  "client"."kind" = \''+ name_field + '\'' +
+                    'WHERE '+kind+' = ?  AND  "client"."kind" = \'' + name_field + '\'' +
                     'ORDER BY timestamp DESC LIMIT ? OFFSET ?',
                     [address, ntake, nstart]);
   }
