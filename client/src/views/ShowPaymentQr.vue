@@ -1,23 +1,20 @@
 <template>
   <b-container class="show-payment-qr">
-    <ViewTitle
-      title="Show this payment QR to your customer"
-    />
+    <ViewTitle title="Show this QR" />
 
     <div class="mt-3">
-      <AeText face="sans-s">
-        Amount: <b>{{ amountAE }} AE</b>
+      <AeText face="sans-xs">
+        Amount:
+        <b>{{ amountAE }} AE</b>
       </AeText>
-      <AeText
-        v-show="message.something.length > 0"
-        face="sans-s"
-      >
-        Concept: <b>{{ message.something }}</b>
+      <AeText v-show="message.something.length > 0" face="sans-xs">
+        Concept:
+        <b>{{ message.something }}</b>
       </AeText>
     </div>
     <div class="mt-2">
       <AeQRCode :value="messageString" />
-       <div v-if="this.$isOnDemandMode && waitingPayment">
+      <div v-if="this.$isOnDemandMode && waitingPayment">
         <AeText face="sans-xs">Waiting for payment ... {{ timeRemaining }} s</AeText>
         <AeLoader />
       </div>
@@ -29,9 +26,7 @@
       class="mt-2"
       extend
       @click="done()"
-    >
-      {{ this.waitingPayment ? "Cancel" : "Done" }}
-    </AeButton>
+    >{{ this.waitingPayment ? "Cancel" : "Done" }}</AeButton>
   </b-container>
 </template>
 
@@ -64,15 +59,18 @@ export default {
         this.showPaymentReceived(e);
       });
       try {
+        //if (this.waitingPayment ===)
         await this.$store.dispatch("openChannel");
-      }
-      catch(e) {
-        this.$swal.fire({ type: 'error', 
-          title: 'Sorry', 
-          text: 'We could not open your channel.  Reason is ' + e.toString()}).then(
-
-      () => { this.$router.replace("main-menu"); }
-          )
+      } catch (e) {
+        this.$swal
+          .fire({
+            type: "error",
+            title: "Sorry",
+            text: "We could not open your channel.  Reason is " + e.toString()
+          })
+          .then(() => {
+            this.$router.replace("main-menu");
+          });
       }
       this.waitingPayment = true;
       this.waitEvent();
@@ -82,10 +80,9 @@ export default {
     this.waitingPayment = false;
   },
   methods: {
-
-    done() {
-
+    async done() {
       this.waitingPayment = false;
+      await this.$store.dispatch("leaveChannel");
       this.$router.replace("main-menu");
     },
     showPaymentReceived(e) {
