@@ -48,7 +48,7 @@ export class MerchantCustomerAccepted {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
         mca.action = "deposit";
-        mca.iteme = "deposit";
+        mca.item = "deposit";
         if ((role!=="merchant") && (role!=="customer")) {
             throw new Error("cannot create something different than merchant or customer!");
         }
