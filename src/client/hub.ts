@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 import {Logger} from "@nestjs/common";
-import {mystringify, sleep, voidf} from "../tools";
+import {clone, mystringify, sleep, voidf} from '../tools';
 import {PaymentTimeout} from "./client.entity";
 import {ClientService, RepoService} from "./client.service";
 import {MerchantCustomer} from "./merchantcustomer";
@@ -73,11 +73,21 @@ export class Hub extends EventEmitter {
                 })
                 .catch((err) => {
                     this.emit("payment-request-rejected",
-                        MerchantCustomer.paymentRejected(err, msg), emitter_channel)
+                        MerchantCustomer.paymentRejected(err, msg), emitter_channel, msg)
                 });
         });
-        this.on("payment-request-rejected", (err_msg, emitter_channel) => {
+        this.on("payment-request-rejected", (err_msg, emitter_channel, msg) => {
             emitter_channel.sendMessage(err_msg).then(voidf).catch(console.error);
+            try {
+                let x = ClientService.getClientByAddress(msg["info"]["merchant"], "merchant");
+                let msg2 = clone(msg);
+                msg2.type = 'payment-request-canceled';
+                x.channel.sendMessage(msg2);
+            } catch (err)
+            {
+                console.log("merchant notification failed");
+                console.log(err);
+            }
         });
         this.on("payment-request-accepted", (mc) => {
             this.log_mc_state(mc, "pre-accepted");

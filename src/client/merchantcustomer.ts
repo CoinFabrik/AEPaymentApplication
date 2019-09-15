@@ -152,7 +152,7 @@ export class MerchantCustomer {
         let merchant = msg["info"]["merchant"];
         let mclient = ClientService.getClientByAddress(merchant, "merchant");
         if (mclient == null) {
-            throw new InvalidMerchant(merchant)
+            throw new InvalidMerchant(merchant);
         }
         let customer = msg["info"]["customer"];
         let cclient = ClientService.getClientByAddress(customer, "customer");
