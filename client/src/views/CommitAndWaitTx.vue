@@ -5,11 +5,11 @@
     <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
     <br />
     <AeText face="sans-xs" v-show="this.transactionHash !== null">
-      <br />Channel creation TX Hash (click to copy)
+      <br />This is the on-chain 'Close' TX Hash (click to copy)
       <b
         :style="{ color: hashColor }"
         @click="copyHash"
-      >{{ this.transactionHash }}</b>
+      >{{ this.prettyHash }}</b>
     </AeText>
     <br />
     <AeLoader v-show="confirmPercent != 100" />
@@ -25,7 +25,7 @@ const STATUS_INITIALIZED = 0,
 import aeternity from "../controllers/aeternity";
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
-import { sleep } from "../util/tools";
+import { sleep, trimHash } from "../util/tools";
 import copy from "copy-to-clipboard";
 
 export default {
@@ -51,7 +51,10 @@ export default {
       );
     },
     hashColor() {
-      return this.hashCopied ? "#e4416f": "#000000"
+      return this.hashCopied ? "#e4416f" : "#000000";
+    },
+    prettyHash() {
+      return this.transactionHash && this.transactionHash !== null ? trimHash(this.transactionHash) : "";
     }
   },
   watch: {},

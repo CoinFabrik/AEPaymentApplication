@@ -6,11 +6,13 @@
     <AeLoader v-show="this.isWorking" />
 
     <AeText face="sans-xs" v-show="this.txHash !== ''">
-      <br/>
-      Channel creation TX Hash (click to copy) 
-      <b :style="{ color: hashColor }" @click="copyHash">{{ this.txHash }}</b>
+      <br />Channel creation TX Hash (click to copy)
+      <b
+        :style="{ color: hashColor }"
+        @click="copyHash"
+      >{{ this.prettyHash }}</b>
     </AeText>
-    
+
     <div v-show="this.isWorking">
       <br />
       <AeButton
@@ -33,6 +35,7 @@ import BigNumber from "bignumber.js";
 import { DisplayUnitsToAE } from "../util/numbers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import copy from "copy-to-clipboard";
+import { trimHash } from "../util/tools";
 
 export default {
   name: "ChannelOpen",
@@ -69,8 +72,11 @@ export default {
         }
       } else return "Unknown state";
     },
-    hashColor () {
-      return this.hashCopied ? '#e4416f' : '#000000'
+    hashColor() {
+      return this.hashCopied ? "#e4416f" : "#000000";
+    },
+    prettyHash() {
+      return this.txHash !== "" ? trimHash(this.txHash) : "";
     }
   },
   mounted: async function() {

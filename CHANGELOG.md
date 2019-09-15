@@ -149,3 +149,11 @@ KNOWN ISSUES
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
+
+0.9.8-2 (190915)
+----------------
+
++ Fixed Tx history failure when empty list was fetched from server.
++ Fixed Tx history popup
++ History entry now shows peer (buyer/seller) address and correct item information.
++ Pretty print of TX Hash at Open and Close

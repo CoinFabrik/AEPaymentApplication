@@ -34,22 +34,40 @@
             <br />
             <b-row>
               <b-col>
-                <AeText align="left" weight="500">Place</AeText>
+                <AeText align="left" weight="500">Name</AeText>
               </b-col>
               <b-col>
-                <AeText>{{ modal.name }}</AeText>
+                <AeText>{{ modal.name && modal.name.trim().length > 0 ? modal.name : "N/A" }}</AeText>
               </b-col>
             </b-row>
+
             <b-row>
               <b-col>
-                <AeText align="left" weight="500">Items</AeText>
+                <AeText align="left" weight="500">Address</AeText>
               </b-col>
               <b-col>
-                <div v-for="item in modal.item" :key="item.what">
-                  <AeText>{{ item.amount }} - {{ item.what }}</AeText>
-                </div>
+                <AeText>{{ modal.peer && modal.peer.trim().length > 0 ? this.prettyAddr(modal.peer) : "N/A"}}</AeText>
               </b-col>
             </b-row>
+
+            <b-row>
+              <b-col>
+                <AeText align="left" weight="500">Amount</AeText>
+              </b-col>
+              <b-col>
+                <AeText>{{ modal.amount }} Æ</AeText>
+              </b-col>
+            </b-row>
+
+            <b-row>
+              <b-col>
+                <AeText align="left" weight="500">Concept</AeText>
+              </b-col>
+              <b-col>
+                <AeText>{{ modal.item && modal.item.trim().length > 0 ? modal.item : "N/A"}}</AeText>
+              </b-col>
+            </b-row>
+
             <b-row>
               <b-col>
                 <AeText align="left" weight="500">Date</AeText>
@@ -58,6 +76,7 @@
                 <AeText>{{ modal.longDate }}</AeText>
               </b-col>
             </b-row>
+
             <br />
             <b-row>
               <b-col>
@@ -78,9 +97,10 @@
 </template>
 
 <script>
-import aeternity from '../controllers/aeternity'
+import aeternity from "../controllers/aeternity";
 import HubConnection from "../controllers/hub";
 import BigNumber from "bignumber.js";
+import { trimAddress } from "../util/tools";
 let hub;
 export default {
   name: "History",
@@ -93,11 +113,17 @@ export default {
   },
   async mounted() {
     this.isLoading = true;
-    hub = new HubConnection(this.$store.state.hubUrl, await aeternity.getAddress());
+    hub = new HubConnection(
+      this.$store.state.hubUrl,
+      await aeternity.getAddress()
+    );
     await this.addItems();
     this.isLoading = false;
   },
   methods: {
+    prettyAddr: function(addr) {
+      return trimAddress(addr);
+    },
     addItems: async function(to, from) {
       try {
         let res = await hub.getTxHistory(process.env.VUE_APP_ROLE, to, from);
@@ -112,14 +138,16 @@ export default {
         }
         console.log(res);
 
-        res.txhistory.map(function(val, index) {
-          res.txhistory[index].amount = new BigNumber(
-            res.txhistory[index].amount
-          )
-            .dividedBy(BigNumber(10 ** 18))
-            .toFixed(2);
-        });
-        this.history.push(...res.txhistory);
+        if (res.txhistory) {
+          res.txhistory.map(function(val, index) {
+            res.txhistory[index].amount = new BigNumber(
+              res.txhistory[index].amount
+            )
+              .dividedBy(BigNumber(10 ** 18))
+              .toFixed(2);
+          });
+          this.history.push(...res.txhistory);
+        }
       } catch (e) {
         this.$swal
           .fire({
