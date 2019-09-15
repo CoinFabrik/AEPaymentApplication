@@ -151,7 +151,7 @@ export default new Vuex.Store({
     },
     async openChannel({ dispatch, commit, state }) {
       console.log("action: openChannel");
-      if (state.channel && state.channel.status() === "open") {
+      if (state.channel.status && state.channel.status() === "open") {
         console.warn("Ignoring action:  channel is already open");
         return;
       }
