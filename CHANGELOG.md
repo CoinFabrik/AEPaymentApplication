@@ -150,10 +150,12 @@ KNOWN ISSUES
 + Do not switch subaccounts except before channel opening.
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
 
-0.9.8-2 (190915)
+0.9.8-3 (190916)
 ----------------
 
 + Fixed Tx history failure when empty list was fetched from server.
 + Fixed Tx history popup
 + History entry now shows peer (buyer/seller) address and correct item information.
 + Pretty print of TX Hash at Open and Close
++ Ignore channel open request if already in OPEN state.
++ Tighter user interaction logic at "Show QR Payment" 

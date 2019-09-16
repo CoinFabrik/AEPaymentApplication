@@ -59,8 +59,9 @@ export default {
         this.showPaymentReceived(e);
       });
       try {
-        //if (this.waitingPayment ===)
+        this.$swal.fire({ text:"Opening payment channel", allowOutsideClick: false });
         await this.$store.dispatch("openChannel");
+        this.$swal.close();
       } catch (e) {
         this.$swal
           .fire({
