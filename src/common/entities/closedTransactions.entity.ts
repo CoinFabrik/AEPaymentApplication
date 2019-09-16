@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
-import { MerchantCustomerAccepted } from '../client/mca.entity';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { MerchantCustomerAccepted } from '../../client/mca.entity';
 
 @Entity()
 export class ClosedTransactionEntity {

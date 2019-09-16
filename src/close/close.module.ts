@@ -4,8 +4,8 @@ import { CloseController } from './close.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CClient } from '../client/client.entity';
 import { MerchantCustomerAccepted } from '../client/mca.entity';
-import { ClosedTransactionEntity } from './closedTransactions.entity';
-import { ChainService } from './channel.service';
+import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
+import { ChainService } from './chain.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([MerchantCustomerAccepted, CClient, ClosedTransactionEntity])],

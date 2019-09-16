@@ -10,6 +10,7 @@ import { CustomerController, MerchantController } from './client/client.controll
 import { ProductsController } from './products/products.controller';
 import { MerchantCustomerAccepted } from './client/mca.entity';
 import { CloseModule } from './close/close.module';
+import { ProfitModule } from './profits/profit.module';
 
 let Entities = [CClient, MerchantCustomerAccepted];
 
@@ -17,13 +18,15 @@ let Entities = [CClient, MerchantCustomerAccepted];
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: getEnv("DB", "db.sqlite"),
+      database: getEnv('DB', 'db.sqlite'),
       entities: [join(__dirname, '**/**.entity{.ts,.js}')],
       synchronize: true,
     }),
-    CloseModule
+    CloseModule,
+    ProfitModule,
   ],
-  controllers: [AppController, MerchantController, CustomerController, ProductsController ],
+  controllers: [AppController, MerchantController, CustomerController, ProductsController],
   providers: [AppService, ClientService],
 })
-export class AppModule {}
+export class AppModule {
+}

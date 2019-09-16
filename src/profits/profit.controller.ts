@@ -1,26 +1,26 @@
 import { Controller, Get, Param, ParseIntPipe, UseFilters, UseInterceptors } from '@nestjs/common';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
-import { CloseService } from './close.service';
-import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
+import { ProfitService } from './profit.service';
+import { ProfitTransactionEntity } from '../common/entities/profitTransactions.entity';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 
-@Controller('/close')
+@Controller('/profit')
 @UseInterceptors(LoggingInterceptor)
 @UseFilters(new HttpExceptionFilter())
-export class CloseController {
-  constructor(private readonly closeService: CloseService) {
+export class ProfitController {
+  constructor(private readonly profitService: ProfitService) {
   }
 
   // TODO: Switch to post.
-  @Get('/all')
+  @Get('/share_all')
   all() {
-    this.closeService.closeAll();
+    this.profitService.shareAll();
     return { status: 'ok' };
   }
 
   @Get('/progress')
   progress() {
-    return this.closeService.progress();
+    return this.profitService.progress();
   }
 
   @Get(':id')
@@ -28,13 +28,13 @@ export class CloseController {
     //@Param('id') id: string
     @Param('id', new ParseIntPipe())
       id: number,
-  ): Promise<ClosedTransactionEntity> {
-    return this.closeService.findOne(+id);
+  ): Promise<ProfitTransactionEntity> {
+    return this.profitService.findOne(+id);
   }
 
   @Get()
-  async findAll(): Promise<ClosedTransactionEntity[]> {
-    return this.closeService.findAll();
+  async findAll(): Promise<ProfitTransactionEntity[]> {
+    return this.profitService.findAll();
   }
 
 }
