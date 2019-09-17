@@ -25,7 +25,7 @@
           <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ paymentData.something }}</AeText>
+          <AeText face="mono-base">{{ paymentData.something.trim().length === 0 ? "N/A" : paymentData.something }}</AeText>
         </div>
       </div>
     </div>
