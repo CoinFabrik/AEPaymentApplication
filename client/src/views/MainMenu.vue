@@ -19,11 +19,11 @@
     
     <ViewButtonSection
       v-if="$isMerchantAppRole && $isOnDemandMode"
-      :buttons="[{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
+      :buttons="[{name:'Request Payment', action: generatePaymentQr},{ name: 'My Activity', action: history},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
     <ViewButtonSection
       v-if="$isMerchantAppRole && !$isOnDemandMode" 
-      :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Generate QR Code', action: generatePaymentQr},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}, { name: 'My Activity', action: history}]"
+      :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Request Payment', action: generatePaymentQr}, { name: 'My Activity', action: history},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
 
     <CloseModal

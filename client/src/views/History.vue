@@ -1,6 +1,6 @@
 <template>
   <b-container class="history-view">
-    <ViewTitle title="Transaction History" />
+    <ViewTitle title="My Activity" />
     <div v-show="isLoading">
       <AeText>Loading...</AeText>
       <AeLoader />

@@ -1,6 +1,6 @@
 <template>
   <b-container class="show-payment-qr">
-    <ViewTitle title="Show this QR" />
+    <!-- <ViewTitle title="Show this QR" /> -->
 
     <div class="mt-3">
       <AeText face="sans-xs">
@@ -128,9 +128,9 @@ export default {
     },
     async showPaymentTimeout() {
       this.$swal.fire({
-        type: "error",
-        title: "Sorry",
-        text: "A payment was not received in the expected time.",
+        type: "warning",
+        title: "Time out",
+        text: "No payment was received.",
         onClose: async () => {
           await this.$store.dispatch("leaveChannel");
           this.$router.replace("main-menu");

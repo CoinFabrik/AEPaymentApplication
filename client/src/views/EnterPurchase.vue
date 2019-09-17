@@ -30,7 +30,7 @@
       v-model="description"
       monospace="true"
       label="Product (optional)"
-      placeholder="What are you selling"
+      placeholder="What are you selling?"
     />
 
     <!-- <div class="footer buttonsection"> -->
