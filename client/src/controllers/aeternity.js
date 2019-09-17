@@ -81,7 +81,7 @@ aeternity.signFunction = async function (tag, tx, { updates } = {}) {
   console.log('signFunction with tag: ' + tag);
 
   if (tag === 'initiator_sign') {
-    return aeternity.signTransactionEx(tx);
+    return await aeternity.signTransactionEx(tx);
   }
   else if (tag === 'update_ack') {
     if (aeternity.updateHandler === undefined) {
