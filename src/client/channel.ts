@@ -411,27 +411,27 @@ export abstract class ServerChannel extends EventEmitter {
         }
     }
 
-    async _get_state() {
+    async _get_state(leave=false) {
         const balances = await this.channel.balances([this.initiator, this.responder]);
         this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
         this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
         this.client.channelId = this.channel.id();
-        const state = await this.channel.leave();
-        this.client.channelSt = state['signedTx'];
         const poi = await this.channel.poi({
             accounts: [this.address, this.opposite]
         });
         this.client.channelPoi = JSON.stringify(poi);
+        const state = leave? await this.channel.leave() : await this.channel.state();
+        this.client.channelSt = state['signedTx'];
     }
 
-    async saveState() {
-        await this._get_state();
+    async saveState(leave=false) {
+        await this._get_state(leave);
         this._save_state();
     }
 
     async a_leave() {
         try {
-            await this.saveState();
+            await this.saveState(true);
         } catch (err) {
             this.log('Cannot leave:' + err);
         }
