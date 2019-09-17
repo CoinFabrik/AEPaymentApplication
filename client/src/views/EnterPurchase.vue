@@ -85,7 +85,7 @@ export default {
 
   methods: {
     cancel() {
-      this.$router.back();
+      this.$router.replace("main-menu");
     },
     async confirm() {
       const message = makePaymentQrData(
