@@ -13,7 +13,7 @@
     </AeText> -->
 
     <AeText face="sans-s">
-      Please set the amount of the payment. A new QR code will be generated.
+      What do you want to sell?
     </AeText>
     <br>
     <AeInput
@@ -27,7 +27,6 @@
       ref="desc"
       v-model="description"
       monospace="true"
-      class="small-input"
       label="Concept (optional)"
       placeholder="Description..."
     />
