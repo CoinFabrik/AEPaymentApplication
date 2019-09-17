@@ -13,7 +13,7 @@ const {
     Channel,
     Crypto,
     Universal,
-    TxBuilder: {unpackTx}
+    TxBuilder: {unpackTx, buildTxHash}
 } = require('@aeternity/aepp-sdk');
 
 
@@ -289,8 +289,14 @@ export abstract class ServerChannel extends EventEmitter {
             this.log('TX (shutdown): ' + (tx.toString()));
             this.closing = true;
         }
-        let signed = await this.nodeuser.signTransaction(tx);
-        this.log(tag + ' - signed: ' + signed);
+        const signed = await this.nodeuser.signTransaction(tx);
+        let txhash = '';
+        try {
+            txhash = buildTxHash(signed);
+        } catch (err) {
+            // do no thing.
+        }
+        this.log(tag + ' # ' + txhash + ' -signed: ' + signed);
         return signed;
     }
 
@@ -444,27 +450,30 @@ export abstract class ServerChannel extends EventEmitter {
         //   tx => this.nodeuser.signTransaction(tx)
         // );
         //
-        const balances = await this.channel.balances([this.address, this.opposite]);
-        let chanid = this.client.channelId;
+        //const balances = await this.channel.balances([this.address, this.opposite]);
+        //let chanid = this.client.channelId;
 
-        const poi = await this.channel.poi({
-            accounts: [this.address, this.opposite]
-        });
-
-        let closeSoloTxFee = await this.nodeuser.channelCloseSoloTx({
-            channelId: chanid,
+        // const poi = await this.channel.poi({
+        //     accounts: [this.address, this.opposite]
+        // });
+        const poi = JSON.parse(this.client.channelPoi);
+        const closeSoloTxFee = await this.nodeuser.channelCloseSoloTx({
+            channelId: this.client.channelId,
             fromId: this.address,
             poi,
-            payload: this.client.channelSt
+            payload: this.client.channelSt});
+
+        console.log("R1:", JSON.stringify(await this.signAndSend(closeSoloTxFee)));
+        let r2 = await this.nodeuser.channelSettleTx({
+            channelId: this.client.channelId,
+            fromId: this.address,
+            // initiatorAmountFinal: balances[this.opposite],
+            // responderAmountFinal: balances[this.address],
+            initiatorAmountFinal: this.client.iBalance,
+            responderAmountFinal: this.client.rBalance,
         });
 
-        let r1 = await this.signAndSend(closeSoloTxFee);
-        let r2 = await this.signAndSend(await this.nodeuser.channelSettleTx({
-            channelId: chanid,
-            fromId: this.address,
-            initiatorAmountFinal: balances[this.opposite],
-            responderAmountFinal: balances[this.address],
-        }));
+        console.log("R2:", JSON.stringify(await this.signAndSend(r2)));
     }
 
     async signAndSend(tx) {
