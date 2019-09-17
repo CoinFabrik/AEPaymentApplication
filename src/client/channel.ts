@@ -353,17 +353,19 @@ export abstract class ServerChannel extends EventEmitter {
         }
         if (this.status.startsWith("DISCONNECT")) {
             ServiceBase.rmClient(this.client, this.Name);
-            if ((!this.disconnect_by_leave) && !(this.died)) {
-                this.client.channelId="";
-                this.client.channelSt="";
-                this._save_state();
-            }
-            if(this.closing) {
-                this.client.channelId="";
-                this.client.channelSt="";
+            if ((!this.disconnect_by_leave) && !(this.died) || this.closing) {
+                this._reset_state();
                 this._save_state();
             }
         }
+    }
+
+    async _reset_state() {
+        this.client.channelId = "";
+        this.client.channelSt = "";
+        this.client.channelPoi = "";
+        this.client.iBalance = "0";
+        this.client.rBalance = "0";
     }
 
     async sendMessage(message) {
@@ -382,7 +384,7 @@ export abstract class ServerChannel extends EventEmitter {
         return await wait_for(() => self.status === expected);
     }
 
-    is_customer():boolean {
+    is_customer(): boolean {
         return this.Name === "customer";
     }
 
@@ -407,14 +409,24 @@ export abstract class ServerChannel extends EventEmitter {
         }
     }
 
+    async _get_state() {
+        const balances = await this.channel.balances([this.initiator, this.responder]);
+        this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
+        this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
+        this.client.channelId = this.channel.id();
+        const state = await this.channel.leave();
+        this.client.channelSt = state["signedTx"];
+        const poi = await this.channel.poi({
+          accounts: [this.address, this.opposite]
+        });
+        console.log(11,typeof poi);
+        console.log(12,JSON.stringify(poi));
+        this.client.channelPoi = JSON.stringify(poi);
+    }
+
     async a_leave() {
         try {
-            let balances = await this.channel.balances([this.initiator, this.responder]);
-            this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
-            this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
-            this.client.channelSt = this.channel.id();
-            let state = await this.channel.leave();
-            this.client.channelSt = state["signedTx"];
+            await this._get_state();
             this._save_state();
         } catch(err) {
             this.log("Cannot leave:"+err);
