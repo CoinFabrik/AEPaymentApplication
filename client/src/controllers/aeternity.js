@@ -30,7 +30,7 @@ aeternity.connectToBaseApp = async function () {
     let id = setTimeout(() => {
       clearTimeout(id);
       reject('timeout')
-    }, 6000);
+    }, 20000);
   });
 
   try {
