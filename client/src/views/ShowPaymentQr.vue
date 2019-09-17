@@ -97,16 +97,16 @@ export default {
       if (e.eventdata === "completed") {
         let concept = "";
         if (e.info.something !== "") {
-          concept = " in concept of " + e.info.something;
+          concept = " as payment for <b> " + e.info.something + "</b>";
         }
         this.$swal.fire({
           type: "success",
           title: "Payment Received",
-          text:
+          html:
             "You received " +
-            DisplayUnitsToAE(e.info.amount) +
-            " AE from " +
-            e.info.customer_name +
+            "<b>" + DisplayUnitsToAE(e.info.amount) + 
+            " AE </b> from <b>" +
+            e.info.customer_name + "</b>" +
             concept,
           onClose: async () => {
             await this.$store.dispatch("leaveChannel");

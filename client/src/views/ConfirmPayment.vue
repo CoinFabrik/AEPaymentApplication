@@ -115,7 +115,7 @@ export default {
                   heightAuto: false,
                   type: "success",
                   title: "Thank you",
-                  html: "Your payment has been successfully submitted."
+                  html: "Your payment has been successfully sent."
                 })
                 .then(async () => {
                   await this.connectionLeaveIfRequired();
