@@ -98,13 +98,14 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static async Init() {
-        let account = await Account.FromFile(ACCOUNT);
+        const account = await Account.FromFile(ACCOUNT);
         this.xlogger.log('Account: ' + account.toString());
         this.pubkey = account.publicKey;
         this.privkey = account.secretKey;
 
         if (ServerChannel._nodeuser == undefined) {
             ServerChannel._nodeuser = await Universal({
+                networkId: MoreConfig.NetworkId,
                 url: API_URL,
                 keypair: {publicKey: this.pubkey, secretKey: this.privkey},
             });

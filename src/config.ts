@@ -49,6 +49,10 @@ export class MoreConfig {
         return Number.parseInt( getEnv("MIN_DEPTH", "3") );
     }
 
+    static get NetworkId(): string {
+        return getEnv("NET", 'ae_uat');
+    }
+
     static async display() {
         console.log("Config:")
         console.log("minimum_depth:", this.MinimumDepth);
