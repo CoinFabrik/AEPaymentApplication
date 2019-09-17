@@ -150,8 +150,8 @@ KNOWN ISSUES
 + Do not switch subaccounts except before channel opening.
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
 
-0.9.8-3 (190916)
-----------------
+0.9.9-WIP "Praga"  (190917)
+---------------------------
 
 + Fixed Tx history failure when empty list was fetched from server.
 + Fixed Tx history popup
@@ -159,3 +159,12 @@ KNOWN ISSUES
 + Pretty print of TX Hash at Open and Close
 + Ignore channel open request if already in OPEN state.
 + Tighter user interaction logic at "Show QR Payment" 
++ Confirm payment will show N/A if there is no concept entered by merchant
++ Misc UI Fixes
+
+KNOWN ISSUES
+
++ Scrolling issues with Android. Please switch to floating keyboard if needed.
++ When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
++ Do not switch subaccounts except before channel opening.
