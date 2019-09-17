@@ -150,9 +150,10 @@ KNOWN ISSUES
 + Do not switch subaccounts except before channel opening.
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
 
-0.9.9-WIP "Praga"  (190917)
----------------------------
+0.9.10  "Praga"  (190917)
+--------------------------
 
++ Fixed missing await causing OnChainTx (and maybe other events?) to be missed 
 + Fixed Tx history failure when empty list was fetched from server.
 + Fixed Tx history popup
 + History entry now shows peer (buyer/seller) address and correct item information.
