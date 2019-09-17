@@ -81,7 +81,7 @@ export class Hub extends EventEmitter {
             try {
                 let x = ClientService.getClientByAddress(msg["info"]["merchant"], "merchant");
                 let msg2 = clone(msg);
-                msg2.type = 'payment-request-canceled';
+                msg2["type"] = 'payment-request-canceled';
                 x.channel.sendMessage(msg2);
             } catch (err)
             {

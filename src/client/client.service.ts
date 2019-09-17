@@ -100,8 +100,7 @@ export class RepoService {
       //     take: ntake
       // };
       // return await repo.find(opts);
-    return getManager().query(
-          'SELECT ' +   //"mca"."id" AS "mca_id",
+    const q = 'SELECT ' +   //"mca"."id" AS "mca_id",
                         '"mca"."' + name_field + '" AS "peer", ' +
                         '"mca"."timestamp" AS "timestamp", ' +
                         '"mca"."amount" AS "amount", ' +
@@ -111,8 +110,9 @@ export class RepoService {
                     'FROM "merchant_customer_accepted" "mca" ' +
                     'LEFT JOIN "c_client" "client" ON "client"."address" = peer ' +
                     'WHERE ' + kind + ' = ? ' +  //  AND  "client"."kind" = \'' + name_field + '\'
-                    'ORDER BY timestamp DESC LIMIT ? OFFSET ?',
-                    [address, ntake, nstart]);
+                    'ORDER BY timestamp DESC LIMIT ? OFFSET ?';
+    console.log(q);
+    return getManager().query(q,[address, ntake, nstart]);
   }
 }
 
