@@ -35,7 +35,7 @@ export class MerchantCustomerAccepted {
     static Create(merchant, customer, uuid, amount: string, item: object) {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
-        mca.action = "purchase";
+        mca.action = 'purchase';
         mca.merchant = merchant;
         mca.customer = customer;
         mca.amount = amount;
@@ -48,7 +48,7 @@ export class MerchantCustomerAccepted {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
         mca.action = "deposit";
-        mca.item = "deposit";
+        mca.item = JSON.stringify("deposit");
         if ((role!=="merchant") && (role!=="customer")) {
             throw new Error("cannot create something different than merchant or customer!");
         }
