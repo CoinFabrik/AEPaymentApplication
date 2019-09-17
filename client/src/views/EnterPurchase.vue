@@ -1,7 +1,7 @@
 <template>
   <b-container class="enterpurchase">
     <ViewTitle
-      title="Generate Payment"
+      title="Request Payment"
       class="mb-2"
     />
     <!-- <AeText
@@ -12,13 +12,15 @@
       Generate Payment
     </AeText> -->
 
+    <!-- 
     <AeText face="sans-s">
       What do you want to sell?
     </AeText>
+    -->
     <br>
     <AeInput
       v-model="amount"
-      label="Amount"
+      label="Amount (AE)"
       placeholder="0.00"
       units="AE"
     />
@@ -27,8 +29,8 @@
       ref="desc"
       v-model="description"
       monospace="true"
-      label="Concept (optional)"
-      placeholder="Description..."
+      label="Product (optional)"
+      placeholder="What are you selling"
     />
 
     <!-- <div class="footer buttonsection"> -->
@@ -53,7 +55,7 @@
             :disabled="!isValidInput"
             @click="confirm()"
           >
-            Confirm
+            Show QR
           </AeButton>
         </b-col>
       </b-row>
@@ -71,7 +73,7 @@ export default {
   props: {},
   data() {
     return {
-      amount: "0.00",
+      amount: "",
       description: ""
     };
   },
