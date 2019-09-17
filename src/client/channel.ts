@@ -420,7 +420,7 @@ export abstract class ServerChannel extends EventEmitter {
             accounts: [this.address, this.opposite]
         });
         this.client.channelPoi = JSON.stringify(poi);
-        const state = leave? await this.channel.leave() : await this.channel.state();
+        const state = leave ? await this.channel.leave() : await this.channel.state();
         this.client.channelSt = state['signedTx'];
     }
 
