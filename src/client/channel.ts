@@ -16,6 +16,14 @@ const {
     TxBuilder: {unpackTx}
 } = require('@aeternity/aepp-sdk');
 
+
+function min(a, b: number): number {
+    if (a < b) {
+        return a;
+    }
+    return b;
+}
+
 export interface UpdateItem {
     amount: number | BigNumber;
     from: string;
@@ -216,6 +224,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
+        let timeout = 3 * 1000 * 60 * 3 * min(MoreConfig.MinimumDepth, 1);
         return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
@@ -225,7 +234,7 @@ export abstract class ServerChannel extends EventEmitter {
             port: 3001,
             lockPeriod: 1,
             minimum_depth: MoreConfig.MinimumDepth,
-            timeoutFundingLock: 3 * 1000 * 60 * 3 * MoreConfig.MinimumDepth,
+            timeoutFundingLock: timeout,
         });
     }
 
