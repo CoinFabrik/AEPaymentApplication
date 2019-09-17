@@ -5,12 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CClient } from '../client/client.entity';
 import { MerchantCustomerAccepted } from '../client/mca.entity';
 import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
-import { ChainService } from './chain.service';
+import { ChainModule } from '../chain/chain.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MerchantCustomerAccepted, CClient, ClosedTransactionEntity])],
+  imports: [ChainModule, TypeOrmModule.forFeature([MerchantCustomerAccepted, CClient, ClosedTransactionEntity])],
   controllers: [CloseController],
-  providers: [CloseService, ChainService],
+  providers: [CloseService],
   exports: [],
 })
 export class CloseModule {

@@ -462,8 +462,8 @@ export abstract class ServerChannel extends EventEmitter {
             responderAmountFinal: balances[this.address],
         }))
 
-        /*const initiatorBalanceBeforeClose2 = await this.nodeuser.balance(this.opposite);
-        const responderBalanceBeforeClose2 = await this.nodeuser.balance(this.address);
+        /*const initiatorBalanceBeforeClose2 = await this.nodeuser.info(this.opposite);
+        const responderBalanceBeforeClose2 = await this.nodeuser.info(this.address);
         console.log(1, initiatorBalanceBeforeClose);
         console.log(2, initiatorBalanceBeforeClose2);
         console.log(3, responderBalanceBeforeClose);

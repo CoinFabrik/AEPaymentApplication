@@ -1,0 +1,30 @@
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Address</th>
+        <th>Kind</th>
+        <th>Name</th>
+        <th>Channel Id</th>
+        <th>Channel St</th>
+        <th>IBalance</th>
+        <th>RBalance</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each data}}
+        <tr>
+            <td>{{this.id}}</td>
+            <td>
+                <a href="/info/{{this.id}}">{{this.address}}</a>
+            </td>
+            <td>{{this.kind}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.channelId}}</td>
+            <td>{{this.channelSt}}</td>
+            <td>{{this.iBalance}}</td>
+            <td>{{this.rBalance}}</td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

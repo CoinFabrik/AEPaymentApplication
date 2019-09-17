@@ -46,7 +46,7 @@ export class AppController {
     return X.map((x):string => x.address);
   }
 
-  @Get("/balance/:merchant")
+  @Get("/merchant_info/:merchant")
   async balances(@Param() params): Promise<any> {
     let merchant = params.merchant;
     return {merchant:merchant,

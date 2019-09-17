@@ -1,18 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { CClient } from '../client/client.entity';
-import { ServiceBase } from '../client/client.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { MerchantCustomerAccepted } from '../client/mca.entity';
+import { ProfitTransactionEntity } from '../common/entities/profitTransactions.entity';
+import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
+import { CClient } from '../client/client.entity';
+import { ServerChannel } from '../client/channel';
+import { ServiceBase } from '../client/client.service';
 
-/*
-  A class to contain call to a service that must be implemented by other module and imported here in the future
- */
 @Injectable()
 export class ChainService {
 
   constructor(@InjectRepository(CClient)
               private readonly cClientRepository: Repository<CClient>,
   ) {
+  }
+
+  async profit(client: MerchantCustomerAccepted) {
+    let height = await ServerChannel.nodeuser.height();
+    const hubPubKey = ServerChannel.pubkey;
+    // TODO: BigNumber ?, what it returns?
+    const ret = await ServerChannel.nodeuser.spend(client.amount, client.merchant);
+    return ret.hash;
   }
 
   async getAllCustomers() {

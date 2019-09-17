@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MerchantCustomerAccepted } from '../client/mca.entity';
 import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
-import { ChainService } from './chain.service';
+import { ChainService } from '../chain/chain.service';
 
 @Injectable()
 export class CloseService implements OnModuleDestroy {
@@ -20,7 +20,7 @@ export class CloseService implements OnModuleDestroy {
   }
 
   onModuleDestroy(): any {
-    console.log('ProfitService shutdown');
+    console.log('ChainService shutdown');
     this.shutdown();
   }
 

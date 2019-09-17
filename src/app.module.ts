@@ -11,6 +11,7 @@ import { ProductsController } from './products/products.controller';
 import { MerchantCustomerAccepted } from './client/mca.entity';
 import { CloseModule } from './close/close.module';
 import { ProfitModule } from './profits/profit.module';
+import { InfoModule } from './info/info.module';
 
 let Entities = [CClient, MerchantCustomerAccepted];
 
@@ -24,6 +25,7 @@ let Entities = [CClient, MerchantCustomerAccepted];
     }),
     CloseModule,
     ProfitModule,
+    InfoModule,
   ],
   controllers: [AppController, MerchantController, CustomerController, ProductsController],
   providers: [AppService, ClientService],

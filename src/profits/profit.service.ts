@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MerchantCustomerAccepted } from '../client/mca.entity';
-import { ChainService } from './chain.service';
 import { ProfitTransactionEntity } from '../common/entities/profitTransactions.entity';
 import { ClosedTransactionEntity } from '../common/entities/closedTransactions.entity';
+import { ChainService } from '../chain/chain.service';
 
 @Injectable()
 export class ProfitService implements OnModuleDestroy {
@@ -23,7 +23,7 @@ export class ProfitService implements OnModuleDestroy {
   }
 
   onModuleDestroy(): any {
-    console.log('ProfitService shutdown');
+    console.log('ChainService shutdown');
     this.shutdown();
   }
 
@@ -35,7 +35,7 @@ export class ProfitService implements OnModuleDestroy {
     return Object.assign(this.bgProgress, { running: (this.bgThread != null) });
   }
 
-  shareAll() {
+  profitAll() {
     if (this.bgThread != null) {
       throw new Error('Operation in progress');
     }
@@ -69,10 +69,14 @@ export class ProfitService implements OnModuleDestroy {
       if (this.bgProgress.cancel) {
         return;
       }
+      if (!cl.tx) {
+        console.error('Invalid state', cl.tx);
+        continue;
+      }
       // store currentChannelId, just in case.
       try {
         console.log('TRYING TO PROFIT PURCHASE', cl);
-        const hash = await this.chainService.profit(cl);
+        const hash = await this.chainService.profit(cl.tx);
         console.log('ACCOUNTING FOR PROFIT TX PURCHASE', hash, 'FOR', cl.id, 'PURCHASE ID', cl.tx.id);
         await this.doAccountingForProfit(cl, hash);
       } catch (err) {
@@ -96,7 +100,7 @@ export class ProfitService implements OnModuleDestroy {
   }
 
   async findAll(): Promise<ProfitTransactionEntity[]> {
-    return await this.profitTransactionRepo.find({ relations: ['tx'] });
+    return await this.profitTransactionRepo.find({ relations: ['closeTx'] });
   }
 
   async findOne(id: number): Promise<ProfitTransactionEntity> {
@@ -107,7 +111,7 @@ export class ProfitService implements OnModuleDestroy {
     .of(1)
     .add(3);
      */
-    return await this.profitTransactionRepo.findOne(id, { relations: ['tx'] });
+    return await this.profitTransactionRepo.findOne(id, { relations: ['closeTx'] });
   }
 
   async create(data: ProfitTransactionEntity) {

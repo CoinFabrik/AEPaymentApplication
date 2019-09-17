@@ -128,7 +128,7 @@ export class Hub extends EventEmitter {
             }
             await sleep(100);
         }
-        this.log("Wait for balance timed out...");
+        this.log("Wait for info timed out...");
         throw new PaymentTimeout();
     }
 

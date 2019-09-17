@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Render, Res, UseFilters, UseInterceptors } from '@nestjs/common';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 import { ProfitService } from './profit.service';
 import { ProfitTransactionEntity } from '../common/entities/profitTransactions.entity';
@@ -13,17 +13,20 @@ export class ProfitController {
 
   // TODO: Switch to post.
   @Get('/share_all')
+  @Render('code')
   all() {
-    this.profitService.shareAll();
+    this.profitService.profitAll();
     return { status: 'ok' };
   }
 
   @Get('/progress')
+  @Render('code')
   progress() {
     return this.profitService.progress();
   }
 
   @Get(':id')
+  @Render('code')
   async findOne(
     //@Param('id') id: string
     @Param('id', new ParseIntPipe())
@@ -33,8 +36,10 @@ export class ProfitController {
   }
 
   @Get()
-  async findAll(): Promise<ProfitTransactionEntity[]> {
-    return this.profitService.findAll();
+  @Render('code')
+  async findAll() {
+    const pretty = JSON.stringify(await this.profitService.findAll(), null, 2);
+    console.log(pretty);
+    return { message: pretty };
   }
-
 }
