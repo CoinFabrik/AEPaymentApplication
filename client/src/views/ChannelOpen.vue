@@ -15,6 +15,8 @@
 
     <div v-show="this.isWorking">
       <br />
+      <AeText><b> Please do not close this app </b></AeText>
+      <br />
       <AeButton
         face="round"
         extend
@@ -36,6 +38,9 @@ import { DisplayUnitsToAE } from "../util/numbers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import copy from "copy-to-clipboard";
 import { trimHash } from "../util/tools";
+import NoSleep from 'nosleep'
+
+let noSleep;
 
 export default {
   name: "ChannelOpen",
@@ -80,6 +85,8 @@ export default {
     }
   },
   mounted: async function() {
+    noSleep = new NoSleep();
+
     window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
 
     try {
@@ -161,6 +168,7 @@ export default {
       console.log("Obtained TX Hash: ", this.txHash);
     },
     onChannelDisconnected() {
+      noSleep.disable();
       this.isWorking = false;
 
       if (this.userCancel) {
@@ -226,6 +234,7 @@ export default {
         });
     },
     onChannelOpen() {
+      noSleep.disable();
       this.$store.commit("setChannelOpenDone", true);
 
       this.$store.dispatch("updateChannelBalances").then(() => {
@@ -266,6 +275,7 @@ export default {
       );
     },
     async createChannel() {
+      noSleep.enable();
       this.$store.commit("setChannelOpenDone", false);
       try {
         await this.$store.dispatch("createChannel");
@@ -280,6 +290,7 @@ export default {
         }
         window.eventBus.$on("channel-onchain-tx", this.onChainTx);
       } catch (e) {
+        noSleep.disable();
         this.$displayError(
           "Oops! There is some problem",
           "We cannot open the channel to the Payment Hub. Please try again in a moment. Reason: " +
