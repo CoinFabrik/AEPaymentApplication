@@ -34,8 +34,8 @@ export default {
       try {
         scandata = await aeternity.readQrCode(
           this.subview === "pay-with-qr"
-            ? "Scan the payment request QR code from the merchant's device."
-            : "Scan the QR code to open the payments channel.'"
+            ? "Scan the payment request"
+            : "Scan the onboarding QR code"
         );
 
         await this.onQrHasData(scandata);
