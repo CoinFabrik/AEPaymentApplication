@@ -131,7 +131,7 @@ export default {
           this.$swal
             .fire({
               type: "error",
-              title: "Sorry",
+              title: "Oops",
               html: "We could not fetch your history at this time. <br>Error: "+ res.error + " <br>To: " + to + " <br>From: " + from
             })
             .then(this.$router.replace("main-menu"));
@@ -152,7 +152,7 @@ export default {
         this.$swal
           .fire({
             type: "error",
-            title: "Sorry",
+            title: "Oops",
             text:
               "We could not fetch your history at this time. Reason:" +
               e.toString()

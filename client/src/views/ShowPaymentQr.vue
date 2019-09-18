@@ -124,7 +124,7 @@ export default {
       } else if (e.eventdata === "canceled") {
         this.$swal.fire({
           type: "error",
-          title: "Sorry",
+          title: "Oops",
           text:
             "The payment hub canceled the payment.  Please try again later.",
           onClose: async () => {

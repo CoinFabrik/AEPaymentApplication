@@ -189,7 +189,7 @@ export default {
           allowOutsideClick: false,
           showCancelButton: true,
           type: "error",
-          title: "Sorry",
+          title: "Oops",
           html:
             "We could not open your " +
             strExisting +

@@ -78,7 +78,7 @@ export default {
 
       this.balanceLoading = false;
     } catch (e) {
-      this.$displayError("Sorry", "We could not query your balances. Reason is " + e.toString());
+      this.$displayError("Oops", "We could not query your balances. Reason is " + e.toString());
       
     }
   },
