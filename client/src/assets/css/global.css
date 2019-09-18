@@ -64,11 +64,16 @@ html, body {
 .column {
   flex: 1;
 }
+
+.column-header {
+  flex: 1;
+}
+
 #progress-el {
   background-color: #FF0D6A !important;
 }
-.scroll {
-  overflow: scroll;
+.noscroll {
+  overflow: visible;
   max-height: 50vh;
   padding-bottom: 20;
 }

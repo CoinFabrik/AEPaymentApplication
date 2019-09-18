@@ -9,17 +9,17 @@
       <AeText>You don't have any channel transactions yet</AeText>
     </div>
     <b-row v-show="!isLoading && history.length > 0">
-      <div class="column">
+      <div class="column-header">
         <AeText weight="500" face="sans-s">Date</AeText>
       </div>
-      <div class="column">
+      <div class="column-header">
         <AeText weight="500" face="sans-s">Name</AeText>
       </div>
-      <div class="column">
+      <div class="column-header">
         <AeText weight="500" face="sans-s">Amount</AeText>
       </div>
     </b-row>
-    <div class="scroll">
+    <div class="noscroll">
       <AeList>
         <div v-for="tx in history" :key="tx.uuid">
           <AeListItem fill="neutral" @click="launchPopUp(tx)">
