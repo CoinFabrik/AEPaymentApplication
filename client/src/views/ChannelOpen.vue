@@ -5,7 +5,7 @@
     <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
     <AeLoader v-show="this.isWorking" />
 
-    <AeText face="sans-xs" v-show="this.txHash !== ''">
+    <AeText face="sans-xs" v-show="this.isWorking && this.txHash !== ''">
       <br />Channel creation TX Hash (click to copy)
       <b
         :style="{ color: hashColor }"
@@ -25,12 +25,28 @@
         :disabled="this.channelStatus === 'opening-hub' || this.channelStatus === 'cancelling'"
       >Cancel</AeButton>
     </div>
+
+     <div v-show="!this.isWorking">
+      <br />
+      <AeText>Please click the button below to open your channel. If you had an already active channel,  </b></AeText>
+      <br />
+      <AeButton
+        face="round"
+        extend
+        fill="primary"
+        @click="onClickOpenChannel"
+        :disabled="this.channelStatus === 'opening-hub' || this.channelStatus === 'cancelling'"
+      >Open Channel</AeButton>
+    </div>
+
   </div>
 </template>
 
 <script>
 /* eslint-disable no-console */
 let hub = null;
+let noSleep = new NoSleep();
+
 import HubConnection from "../controllers/hub";
 import aeternity from "../controllers/aeternity";
 import BigNumber from "bignumber.js";
@@ -38,9 +54,7 @@ import { DisplayUnitsToAE } from "../util/numbers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import copy from "copy-to-clipboard";
 import { trimHash } from "../util/tools";
-import NoSleep from 'nosleep'
-
-let noSleep;
+import NoSleep from 'nosleep.js'
 
 export default {
   name: "ChannelOpen",
@@ -85,16 +99,28 @@ export default {
     }
   },
   mounted: async function() {
-    noSleep = new NoSleep();
-
+    this.noSleep = new NoSleep();
     window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
+  },
+  beforeDestroy() {
+    window.eventBus.$off("channel-onchain-tx", this.onChainTx);
+    window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
+  },
+  methods: {
+    async copyHash() {
+      if (copy(this.txHash)) {
+        this.hashCopied = true;
+      }
+    },
+    async onClickOpenChannel() {
+      this.noSleep.enable();
+      this.isWorking = true;
 
-    try {
+      try {
       this.hub = new HubConnection(
         this.$store.state.hubUrl,
         await aeternity.getAddress()
       );
-      this.isWorking = true;
       let res = await this.notifyHub();
 
       if (!res.success) {
@@ -128,18 +154,9 @@ export default {
         params: { initialDeposit: true }
       });
     }
-  },
-  beforeDestroy() {
-    window.eventBus.$off("channel-onchain-tx", this.onChainTx);
-    window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
-  },
-  methods: {
-    async copyHash() {
-      if (copy(this.txHash)) {
-        this.hashCopied = true;
-      }
     },
     async cancel() {
+      this.noSleep.disable();
       this.channelStatus = "cancelling";
       this.userCancel = true;
       try {
@@ -168,7 +185,7 @@ export default {
       console.log("Obtained TX Hash: ", this.txHash);
     },
     onChannelDisconnected() {
-      noSleep.disable();
+      this.noSleep.disable();
       this.isWorking = false;
 
       if (this.userCancel) {
@@ -234,7 +251,7 @@ export default {
         });
     },
     onChannelOpen() {
-      noSleep.disable();
+      this.noSleep.disable();
       this.$store.commit("setChannelOpenDone", true);
 
       this.$store.dispatch("updateChannelBalances").then(() => {
@@ -275,7 +292,6 @@ export default {
       );
     },
     async createChannel() {
-      noSleep.enable();
       this.$store.commit("setChannelOpenDone", false);
       try {
         await this.$store.dispatch("createChannel");
