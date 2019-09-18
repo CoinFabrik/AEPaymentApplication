@@ -1,22 +1,40 @@
 <template>
   <div class="channel-open">
-    <ViewTitle title="Opening payment channel, please wait..." v-show="this.isWorking" />
+    <ViewTitle
+      fill="primary"
+      :title="this.isInitial ? 'WARNING' :'Opening payment channel, please wait...' "
+    />
     <br />
-    <AeText v-show="this.isWorking" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
-    <AeLoader v-show="this.isWorking" />
 
-    <AeText face="sans-xs" v-show="this.isWorking && this.txHash !== ''">
-      <br />Channel creation TX Hash (click to copy)
+    <div v-show="this.isInitial">
+      <br />
+      <AeText>
+        The following operation could take
+        <b>up to five minutes</b> in order to be confirmed.
+        <br />
+      </AeText>
+      <br />
+      <AeText fill="secondary">
+        <b>DO NOT CLOSE NOR SWITCH OUT THIS APPLICATION.</b>
+      </AeText>
+      <br />
+      <AeButton face="round" extend fill="primary" @click="onClickOpenChannel">Open Channel</AeButton>
+    </div>
+
+    <AeText v-show="this.isWorking || this.isCancelledByUser" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
+
+    <AeLoader v-show="this.isWorking || this.isCancelledByUser"/>
+<br/>
+    <AeText face="sans-xs" v-show="(this.isWorking || this.isCancelledByUser) && this.txHash !== ''">
+      Channel creation TX Hash (click to copy)
       <b
         :style="{ color: hashColor }"
         @click="copyHash"
       >{{ this.prettyHash }}</b>
     </AeText>
+    <br/>
 
-    <div v-show="this.isWorking">
-      <br />
-      <AeText><b> Please do not close this app </b></AeText>
-      <br />
+    <div v-show="!this.isInitial">
       <AeButton
         face="round"
         extend
@@ -25,20 +43,6 @@
         :disabled="this.channelStatus === 'opening-hub' || this.channelStatus === 'cancelling'"
       >Cancel</AeButton>
     </div>
-
-     <div v-show="!this.isWorking">
-      <br />
-      <AeText>Please click the button below to open your channel. If you had an already active channel,  </b></AeText>
-      <br />
-      <AeButton
-        face="round"
-        extend
-        fill="primary"
-        @click="onClickOpenChannel"
-        :disabled="this.channelStatus === 'opening-hub' || this.channelStatus === 'cancelling'"
-      >Open Channel</AeButton>
-    </div>
-
   </div>
 </template>
 
@@ -47,6 +51,14 @@
 let hub = null;
 let noSleep = new NoSleep();
 
+const STATUS_INITIAL = 0,
+  STATUS_WORKING = 1,
+  STATUS_USER_CANCELLED = 2,
+  STATUS_CONNECTED = 3,
+  STATUS_DISCONNECTED = 4,
+  STATUS_OPEN = 5,
+  STATUS_ERROR = 255;
+
 import HubConnection from "../controllers/hub";
 import aeternity from "../controllers/aeternity";
 import BigNumber from "bignumber.js";
@@ -54,7 +66,7 @@ import { DisplayUnitsToAE } from "../util/numbers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import copy from "copy-to-clipboard";
 import { trimHash } from "../util/tools";
-import NoSleep from 'nosleep.js'
+import NoSleep from "nosleep.js";
 
 export default {
   name: "ChannelOpen",
@@ -62,34 +74,53 @@ export default {
   data() {
     return {
       channelStatus: "unknown",
-      isWorking: false,
-      userCancel: false,
+      viewStatus: STATUS_INITIAL,
       txHash: "",
       hashCopied: false
     };
   },
   computed: {
+    isInitial() {
+      return this.viewStatus === STATUS_INITIAL;
+    },
+    isWorking() {
+      return this.viewStatus === STATUS_WORKING;
+    },
+    isCancelledByUser() {
+      return this.viewStatus === STATUS_USER_CANCELLED;
+    },
+    isConnected() {
+      return this.viewStatus === STATUS_CONNECTED;
+    },
+    isDisconnected() {
+      return this.viewStatus === STATUS_DISCONNECTED;
+    },
+    isOpen() {
+      return this.viewStatus === STATUS_OPEN;
+    },
     getChannelStatusDescriptiveText() {
       if (this.isWorking) {
         switch (this.channelStatus) {
           case "opening-hub":
             return "Opening Hub...";
           case "connected":
-            return "Channel connected";
+            return "Channel connected, wait for sign request...";
           case "accepted":
             return "Channel connection accepted";
           case "half-signed":
             return "Please wait while the transaction is signed by the server...";
           case "signed":
-            return "Channel opening transaction signed by both parties";
+            return "Waiting confirmations from the blockchain...";
           case "open":
             return "Channel successfully opened";
-          case "cancelling":
-            return "Cancelling operation";
+ 
           default:
             return "Working...";
         }
-      } else return "Unknown state";
+      } 
+      
+      if (this.isCancelledByUser) 
+        return "Cancelling operation ...";
     },
     hashColor() {
       return this.hashCopied ? "#e4416f" : "#000000";
@@ -99,8 +130,8 @@ export default {
     }
   },
   mounted: async function() {
+    this.viewStatus = STATUS_INITIAL;
     this.noSleep = new NoSleep();
-    window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
   },
   beforeDestroy() {
     window.eventBus.$off("channel-onchain-tx", this.onChainTx);
@@ -113,52 +144,53 @@ export default {
       }
     },
     async onClickOpenChannel() {
+      window.eventBus.$on("channel-status-changed", this.onChannelStatusChange);
       this.noSleep.enable();
-      this.isWorking = true;
+      this.viewStatus = STATUS_WORKING;
 
       try {
-      this.hub = new HubConnection(
-        this.$store.state.hubUrl,
-        await aeternity.getAddress()
-      );
-      let res = await this.notifyHub();
+        this.hub = new HubConnection(
+          this.$store.state.hubUrl,
+          await aeternity.getAddress()
+        );
+        let res = await this.notifyHub();
 
-      if (!res.success) {
-        this.isWorking = false;
+        if (!res.success) {
+          this.viewStatus = STATUS_ERROR;
+          this.$displayError(
+            "Oops! There is some problem",
+            "We could not communicate with the payment hub. Please try again later. Reason: " +
+              res.error.toString()
+          );
+          this.$router.replace({
+            name: "deposit",
+            params: { initialDeposit: true }
+          });
+        } else {
+          console.log("Hub Wallet Address: " + res.address);
+          console.log("Hub Node:  http" + res.node);
+          this.$store.commit("loadHubAddress", res.address);
+          this.$store.commit("loadHubNode", res.node);
+          await this.$store.dispatch("storeChannelOptions", res.options);
+          await this.createChannel();
+        }
+      } catch (e) {
+        this.viewStatus = STATUS_ERROR;
         this.$displayError(
           "Oops! There is some problem",
           "We could not communicate with the payment hub. Please try again later. Reason: " +
-            res.error.toString()
+            e.toString()
         );
         this.$router.replace({
           name: "deposit",
           params: { initialDeposit: true }
         });
-      } else {
-        console.log("Hub Wallet Address: " + res.address);
-        console.log("Hub Node:  http" + res.node);
-        this.$store.commit("loadHubAddress", res.address);
-        this.$store.commit("loadHubNode", res.node);
-        await this.$store.dispatch("storeChannelOptions", res.options);
-        await this.createChannel();
       }
-    } catch (e) {
-      this.isWorking = false;
-      this.$displayError(
-        "Oops! There is some problem",
-        "We could not communicate with the payment hub. Please try again later. Reason: " +
-          e.toString()
-      );
-      this.$router.replace({
-        name: "deposit",
-        params: { initialDeposit: true }
-      });
-    }
     },
     async cancel() {
       this.noSleep.disable();
       this.channelStatus = "cancelling";
-      this.userCancel = true;
+      this.viewStatus = STATUS_USER_CANCELLED;
       try {
         await this.$store.state.channel.disconnect();
         await aeternity.waitForChannelStatus(
@@ -186,11 +218,12 @@ export default {
     },
     onChannelDisconnected() {
       this.noSleep.disable();
-      this.isWorking = false;
 
-      if (this.userCancel) {
+      if (this.viewStatus === STATUS_USER_CANCELLED) {
         return;
       }
+
+      this.viewStatus = STATUS_DISCONNECTED;
 
       if (this.$store.state.channelOpenDone && this.$isOnDemandMode) {
         console.log("Ignoring handler (disconnect by on-demand LEAVE)");
@@ -224,7 +257,7 @@ export default {
         })
         .then(async result => {
           if (result.value) {
-            this.isWorking = true;
+            this.status = STATUS_WORKING;
             this.createChannel();
           } else if (result.dismiss === "cancel") {
             try {
@@ -235,6 +268,7 @@ export default {
                 throw "Call unsuccessful: " + res.error;
               }
             } catch (e) {
+              this.viewStatus = STATUS_ERROR;
               console.error(
                 "Failed to call endpoint to reset hub connection data: " +
                   e.toString()
@@ -251,6 +285,7 @@ export default {
         });
     },
     onChannelOpen() {
+      this.status = STATUS_OPEN;
       this.noSleep.disable();
       this.$store.commit("setChannelOpenDone", true);
 
@@ -262,7 +297,9 @@ export default {
           text: this.$isMerchantAppRole
             ? "Every time you get paid, the money will be addressed to your channel. Once you close it, all the funds will be withdrawn to your wallet."
             : "Now your channel balance is " +
-              DisplayUnitsToAE(this.$store.state.initiatorBalance, { rounding: BigNumber.ROUND_UP }) +
+              DisplayUnitsToAE(this.$store.state.initiatorBalance, {
+                rounding: BigNumber.ROUND_UP
+              }) +
               " AE. You can deposit more AEs when needed."
         }).then(this.$router.replace("main-menu"));
       });
@@ -306,6 +343,7 @@ export default {
         }
         window.eventBus.$on("channel-onchain-tx", this.onChainTx);
       } catch (e) {
+        this.status = STATUS_ERROR;
         noSleep.disable();
         this.$displayError(
           "Oops! There is some problem",
@@ -325,7 +363,9 @@ export default {
           this.$swal.fire({
             text:
               "Payment of " +
-              DisplayUnitsToAE(e.info.amount, { rounding: BigNumber.ROUND_UP}) +
+              DisplayUnitsToAE(e.info.amount, {
+                rounding: BigNumber.ROUND_UP
+              }) +
               " AE received from " +
               e.info.customer_name,
             toast: true,

@@ -4,6 +4,7 @@
       class="titleHead mb-3"
       weight="bold"
       :face="getHeight() > 550 ? 'sans-l' : 'sans-base'"
+      :fill=fill
     >
       {{ title }}
     </AeText>
@@ -16,11 +17,8 @@
 	export default {
 		name: "ViewTitle",
 		components: { AeText },
-		props: ['title'],
+		props: ['title', 'fill'],
 		methods: {
-			goHome() {
-				this.$router.replace({name: "connectToWallet"});
-			},
 			getHeight() {
 				console.log(window.innerHeight)
 				return window.innerHeight;
