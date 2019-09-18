@@ -278,14 +278,7 @@ export default {
               heightAuto: false,
               type: "error",
               title: "Oops!",
-              html: e => {
-                if (e.toString() === "no-reconnect-info")
-                  return "Cannot open channel due to re-connection info not available.";
-                else if (e.toString() === "reconnect-info-error")
-                  return "Cannot fetch re-connection info from payment hub at this time";
-                else
-                  "We could not open your channel.  Reason is " + e.toString();
-              }
+              html: "We could not open your channel.<br>Reason: " + e.toString()
             })
             .then(() => {
               this.$router.replace("main-menu");
