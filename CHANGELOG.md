@@ -175,6 +175,7 @@ KNOWN ISSUES
 
 + Channel re-open will check if there is reconnection info available at payment hub
 + BigNumber Round-up policy is now used where appropiate 
++ NoSleep package used to avoid mobile browsers going to sleep.
 + Little UI tweaks
 
 KNOWN ISSUES
