@@ -33,6 +33,7 @@
 <script>
 import { setTimeout } from "timers";
 import { DisplayUnitsToAE } from "../util/numbers";
+import BigNumber from 'bignumber.js';
 const PAYMENT_TIMEOUT_SECONDS = 60;
 
 export default {
@@ -48,7 +49,7 @@ export default {
       return JSON.stringify(this.message);
     },
     amountAE() {
-      return DisplayUnitsToAE(this.message.amount);
+      return DisplayUnitsToAE(this.message.amount, { rounding: BigNumber.ROUND_UP });
     }
   },
   async mounted() {
@@ -66,14 +67,20 @@ export default {
             this.$swal.showLoading();
           }
         });
-        await this.$store.dispatch("openChannel");
+        await this.$store.dispatch("openChannel", true);
         this.$swal.close();
       } catch (e) {
         this.$swal
           .fire({
             type: "error",
             title: "Sorry",
-            text: "We could not open your channel.  Reason is " + e.toString()
+            text: e => {
+              if (e.toString() === "no-reconnect-info")
+                return "Cannot open channel due to re-connection info not available.";
+              else if (e.toString() === "reconnect-info-error")
+                return "Cannot fetch re-connection info from payment hub at this time";
+              else "We could not open your channel.  Reason is " + e.toString();
+            }
           })
           .then(() => {
             this.$router.replace("main-menu");
@@ -104,9 +111,11 @@ export default {
           title: "Payment Received",
           html:
             "You received " +
-            "<b>" + DisplayUnitsToAE(e.info.amount) + 
+            "<b>" +
+            DisplayUnitsToAE(e.info.amount, { rounding: BigNumber.ROUND_UP }) +
             " AE </b> from <b>" +
-            e.info.customer_name + "</b>" +
+            e.info.customer_name +
+            "</b>" +
             concept,
           onClose: async () => {
             await this.$store.dispatch("leaveChannel");

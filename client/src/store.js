@@ -149,7 +149,7 @@ export default new Vuex.Store({
       }
       commit('updateInHubBalance', res.balance);
     },
-    async openChannel({ dispatch, commit, state }) {
+    async openChannel({ dispatch, commit, state }, ensureReconnectionInfo) {
       console.log("action: openChannel");
       if (state.channel.status && state.channel.status() === "open") {
         console.warn("Ignoring action:  channel is already open");
@@ -157,6 +157,16 @@ export default new Vuex.Store({
       }
 
       let hub = new HubConnection(state.hubUrl, await aeternity.getAddress());
+
+      if (ensureReconnectionInfo) {
+        let res = await hub.getPrevChannelId(process.env.VUE_APP_ROLE);
+        if (!res.success) {
+          throw new Error("reconnect-info-error");
+        }
+        if (res.channelId === undefined || res.channelId === "") {
+          throw new Error("no-reconnect-info");
+        }
+      }
 
       let res = await hub.notifyUserOnboarding(
         state.initiatorAmount,

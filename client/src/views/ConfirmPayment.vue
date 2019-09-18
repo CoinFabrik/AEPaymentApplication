@@ -25,7 +25,9 @@
           <AeText fill="secondary" face="sans-base">Concept</AeText>
         </div>
         <div class="column">
-          <AeText face="mono-base">{{ paymentData.something.trim().length === 0 ? "N/A" : paymentData.something }}</AeText>
+          <AeText
+            face="mono-base"
+          >{{ paymentData.something.trim().length === 0 ? "N/A" : paymentData.something }}</AeText>
         </div>
       </div>
     </div>
@@ -230,7 +232,7 @@ export default {
     async ensureConnectionOpen() {
       if (this.$isOnDemandMode) {
         console.log("Waiting for channel to open...");
-        await this.$store.dispatch("openChannel");
+        await this.$store.dispatch("openChannel", true);
       }
     },
     async confirm() {
@@ -276,10 +278,14 @@ export default {
               heightAuto: false,
               type: "error",
               title: "Oops!",
-              html:
-                "There was a problem opening your channel. Reason is: " +
-                e.toString() +
-                "<br>Please try again later"
+              html: e => {
+                if (e.toString() === "no-reconnect-info")
+                  return "Cannot open channel due to re-connection info not available.";
+                else if (e.toString() === "reconnect-info-error")
+                  return "Cannot fetch re-connection info from payment hub at this time";
+                else
+                  "We could not open your channel.  Reason is " + e.toString();
+              }
             })
             .then(() => {
               this.$router.replace("main-menu");
