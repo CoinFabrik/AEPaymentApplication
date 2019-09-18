@@ -169,3 +169,17 @@ KNOWN ISSUES
 + When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
+
+0.9.11 "Praga-2" (190918)
+-------------------------
+
++ Channel re-open will check if there is reconnection info available at payment hub
++ BigNumber Round-up policy is now used where appropiate 
++ Little UI tweaks
+
+KNOWN ISSUES
+
++ Scrolling issues with Android. Please switch to floating keyboard if needed.
++ When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
++ Do not switch subaccounts except before channel opening.
