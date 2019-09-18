@@ -144,7 +144,7 @@ export default {
               res.txhistory[index].amount
             )
               .dividedBy(BigNumber(10 ** 18))
-              .toFixed(2);
+              .toFixed(2, BigNumber.ROUND_UP);
           });
           this.history.push(...res.txhistory);
         }

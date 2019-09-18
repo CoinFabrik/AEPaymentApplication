@@ -82,7 +82,7 @@ export default {
       return DisplayUnitsToAE(process.env.VUE_APP_MERCHANT_INITIAL_DEPOSIT, 5);
     },
     balance() {
-      return DisplayUnitsToAE(this.$store.state.balance);
+      return DisplayUnitsToAE(this.$store.state.balance, { rounding: BigNumber.ROUND_UP });
     },
     isWaitingUserInput() {
       return this.viewState == STATUS_USER_INPUT;

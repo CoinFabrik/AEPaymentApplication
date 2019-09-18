@@ -33,7 +33,7 @@
 <script>
 import { setTimeout } from "timers";
 import { DisplayUnitsToAE } from "../util/numbers";
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 const PAYMENT_TIMEOUT_SECONDS = 60;
 
 export default {
@@ -49,7 +49,9 @@ export default {
       return JSON.stringify(this.message);
     },
     amountAE() {
-      return DisplayUnitsToAE(this.message.amount, { rounding: BigNumber.ROUND_UP });
+      return DisplayUnitsToAE(this.message.amount, {
+        rounding: BigNumber.ROUND_UP
+      });
     }
   },
   async mounted() {
@@ -73,16 +75,13 @@ export default {
         this.$swal
           .fire({
             type: "error",
-            title: "Sorry",
-            text: e => {
-              if (e.toString() === "no-reconnect-info")
-                return "Cannot open channel due to re-connection info not available.";
-              else if (e.toString() === "reconnect-info-error")
-                return "Cannot fetch re-connection info from payment hub at this time";
-              else "We could not open your channel.  Reason is " + e.toString();
-            }
+            title: "Oops",
+            text: "We could not open your channel.  Reason is " + e.toString()
           })
-          .then(() => {
+          .then(async () => {
+            // Do a leave for a clean FSM exit, if required.
+
+            await this.$store.dispatch("leaveChannel");
             this.$router.replace("main-menu");
           });
       }

@@ -236,7 +236,7 @@ export default {
           text: this.$isMerchantAppRole
             ? "Every time you get paid, the money will be addressed to your channel. Once you close it, all the funds will be withdrawn to your wallet."
             : "Now your channel balance is " +
-              DisplayUnitsToAE(this.$store.state.initiatorBalance) +
+              DisplayUnitsToAE(this.$store.state.initiatorBalance, { rounding: BigNumber.ROUND_UP }) +
               " AE. You can deposit more AEs when needed."
         }).then(this.$router.replace("main-menu"));
       });
@@ -298,7 +298,7 @@ export default {
           this.$swal.fire({
             text:
               "Payment of " +
-              DisplayUnitsToAE(e.info.amount) +
+              DisplayUnitsToAE(e.info.amount, { rounding: BigNumber.ROUND_UP}) +
               " AE received from " +
               e.info.customer_name,
             toast: true,
