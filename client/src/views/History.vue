@@ -87,12 +87,12 @@
         </b-modal>
       </AeList>
     </div>
-    <div class="fixedButton">
+    <!-- <div class="fixedButton">
       <AeButton face="icon" fill="primary" @click="addItems(history.length)">
         <ae-icon name="plus" />
       </AeButton>
-    </div>
-    <ViewButtonSection v-if="isIOS()" :buttons="[{name:'Back', action: goBack, cancel:true}]" />
+    </div> -->
+    <ViewButtonSection :buttons="[{name:'Back', action: goBack, cancel:true}]" />
   </b-container>
 </template>
 
