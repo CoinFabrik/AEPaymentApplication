@@ -19,7 +19,7 @@
         <AeText weight="500" face="sans-s">Amount</AeText>
       </div>
     </b-row>
-    <div class="noscroll">
+    <div class="scroll">
       <AeList>
         <div v-for="tx in history" :key="tx.uuid">
           <AeListItem fill="neutral" @click="launchPopUp(tx)">

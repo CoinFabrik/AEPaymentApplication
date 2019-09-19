@@ -72,8 +72,8 @@ html, body {
 #progress-el {
   background-color: #FF0D6A !important;
 }
-.noscroll {
-  overflow: visible;
+.scroll {
+  overflow: scroll;
   max-height: 50vh;
   padding-bottom: 20;
 }
