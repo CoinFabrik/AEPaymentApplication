@@ -3,8 +3,8 @@
     <ViewTitle :title="getName || 'Menu'" />
     <ViewBalances
       style="margin-top:4vh;"
-      :wallet-balance="getMyWalletBalance.toFixed(2)"
-      :channel-balance="$isMerchantAppRole ? getTotalBalance.toFixed(2) : getMyChannelBalance.toFixed(2)"
+      :wallet-balance="getMyWalletBalanceAE"
+      :channel-balance="$isMerchantAppRole ? getTotalBalanceAE : getMyChannelBalanceAE"
       :loading="balanceLoading"
     />
 
@@ -16,32 +16,30 @@
       v-if="$isClientAppRole && $isOnDemandMode"
       :buttons="[{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
-    
+
     <ViewButtonSection
       v-if="$isMerchantAppRole && $isOnDemandMode"
       :buttons="[{name:'Request Payment', action: generatePaymentQr},{ name: 'My Activity', action: history},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
     <ViewButtonSection
-      v-if="$isMerchantAppRole && !$isOnDemandMode" 
+      v-if="$isMerchantAppRole && !$isOnDemandMode"
       :buttons="[{name:'Withdraw Funds', action: withdraw},{name:'Request Payment', action: generatePaymentQr}, { name: 'My Activity', action: history},{name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
 
-    <CloseModal
-      text="Close channel?"
-      :on-confirm="this.closeChannel"
-    />
+    <CloseModal text="Close channel?" :on-confirm="this.closeChannel" />
   </b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
 
-import BigNumber from 'bignumber.js'
+import BigNumber from "bignumber.js";
+import { DisplayUnitsToAE } from "../util/numbers";
 
 export default {
   name: "MainMenu",
   data() {
-    return { balanceLoading: true }
+    return { balanceLoading: true };
   },
   computed: {
     getName: function() {
@@ -50,17 +48,25 @@ export default {
     getAddress: function() {
       return this.$store.getters.initiatorId;
     },
-    getTotalBalance: function() {
-       return this.getMyChannelBalance.plus(this.getMyPendingHubBalance)
+    getTotalBalanceAE: function() {
+      return DisplayUnitsToAE(
+        BigNumber(this.$store.state.initiatorBalance).plus(
+          this.$store.state.hubBalance
+        ),
+        { digits: 2, rounding: BigNumber.ROUND_DOWN }
+      );
     },
-    getMyChannelBalance: function() {
-      return BigNumber(this.$store.state.initiatorBalance).dividedBy(10 ** 18);
+    getMyChannelBalanceAE: function() {
+      return DisplayUnitsToAE(BigNumber(this.$store.state.initiatorBalance), {
+        digits: 2,
+        rounding: BigNumber.ROUND_DOWN
+      });
     },
-    getMyWalletBalance: function() {
-      return BigNumber(this.$store.state.balance).dividedBy(10 ** 18);
-    },
-    getMyPendingHubBalance: function() {
-      return BigNumber(this.$store.state.hubBalance).dividedBy(10 ** 18);
+    getMyWalletBalanceAE: function() {
+      return DisplayUnitsToAE(this.$store.state.balance, {
+        digits: 2,
+        rounding: BigNumber.ROUND_DOWN
+      });
     }
   },
   async mounted() {
@@ -78,8 +84,10 @@ export default {
 
       this.balanceLoading = false;
     } catch (e) {
-      this.$displayError("Oops", "We could not query your balances. Reason is " + e.toString());
-      
+      this.$displayError(
+        "Oops",
+        "We could not query your balances. Reason is " + e.toString()
+      );
     }
   },
   methods: {
