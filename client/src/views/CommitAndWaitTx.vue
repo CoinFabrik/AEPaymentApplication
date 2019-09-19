@@ -1,18 +1,23 @@
 <template>
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
-    <AeText>Please wait for your transaction to be confirmed</AeText>
-    <AeText face="sans-l" fill="primary">{{ confirmPercent === NaN ? 0 : confirmPercent }}%</AeText>
+    <ViewTitle
+      fill="primary"
+      title="{{ this.getOperationName }} in progress, please wait..."
+    />
+    <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
     <br />
+
+    <AeLoader v-show="confirmPercent != 100" />
+    <br/>
     <AeText face="sans-xs" v-show="this.transactionHash !== null">
-      <br />This is the on-chain 'Close' TX Hash (click to copy)
+      <br />On-chain transaction hash (click to copy)
       <b
         :style="{ color: hashColor }"
         @click="copyHash"
       >{{ this.prettyHash }}</b>
     </AeText>
     <br />
-    <AeLoader v-show="confirmPercent != 100" />
   </div>
 </template>
 
@@ -55,6 +60,24 @@ export default {
     },
     prettyHash() {
       return this.transactionHash && this.transactionHash !== null ? trimHash(this.transactionHash) : "";
+    },
+    getOperationName() {
+      switch(this.txKind) {
+        case "deposit":
+          return "Deposit"
+          break;
+
+        case "withdraw":
+          return "Withdraw"
+          break;
+
+        case "close":
+          return "Channel close"
+          break;
+
+        default:
+          throw new Error("Transaction type is unknown");
+      }
     }
   },
   watch: {},

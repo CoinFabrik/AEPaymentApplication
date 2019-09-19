@@ -21,18 +21,24 @@
       <AeButton face="round" extend fill="primary" @click="onClickOpenChannel">Open Channel</AeButton>
     </div>
 
-    <AeText v-show="this.isWorking || this.isCancelledByUser" face="sans-s">{{ this.getChannelStatusDescriptiveText }}</AeText>
+    <AeText
+      v-show="this.isWorking || this.isCancelledByUser"
+      face="sans-s"
+    >{{ this.getChannelStatusDescriptiveText }}</AeText>
 
-    <AeLoader v-show="this.isWorking || this.isCancelledByUser"/>
-<br/>
-    <AeText face="sans-xs" v-show="(this.isWorking || this.isCancelledByUser) && this.txHash !== ''">
+    <AeLoader v-show="this.isWorking || this.isCancelledByUser" />
+    <br />
+    <AeText
+      face="sans-xs"
+      v-show="(this.isWorking || this.isCancelledByUser) && this.txHash !== ''"
+    >
       Channel creation TX Hash (click to copy)
       <b
         :style="{ color: hashColor }"
         @click="copyHash"
       >{{ this.prettyHash }}</b>
     </AeText>
-    <br/>
+    <br />
 
     <div v-show="!this.isInitial">
       <AeButton
@@ -113,14 +119,13 @@ export default {
             return "Waiting confirmations from the blockchain...";
           case "open":
             return "Channel successfully opened";
- 
+
           default:
             return "Working...";
         }
-      } 
-      
-      if (this.isCancelledByUser) 
-        return "Cancelling operation ...";
+      }
+
+      if (this.isCancelledByUser) return "Cancelling operation ...";
     },
     hashColor() {
       return this.hashCopied ? "#e4416f" : "#000000";
