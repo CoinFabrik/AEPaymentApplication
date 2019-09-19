@@ -30,7 +30,7 @@
         </div>
         <b-modal id="authorize-modal" centered hide-footer hide-header>
           <div class="d-block text-center">
-            <AeText weight="bold" face="sans-l">Summary</AeText>
+            <AeText weight="bold" face="sans-l">Payment Detail</AeText>
             <br />
             <b-row>
               <b-col>
