@@ -254,9 +254,8 @@ export default {
               "You may deposit funds in your channel and try again."
           })
           .then(function() {
-            that.$router.push({
-              name: "scanqr",
-              params: { subview: "pay-with-qr" }
+            that.$router.replace({
+              name: "main-menu"
             });
           });
       } else {
