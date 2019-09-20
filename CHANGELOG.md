@@ -148,11 +148,13 @@ KNOWN ISSUES
 + On-Chain-TX info may not be shown under Node 5.X testnet (see https://forum.aeternity.com/t/onchaintx-event-with-create-channel-tx-differences-between-node-versions/4729)
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
-+ Page Refresh may cause problems if a channel operation is underway. This should be fixed with 4.7.0 and reconnection mechanism (not included yet)
 
-0.9.10  "Praga"  (190917)
---------------------------
 
+0.9.12 "Devcon" (190920)
+------------------------
+
++ On insufficient funds return to Main Menu.
++ Beautified close tx Wait screen.
 + Fixed missing await causing OnChainTx (and maybe other events?) to be missed 
 + Fixed Tx history failure when empty list was fetched from server.
 + Fixed Tx history popup
@@ -161,26 +163,18 @@ KNOWN ISSUES
 + Ignore channel open request if already in OPEN state.
 + Tighter user interaction logic at "Show QR Payment" 
 + Confirm payment will show N/A if there is no concept entered by merchant
-+ Misc UI Fixes
-
-KNOWN ISSUES
-
-+ Scrolling issues with Android. Please switch to floating keyboard if needed.
-+ When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
-+ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
-+ Do not switch subaccounts except before channel opening.
-
-0.9.11 "Praga-2" (190918)
--------------------------
-
 + Channel re-open will check if there is reconnection info available at payment hub
 + BigNumber Round-up policy is now used where appropiate 
-+ NoSleep package used to avoid mobile browsers going to sleep.
-+ Little UI tweaks
++ NoSleep package used to avoid mobile browsers going to sleep at Channel creation.
++ Application icons w/manifest.
++ Banner asks confirmation to go home on click.
++ Other UI and navigation Fixes
 
 KNOWN ISSUES
 
++ Merchant payment notifications may get lost.
 + Scrolling issues with Android. Please switch to floating keyboard if needed.
 + When OnDemand mode is active, Withdraw and Deposit are not available (see  https://www.pivotaltracker.com/n/projects/2124891/stories/167944617)
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
++ Page Refresh may cause problems if a channel operation is underway. This should be fixed with future 5.0.0  node Release.
