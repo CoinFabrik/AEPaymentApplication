@@ -3,7 +3,7 @@
   <div class="commit-and-wait-tx">
     <ViewTitle
       fill="primary"
-      title="{{ this.getOperationName }} in progress, please wait..."
+      :title="getHeaderTitle"
     />
     <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
     <br />
@@ -61,18 +61,18 @@ export default {
     prettyHash() {
       return this.transactionHash && this.transactionHash !== null ? trimHash(this.transactionHash) : "";
     },
-    getOperationName() {
+    getHeaderTitle() {
       switch(this.txKind) {
         case "deposit":
-          return "Deposit"
+          return "Deposit in progress, please wait..."
           break;
 
         case "withdraw":
-          return "Withdraw"
+          return "Withdraw in progress, please wait..."
           break;
 
         case "close":
-          return "Channel close"
+          return "Channel close in progress, please wait..."
           break;
 
         default:
