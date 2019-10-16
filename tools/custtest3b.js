@@ -137,10 +137,6 @@ function pick_random(arr) {
     let result = await peer.channel.leave();
     console.log(result);
     console.log("");
-    console.log(result);
-    console.log("");
-    console.log(result);
-    console.log("");
     //await peer.shutdown();
     await peer.wait_state("DISCONNECTED");
 

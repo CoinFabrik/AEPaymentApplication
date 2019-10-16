@@ -19,20 +19,20 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@aeternity/aepp-sdk": "^4.6.0",
+    "@aeternity/aepp-sdk": "^5.0.0",
     "@nestjs/common": "^6.0.0",
     "@nestjs/core": "^6.0.0",
     "@nestjs/platform-express": "^6.0.0",
     "@nestjs/typeorm": "^6.1.3",
     "bignumber.js": "^9.0.0",
+    "flatted": "latest",
     "mysql": "^2.17.1",
     "qr-image": "^3.2.0",
     "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
     "rxjs": "^6.3.3",
     "sqlite3": "^4.0.9",
-    "typeorm": "^0.2.18",
-    "flatted": "latest"
+    "typeorm": "^0.2.18"
   },
   "devDependencies": {
     "@nestjs/testing": "6.1.1",
