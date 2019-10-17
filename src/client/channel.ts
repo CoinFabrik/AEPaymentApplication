@@ -1,3 +1,4 @@
+/* tslint:disable:no-console no-string-literal */
 import {RepoService, ServiceBase} from './client.service';
 import {Actor, CClient} from './client.entity';
 import {EventEmitter} from 'events';
@@ -225,7 +226,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
-        let timeout = 3 * 1000 * 60 * 3 * max(MoreConfig.MinimumDepth, 1);
+        const timeout = 3 * 1000 * 60 * 3 * max(MoreConfig.MinimumDepth, 1);
         return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
@@ -310,7 +311,7 @@ export abstract class ServerChannel extends EventEmitter {
         options['sign'] = async (tag, tx, {updates = {}} = {}) => {
             try {
                 let result = await this.customSign(tag, tx, {updates});
-                //this.saveState();
+                // this.saveState();
                 return result;
             } catch (err) {
                 console.error(err);
@@ -363,8 +364,10 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.status.startsWith('DISCONNECT')) {
             ServiceBase.rmClient(this.client, this.Name);
             if ((!this.disconnect_by_leave) && !(this.died) || this.closing) {
-                this._reset_state();
-                this._save_state();
+                this._reset_state().then(() => {
+                    this._save_state();
+                })
+                    .catch(console.error);
             }
         }
     }
@@ -384,7 +387,7 @@ export abstract class ServerChannel extends EventEmitter {
     async shutdown() {
         if (this.is_initiator) {
             const self = this;
-            return await this.channel.shutdown(_tx => self.nodeuser.signTransaction(_tx));
+            return await this.channel.shutdown(tx => self.nodeuser.signTransaction(tx));
         }
     }
 
@@ -399,7 +402,7 @@ export abstract class ServerChannel extends EventEmitter {
 
     async hb() {
         while (this.status === 'OPEN') {
-            await this.sendMessage({'type': 'heartbeat'});
+            await this.sendMessage({type: 'heartbeat'});
             await sleep(40 * 1000);
             if (this.is_customer() && (Date.now() - this.last_update > 90000 * 1000)) {
                 break;
@@ -418,20 +421,20 @@ export abstract class ServerChannel extends EventEmitter {
         }
     }
 
-    async _get_state(leave=false) {
+    async _get_state(leave = false) {
         const balances = await this.channel.balances([this.initiator, this.responder]);
         this.client.iBalance = (new BigNumber(balances[this.initiator])).toString(10);
         this.client.rBalance = (new BigNumber(balances[this.responder])).toString(10);
         this.client.channelId = this.channel.id();
         const poi = await this.channel.poi({
-            accounts: [this.address, this.opposite]
+            accounts: [this.address, this.opposite],
         });
         this.client.channelPoi = JSON.stringify(poi);
         const state = leave ? await this.channel.leave() : await this.channel.state();
         this.client.channelSt = state['signedTx'];
     }
 
-    async saveState(leave=false) {
+    async saveState(leave = false) {
         await this._get_state(leave);
         this._save_state();
     }
@@ -445,50 +448,35 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async solo() {
-        //
-        // const { signedTx } = await this.channel.update(
-        //   this.opposite, this.address, new BigNumber("1"),
-        //   tx => this.nodeuser.signTransaction(tx)
-        // );
-        //
-        //const balances = await this.channel.balances([this.address, this.opposite]);
-        //let chanid = this.client.channelId;
-
-        // const poi = await this.channel.poi({
-        //     accounts: [this.address, this.opposite]
-        // });
         const poi = JSON.parse(this.client.channelPoi);
         const closeSoloTxFee = await this.nodeuser.channelCloseSoloTx({
             channelId: this.client.channelId,
             fromId: this.address,
             poi,
             payload: this.client.channelSt});
+        console.log('R1:', JSON.stringify(await this.signAndSend(closeSoloTxFee)));
 
-        console.log("R1:", JSON.stringify(await this.signAndSend(closeSoloTxFee)));
-        let r2 = await this.nodeuser.channelSettleTx({
+        const r2 = await this.nodeuser.channelSettleTx({
             channelId: this.client.channelId,
             fromId: this.address,
-            // initiatorAmountFinal: balances[this.opposite],
-            // responderAmountFinal: balances[this.address],
             initiatorAmountFinal: this.client.iBalance,
             responderAmountFinal: this.client.rBalance,
         });
-
-        console.log("R2:", JSON.stringify(await this.signAndSend(r2)));
+        console.log('R2:', JSON.stringify(await this.signAndSend(r2)));
     }
 
     async signAndSend(tx) {
-        let fee = unpackTx(tx).tx.fee;
-        let signed = await this.nodeuser.signTransaction(tx);
-        let resulsut = await this.nodeuser.sendTransaction(signed, {waitMined: true});
-        return {result: resulsut, fee: fee};
+        const fee = unpackTx(tx).tx.fee;
+        const signed = await this.nodeuser.signTransaction(tx);
+        const result = await this.nodeuser.sendTransaction(signed, {waitMined: true});
+        return {result, fee};
     }
 
     ///////////////////////////////////////////////////////////
-    async update(_from, _to, amount, msg = '') {
+    async update(from, to, amount, msg = '') {
         const self = this;
         try {
-            let result = await this.channel.update(_from, _to, amount, async (tx) => {
+            const result = await this.channel.update(from, to, amount, async (tx) => {
                 this.log('signing: ' + tx.toString() + JSON.stringify(msg));
                 return await self.nodeuser.signTransaction(tx);
             });
