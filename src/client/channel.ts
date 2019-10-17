@@ -18,6 +18,8 @@ const {
 } = require('@aeternity/aepp-sdk');
 
 
+const MAX_BLOCK_TIME_MINUTES = 11;
+
 function max(a, b: number): number {
     if (a > b) {
         return a;
@@ -226,7 +228,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static base_options() {
-        const timeout = 3 * 1000 * 60 * 3 * max(MoreConfig.MinimumDepth, 1);
+        const timeout = 1000 * 60 * MAX_BLOCK_TIME_MINUTES * max(MoreConfig.MinimumDepth, 1);
         return clone({ // initiatorId / initiatorAmount / role / url: WS_URL + '/channel',
             responderId: this.address,
             pushAmount: 0,
