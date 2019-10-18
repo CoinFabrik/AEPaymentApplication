@@ -178,3 +178,10 @@ KNOWN ISSUES
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
 + Page Refresh may cause problems if a channel operation is underway. This should be fixed with future 5.0.0  node Release.
+
+0.9.13 (191018)
+---------------
+
++ Updated SDK to 5.0.0 
++ Tested with 5.0.0-rc5 Testnet Node and Hub.
++ New app icons
