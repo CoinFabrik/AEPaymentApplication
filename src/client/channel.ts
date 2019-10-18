@@ -521,12 +521,13 @@ export abstract class ServerChannel extends EventEmitter {
         });
     }
 
-    private removePending(mc: MerchantCustomer) {
-        let pending = mc.pending;
+    public removePending(mc: MerchantCustomer) {
+        const pending = mc.pending;
         mc.pending = null;
         try {
             clearTimeout(pending.timeout);
         } catch (err) {
+            // ignore timeout clearing problems
         }
         array_rm(this.pending_mcs, pending);
     }

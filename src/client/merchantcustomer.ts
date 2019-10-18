@@ -114,7 +114,13 @@ export class MerchantCustomer {
 
     msgPaymentRequestCompleted() {
         const base = this.base();
-        base['customer_name'] = this.cclient.name;
+        let name = this.customer;
+        try {
+            name = this.cclient.name;
+        } catch (err) {
+            // if no client, ignore name..
+        }
+        base['customer_name'] = name;
         base['type'] = 'payment-request-completed';
         return base;
     }
@@ -126,11 +132,19 @@ export class MerchantCustomer {
     }
 
     sendCustomer(msg: object) {
-        this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        try {
+            this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        } catch (err) {
+            console.log(' * customer disappeared: ' + this.customer + 'message not delivered!');
+        }
     }
 
     sendMerchant(msg: object) {
-        this.mclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        try {
+            this.mclient.channel.sendMessage(msg).then(voidf).catch(console.error);
+        } catch (err) {
+            console.log(' * merchant disappeared: ' + this.merchant + 'message not delivered!');
+        }
     }
 
     public get mclient(): CClient {
