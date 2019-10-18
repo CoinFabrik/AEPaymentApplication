@@ -43,8 +43,7 @@ export class MerchantCustomer {
         return this.all[mc_id];
     }
 
-    private constructor(readonly merchant: string, readonly customer: string, public msg: object,
-                        private cust_channel: ServerChannel, private _mclient?: CClient, private _cclient?: CClient) {
+    private constructor(readonly merchant: string, readonly customer: string, public msg: object) {
         let id;
         try {
             id = msg['info']['id'];
@@ -127,7 +126,7 @@ export class MerchantCustomer {
     }
 
     sendCustomer(msg: object) {
-        this.cust_channel.sendMessage(msg).then(voidf).catch(console.error);
+        this.cclient.channel.sendMessage(msg).then(voidf).catch(console.error);
     }
 
     sendMerchant(msg: object) {
@@ -135,31 +134,23 @@ export class MerchantCustomer {
     }
 
     public get mclient(): CClient {
-        if (this._mclient == null) {
-            this._mclient = ClientService.getClientByAddress(this.merchant, 'merchant');
-        }
-        return this._mclient;
+        return ClientService.getClientByAddress(this.merchant, 'merchant');
     }
 
     public get cclient(): CClient {
-        if (this._cclient == null) {
-            this._cclient = ClientService.getClientByAddress(this.customer, 'customer');
-        }
-        return this._cclient;
+        return ClientService.getClientByAddress(this.customer, 'customer');
     }
 
-    static FromRequest(msg: object, cust_channel: ServerChannel): MerchantCustomer {
+    static FromRequest(msg: object): MerchantCustomer {
         const merchant = msg['info']['merchant'];
-        const mclient = ClientService.getClientByAddress(merchant, 'merchant');
-        if (mclient == null) {
+        if (null == ClientService.getClientByAddress(merchant, 'merchant')) {
             throw new InvalidMerchant(merchant);
         }
         const customer = msg['info']['customer'];
-        const cclient = ClientService.getClientByAddress(customer, 'customer');
-        if (cclient == null) {
+        if (null == ClientService.getClientByAddress(customer, 'customer')) {
             throw new InvalidCustomer(customer);
         }
-        return new MerchantCustomer(merchant, customer, msg, cust_channel, mclient, cclient);
+        return new MerchantCustomer(merchant, customer, msg);
     }
 
     paymentReceived() {

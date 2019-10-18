@@ -67,7 +67,7 @@ export class Hub extends EventEmitter {
         });
 
         this.on("user-payment-request", (msg, emitter_channel) => {
-            this.payment_request(msg, emitter_channel)
+            this.payment_request(msg)
                 .then((mc) => {
                     this.emit("payment-request-accepted", mc)
                 })
@@ -156,11 +156,11 @@ export class Hub extends EventEmitter {
         throw new PaymentTimeout();
     }
 
-    async payment_request(msg, emitter_channel) {
+    async payment_request(msg) {
         let mc;
         this.log("pay-request: " + (mystringify(msg)));
         try {
-            mc = MerchantCustomer.FromRequest(msg, emitter_channel);
+            mc = MerchantCustomer.FromRequest(msg);
             let pre_balance = await mc.cclient.channel.hub_balance();
             this.emit("wait-payment", mc, pre_balance);
             return mc;
