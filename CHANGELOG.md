@@ -185,3 +185,9 @@ KNOWN ISSUES
 + Updated SDK to 5.0.0 
 + Tested with 5.0.0-rc5 Testnet Node and Hub.
 + New app icons
+
+0.9.14
+------
+
++ Updated SDK to 6.0.0
+
