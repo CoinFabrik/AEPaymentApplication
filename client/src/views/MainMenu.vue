@@ -9,13 +9,15 @@
     />
 
     <ViewButtonSection
-      v-if="$isClientAppRole && !$isOnDemandMode"
+      v-if="$isClientAppRole" 
       :buttons="[{name:'Deposit Funds', action: deposit},{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
+    <!--
     <ViewButtonSection
       v-if="$isClientAppRole && $isOnDemandMode"
       :buttons="[{name:'Scan Payment Request', action: scanTxQr},{ name: 'My Activity', action: history}, {name:'Close channel', action: popUpCloseModal, fill:'secondary'}]"
     />
+    -->
 
     <ViewButtonSection
       v-if="$isMerchantAppRole && $isOnDemandMode"

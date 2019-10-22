@@ -140,7 +140,7 @@ aeternity.estimateDepositFee = function (gasAmount) {
   return calculateFee(null, 'channel_deposit', { gas: gasAmount })
 }
 
-aeternity.deposit = async function (channel, amount, onChainTxCallback) {
+aeternity.deposit = async function (channel, amount, onChainTxCallback, onOwnDepositLockedCallback) {
   if (!aeternity.client) {
     await aeternity.connectToBaseApp();
   }
@@ -149,17 +149,17 @@ aeternity.deposit = async function (channel, amount, onChainTxCallback) {
   return channel.deposit(amount, async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
-      onOwnDepositLocked: () => console.log("OnOwnDepositLocked"),
+      onOwnDepositLocked: onOwnDepositLockedCallback,
       onDepositLocked: () => console.log("OnDepositLocked")
     });
 }
 
-aeternity.withdraw = async function (channel, amount, onChainTxCallback) {
+aeternity.withdraw = async function (channel, amount, onChainTxCallback, onOwnWithdrawLockedCallback) {
   console.log("Withdraw: ", amount);
   return channel.withdraw(amount, async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
-      onOwnWithdrawLocked: () => console.log("OnOwnWithdrawLocked"),
+      onOwnWithdrawLocked: onOwnWithdrawLockedCallback,
       onWithdrawLocked: () => console.log("OnWithdrawLocked")
     });
 }

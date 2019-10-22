@@ -1,15 +1,12 @@
 <template>
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
-    <ViewTitle
-      fill="primary"
-      :title="getHeaderTitle"
-    />
+    <ViewTitle fill="primary" :title="getHeaderTitle" />
     <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
     <br />
 
     <AeLoader v-show="confirmPercent != 100" />
-    <br/>
+    <br />
     <AeText face="sans-xs" v-show="this.transactionHash !== null">
       <br />On-chain transaction hash (click to copy)
       <b
@@ -46,7 +43,8 @@ export default {
       errorText: null,
       transaction: null,
       transactionHash: null,
-      hashCopied: false
+      hashCopied: false,
+      onchainTxLocked: false
     };
   },
   computed: {
@@ -59,20 +57,29 @@ export default {
       return this.hashCopied ? "#e4416f" : "#000000";
     },
     prettyHash() {
-      return this.transactionHash && this.transactionHash !== null ? trimHash(this.transactionHash) : "";
+      return this.transactionHash && this.transactionHash !== null
+        ? trimHash(this.transactionHash)
+        : "";
+    },
+    txConfirmed() {
+      if (this.txKind === "close") {
+        return this.elapsedBlocks >= WAIT_BLOCKS;
+      } else if (this.txKind === "deposit" || this.txKind === "withdraw") {
+        return this.onchainTxLocked;
+      } else throw new Error("Transaction type is unknown");
     },
     getHeaderTitle() {
-      switch(this.txKind) {
+      switch (this.txKind) {
         case "deposit":
-          return "Deposit in progress, please wait..."
+          return "Deposit in progress, please wait...";
           break;
 
         case "withdraw":
-          return "Withdraw in progress, please wait..."
+          return "Withdraw in progress, please wait...";
           break;
 
         case "close":
-          return "Channel close in progress, please wait..."
+          return "Channel close in progress, please wait...";
           break;
 
         default:
@@ -120,13 +127,13 @@ export default {
         this.transactionHash
       );
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
-      if (this.elapsedBlocks >= WAIT_BLOCKS) {
-        await sleep(1000); // keep 100% for a while
 
+      if (this.txConfirmed) {
         if (
           this.$isOnDemandMode &&
           (this.txKind === "deposit" || this.tx === "withdraw")
         ) {
+          await this.$store.dispatch("updateChannelBalances");
           await this.$store.dispatch("leaveChannel");
         }
         this.navigateOut();
@@ -142,13 +149,6 @@ export default {
             title: "Success",
             text: "Your deposit transaction has been successfully confirmed. ",
             onClose: async () => {
-              // This is a HACK!
-              // (after deposit the channel will die by a bug, so we need to re-query the balances
-              //  to properly display them in the main menu ....)
-
-              await this.$store.dispatch("openChannel");
-              await this.$store.dispatch("updateChannelBalances");
-              await this.$store.dispatch("leaveChannel");
               this.$router.replace("main-menu");
             }
           });
@@ -161,12 +161,6 @@ export default {
             title: "Success",
             text: "Your withdraw transaction has been successfully confirmed. ",
             onClose: async () => {
-              // This is a HACK!
-              // (after withdraw the channel will die by a bug, so we need to re-query the balances
-              //  to properly display them in the main menu ....)
-              await this.$store.dispatch("openChannel");
-              await this.$store.dispatch("updateChannelBalances");
-              await this.$store.dispatch("leaveChannel");
               this.$router.replace("main-menu");
             }
           });
@@ -196,6 +190,11 @@ export default {
       this.transaction = tx;
       this.viewStatus = STATUS_TRACK_TX_PROGRESS;
 
+      /* Note that we track Close and Deposit/Withdraw differently.
+         With "Close" we will wait for VUE_APP_MINIMUM_DEPTH blocks.
+         With Withdraw / Deposit we will wait for the OnOwnWithdrawLocked/OnOwnDepositLocked callbacks 
+         to trigger the "transaction confirmed" notification */
+
       setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
     },
     async onRejectedByUser() {
@@ -224,6 +223,10 @@ export default {
           async tx => {
             console.log("posted DEPOSIT Onchain TX: ", tx);
             this.setStatusTrackProgress(tx);
+          },
+          () => {
+            console.log("Onchain deposit Locked event");
+            this.onchainTxLocked = true;
           }
         );
         if (r.accepted) {
@@ -237,10 +240,7 @@ export default {
           await this.$store.dispatch("leaveChannel");
         }
         // HACK: Interpreted as rejected by user
-        if (
-          e.hasOwnProperty("wsMessage") &&
-          e.wsMessage.error.code === -32601
-        ) {
+        if (e.toString() === "Rejected by user") {
           await this.onRejectedByUser();
           return;
         }
@@ -262,6 +262,11 @@ export default {
           async tx => {
             console.log("posted withdraw Onchain TX: ", tx);
             this.setStatusTrackProgress(tx);
+          },
+          () => {
+
+            console.log("Onchain withdraw Locked event");
+            this.onchainTxLocked = true;
           }
         );
 
@@ -275,10 +280,7 @@ export default {
           await this.$store.dispatch("leaveChannel");
         }
         // HACK: Interpreted as rejected by user
-        if (
-          e.hasOwnProperty("wsMessage") &&
-          e.wsMessage.error.code === -32601
-        ) {
+        if (e.toString() === "Rejected by user") {
           await this.onRejectedByUser();
           return;
         }

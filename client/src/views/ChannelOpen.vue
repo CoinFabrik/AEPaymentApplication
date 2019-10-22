@@ -124,8 +124,9 @@ export default {
             return "Working...";
         }
       }
-
       if (this.isCancelledByUser) return "Cancelling operation ...";
+      
+      return "Unknown state...";
     },
     hashColor() {
       return this.hashCopied ? "#e4416f" : "#000000";
