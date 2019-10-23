@@ -4,6 +4,7 @@
 const myjschannel = require("./myjschannel");
 const MyChannel = myjschannel.MyChannel;
 const jstools = require('./jstools');
+const BigNumber = require('bignumber.js');
 
 
 class Merchant extends MyChannel {
@@ -20,6 +21,18 @@ class Merchant extends MyChannel {
     }
 
     static async Init(account) {
+        let node = await MyChannel.anode();
+        let balance = 0;
+        try {
+             balance = await node.balance(account.publicKey);
+        } catch(err) { 
+             console.log('Balance error: ', err);
+        }
+ 
+        if (new BigNumber(balance).isLessThan(new BigNumber(myjschannel.INITIATOR_MIN_BALANCE))) {
+            console.log("WARNING: not enough balance: "+balance.toString(10) + " - required: "+myjschannel.INITIATOR_MIN_BALANCE)
+        }
+
         let sdata = await MyChannel.register("merchant",
                             account.publicKey, myjschannel.INITIATOR_MIN_BALANCE,
                             "dave's beer");
@@ -53,11 +66,13 @@ async function show_hub_balance(peer) {
         peer = await Merchant.Init(account);
     } catch(err) {
         console.log("cant connect!");
+        console.log(err);
         return;
     }
 
 
     await peer.init();
+try {
     await peer.initChannel();
     await peer.wait_state("OPEN");
 
@@ -69,5 +84,9 @@ async function show_hub_balance(peer) {
     show_hub_balance(peer).then(()=>{}).catch(console.error);
 
     await peer.wait_state("DISCONNECTED");
+} catch(err) { 
+    console.log("ERROR:");
+    console.log(err);
+}
     process.exit(0);
 })();

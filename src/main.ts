@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import {MoreConfig} from "./config";
+import {getEnv} from "./tools";
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as hbs from 'hbs';
@@ -20,7 +22,10 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.engine('hbs', ex_hbs.engine);
   app.set('view engine', 'hbs');
-  await app.listen(3000, '0.0.0.0');
+  await MoreConfig.display();
+  let PORT = Number.parseInt(getEnv("PORT", "3000"));
+  let HOST = getEnv("HOST", "0.0.0.0");
+  await app.listen(PORT, HOST);
 }
 
 bootstrap();

@@ -32,9 +32,9 @@ export class MoreConfig {
         }
     }
 
-    static get ExternalIP(): string {
-        return this.external_ip;
-    }
+    // static get ExternalIP(): string {
+    //     return this.external_ip;
+    // }
 
     static get USER_NODE(): string {
         let url = WS_URL;
@@ -43,6 +43,21 @@ export class MoreConfig {
             url = url.slice(2);
         }
         return url;
+    }
+
+    static get MinimumDepth(): number {
+        return Number.parseInt( getEnv("MIN_DEPTH", "3") );
+    }
+
+    static get NetworkId(): string {
+        return getEnv("NET", 'ae_uat');
+    }
+
+    static async display() {
+        console.log("Config:")
+        console.log("minimum_depth:", this.MinimumDepth);
+        console.log("USER_NODE:", this.USER_NODE);
+        console.log("QR_HUB_URL:", this.QR_HUB_URL);
     }
 }
 
