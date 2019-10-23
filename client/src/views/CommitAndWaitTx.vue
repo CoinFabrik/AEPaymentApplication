@@ -209,130 +209,63 @@ export default {
         }
       });
     },
-    async commitDepositTransaction() {
-      console.log("Committing DEPOSIT transaction ... ");
-
-      try {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("openChannel");
-        }
-
-        let r = await aeternity.deposit(
-          this.$store.state.channel,
-          parseInt(this.txParams.amountAettos), // this does not take BN as strings, BAD.
-          async tx => {
-            console.log("posted DEPOSIT Onchain TX: ", tx);
-            this.setStatusTrackProgress(tx);
-          },
-          () => {
-            console.log("Onchain deposit Locked event");
-            this.onchainTxLocked = true;
-          }
-        );
-        if (r.accepted) {
-          console.log("Accepted deposit");
-        } else {
-          throw new Error("Deposit transaction has been rejected");
-        }
-      } catch (e) {
-        console.log(e.toString());
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("leaveChannel");
-        }
-        // HACK: Interpreted as rejected by user
-        if (e.toString() === "Rejected by user") {
-          await this.onRejectedByUser();
-          return;
-        }
-        throw new Error(
-          "Cannot commit DEPOSIT transaction. Reason: " + e.toString()
-        );
-      }
-    },
-    async commitWithdrawTransaction() {
-      console.log("Committing WITHDRAW transaction ... ");
-
-      try {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("openChannel");
-        }
-        let accepted = await aeternity.withdraw(
-          this.$store.state.channel,
-          parseInt(this.txParams.amountAettos),
-          async tx => {
-            console.log("posted withdraw Onchain TX: ", tx);
-            this.setStatusTrackProgress(tx);
-          },
-          () => {
-
-            console.log("Onchain withdraw Locked event");
-            this.onchainTxLocked = true;
-          }
-        );
-
-        if (accepted) {
-          console.log("Accepted withdraw");
-        } else {
-          throw new Error("Withdraw transaction has been rejected");
-        }
-      } catch (e) {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("leaveChannel");
-        }
-        // HACK: Interpreted as rejected by user
-        if (e.toString() === "Rejected by user") {
-          await this.onRejectedByUser();
-          return;
-        }
-        throw new Error(
-          "Cannot commit WITHDRAW transaction. Reason: " + e.toString()
-        );
-      }
-    },
-    async commitCloseTransaction() {
-      console.log("Committing CLOSE transaction ... ");
-
-      try {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("openChannel");
-        }
-        let tx = await aeternity.closeChannel(this.$store.state.channel);
-
-        console.log("posted CLOSE Onchain TX: ", tx);
-        this.setStatusTrackProgress(tx);
-      } catch (e) {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("leaveChannel");
-        }
-        // HACK: Interpreted as rejected by user
-        if (
-          e.hasOwnProperty("wsMessage") &&
-          e.wsMessage.error.code === -32601
-        ) {
-          await this.onRejectedByUser();
-          return;
-        }
-        throw new Error(
-          "Cannot commit CLOSE transaction. Reason: " + e.toString()
-        );
-      }
-    },
     async commitTransaction() {
+      console.log("Committing " + this.txKind + " transaction ... ");
+      let func, params, callbacks;
+
+      const onChainCallback = async tx => {
+        console.log("Posted " + this.txKind + " Onchain TX: ", tx);
+        this.setStatusTrackProgress(tx);
+      };
+
+      const onLockedTxCallback = () => {
+        console.log("Onchain " + this.txKind + " locked event");
+        this.onchainTxLocked = true;
+      };
+
       switch (this.txKind) {
         case "deposit":
-          await this.commitDepositTransaction();
+          func = aeternity.deposit;
+          params = [this.txParams.amountAettos];
+          callbacks = [onChainCallback, onLockedTxCallback];
           break;
 
         case "withdraw":
-          await this.commitWithdrawTransaction();
+          func = aeternity.withdraw;
+          params = [this.txParams.amountAettos];
+          callbacks = [onChainCallback, onLockedTxCallback];
           break;
 
         case "close":
-          await this.commitCloseTransaction();
+          func = aeternity.closeChannel;
+          params = [];
+          callbacks = [onChainCallback];
           break;
+      }
 
-        default:
-          throw new Error("Transaction type is unknown");
+      try {
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("openChannel");
+        }
+
+        let r = await func(this.$store.state.channel, ...params, ...callbacks);
+        console.log(r);
+        if (r.accepted) {
+          console.log("Accepted transaction");
+        } else {
+          throw new Error("This transaction has been rejected");
+        }
+      } catch (e) {
+        console.log(e.toString());
+        if (aeternity.rejectedByUser) {
+          if (this.$isOnDemandMode) {
+            await this.$store.dispatch("leaveChannel");
+          }
+          await this.onRejectedByUser();
+          return;
+        }
+
+        throw new Error("Cannot commit transaction. Reason: " + e.toString());
       }
     }
   }
