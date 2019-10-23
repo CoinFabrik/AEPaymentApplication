@@ -3,7 +3,6 @@ import Router from 'vue-router'
 import ConnectToWallet from './views/ConnectToWallet.vue'
 import ScanQR from './views/ScanQr.vue'
 import Deposit from './views/Deposit.vue'
-import ConfirmTx from './views/ConfirmTx.vue'
 import ConfirmPayment from './views/ConfirmPayment.vue'
 import CommitAndWaitTx from './views/CommitAndWaitTx.vue'
 import MainMenu from './views/MainMenu.vue'
@@ -44,12 +43,6 @@ export default new Router({
       path: '/withdraw',
       name: 'withdraw',
       component: Withdraw
-    },
-    {
-      path: '/confirmtx',
-      name: 'confirm-tx',
-      component: ConfirmTx,
-      props: true
     },
     {
       path: '/confirm-payment',
