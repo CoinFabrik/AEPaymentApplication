@@ -341,7 +341,8 @@ export abstract class ServerChannel extends EventEmitter {
 
         await this.wait_state('OPEN');
         if (!this.client.isReestablish(options)) {
-            const mca = MerchantCustomerAccepted.CreateInitialDeposit(options, this.Name);
+            const mca = MerchantCustomerAccepted.CreateInitialDeposit(options, this.Name,
+                this.channel.channelId);
             await RepoService.save(mca);
         }
         this.client.channelId = this.channel.id();
@@ -465,7 +466,9 @@ export abstract class ServerChannel extends EventEmitter {
             initiatorAmountFinal: this.client.iBalance,
             responderAmountFinal: this.client.rBalance,
         });
-        console.log('R2:', JSON.stringify(await this.signAndSend(r2)));
+        const result = await this.signAndSend(r2);
+        console.log('R2:', JSON.stringify(result));
+        return result;
     }
 
     async signAndSend(tx) {

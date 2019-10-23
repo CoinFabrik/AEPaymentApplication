@@ -43,7 +43,10 @@ export class MerchantCustomer {
         return this.all[mc_id];
     }
 
-    private constructor(readonly merchant: string, readonly customer: string, public msg: object) {
+    private constructor(readonly merchant: string,
+                        readonly customer: string,
+                        readonly channelId: string,
+                        public msg: object) {
         let id;
         try {
             id = msg['info']['id'];
@@ -75,6 +78,7 @@ export class MerchantCustomer {
 
     getEntity(): MerchantCustomerAccepted {
         return MerchantCustomerAccepted.Create(this.merchant, this.customer,
+            this.channelId,
             this.id, this.amount_str,  // XXX
             this.original_msg['info']['something']);
     }
@@ -157,14 +161,15 @@ export class MerchantCustomer {
 
     static FromRequest(msg: object): MerchantCustomer {
         const merchant = msg['info']['merchant'];
-        if (null == ClientService.getClientByAddress(merchant, 'merchant')) {
+        if (null === ClientService.getClientByAddress(merchant, 'merchant')) {
             throw new InvalidMerchant(merchant);
         }
         const customer = msg['info']['customer'];
-        if (null == ClientService.getClientByAddress(customer, 'customer')) {
+        const cclient = ClientService.getClientByAddress(customer, 'customer');
+        if (null === cclient) {
             throw new InvalidCustomer(customer);
         }
-        return new MerchantCustomer(merchant, customer, msg);
+        return new MerchantCustomer(merchant, customer, cclient.channelId, msg);
     }
 
     paymentReceived() {

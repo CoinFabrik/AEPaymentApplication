@@ -1,13 +1,12 @@
-import {Column, Entity, Index, PrimaryGeneratedColumn} from "typeorm";
-import {Actor} from "./client.entity";
+import {Column, Entity, Index, PrimaryGeneratedColumn} from 'typeorm';
+import {Actor} from './client.entity';
 
-type Actions = "purchase" | "deposit" | "withdraw";
-
+type Actions = 'purchase' | 'deposit' | 'withdraw';
 
 @Entity()
-@Index(["merchant"])
-@Index(["customer"])
-@Index(["tx_uuid"], {unique: true})
+@Index(['merchant'])
+@Index(['customer'])
+@Index(['tx_uuid'], {unique: true})
 export class MerchantCustomerAccepted {
     @PrimaryGeneratedColumn()
     id: number;
@@ -28,6 +27,7 @@ export class MerchantCustomerAccepted {
 
     @Column({nullable: true})
     tx_uuid: string;
+
     @Column()
     timestamp: number;
     @Column()
@@ -35,7 +35,7 @@ export class MerchantCustomerAccepted {
     @Column({nullable: true})
     item: string;
 
-    static Create(merchant, customer, channelId: string, uuid, amount: string, item: object) {
+    static Create(merchant, customer, channelId, uuid, amount: string, item: object) {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
         mca.action = 'purchase';
@@ -48,21 +48,22 @@ export class MerchantCustomerAccepted {
         return mca;
     }
 
-    static CreateInitialDeposit(options: object, role: Actor) {
+    static CreateInitialDeposit(options: object, role: Actor, channelId: string) {
         const mca = new MerchantCustomerAccepted();
         mca.timestamp = Date.now();
-        mca.action = "deposit";
-        mca.item = JSON.stringify("deposit");
-        if ((role!=="merchant") && (role!=="customer")) {
-            throw new Error("cannot create something different than merchant or customer!");
+        mca.action = 'deposit';
+        mca.item = JSON.stringify('deposit');
+        if ((role !== 'merchant') && (role !== 'customer')) {
+            throw new Error('cannot create something different than merchant or customer!');
         }
 
-        if (role==="merchant") {
-            mca.merchant = options["initiatorId"];
+        if (role === 'merchant') {
+            mca.merchant = options['initiatorId'];
         } else {
-            mca.customer = options["initiatorId"];
+            mca.customer = options['initiatorId'];
         }
-        mca.amount = options["initiatorAmount"];
+        mca.amount = options['initiatorAmount'];
+        mca.channelId = channelId;
         return mca;
     }
 }

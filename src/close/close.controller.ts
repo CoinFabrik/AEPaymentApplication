@@ -25,7 +25,6 @@ export class CloseController {
 
   @Get(':id')
   async findOne(
-    //@Param('id') id: string
     @Param('id', new ParseIntPipe())
       id: number,
   ): Promise<ClosedTransactionEntity> {
