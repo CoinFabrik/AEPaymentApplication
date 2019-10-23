@@ -139,11 +139,10 @@ export default {
             this.$router.push("channelopen");
           } else {
             this.$router.push({
-              name: "confirm-tx",
+              name: "commit-and-wait-tx",
               params: {
                 txKind: "deposit",
-                amountAettos: inputBN.toFixed(0),
-                fee: estimatedFeeBN.toFixed(0)
+                txParams: { amountAettos: inputBN.toFixed(0) }
               }
             });
           }
