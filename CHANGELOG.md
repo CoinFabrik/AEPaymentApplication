@@ -186,8 +186,10 @@ KNOWN ISSUES
 + Tested with 5.0.0-rc5 Testnet Node and Hub.
 + New app icons
 
-0.9.14
+0.9.20
 ------
 
 + Updated SDK to 6.0.0
++ Restored Deposit/Withdrawal functionality. This should already work with nodes >= 5.0.0-rc5.
++ Supports cancellation of base-aepp SIGN dialog at Channel Open request
 

@@ -16,7 +16,8 @@ const aeternity = {
   client: null,
   address: null,
   updateHandler: null,
-  afterSignHandler: null
+  afterSignHandler: null,
+  rejectedByUser: false
 }
 
 aeternity.connectToBaseApp = async function () {
@@ -68,7 +69,8 @@ aeternity.createChannel = async function (params) {
     sign: async (tag, tx, updates) => {
       let signedTx = await aeternity.signFunction(tag, tx, updates);
       if (!signedTx) {
-        throw (new Error("rejected-by-user"));
+        window.eventBus.$emit("channel-rejected-by-user");
+        return;
       }
       return signedTx;
     }
@@ -114,15 +116,16 @@ aeternity.leaveChannel = async function (channel) {
 }
 
 aeternity.signTransactionEx = async function (tx) {
+  aeternity.rejectedByUser = false;
   try {
     let signedTx = await aeternity.client.signTransaction(tx);
     return signedTx;
   }
   catch (e) {
     if (e.toString() === "Rejected by user") {
-      console.warn("Sign Function Rejected by user");
-
-      return null;  // this makes upper exception handler receive Error: Method not found.
+      console.warn("(!) Sign Function Rejected by user");
+      aeternity.rejectedByUser = true;
+      return null;
     }
   }
 }
@@ -146,7 +149,9 @@ aeternity.deposit = async function (channel, amount, onChainTxCallback, onOwnDep
   }
 
   console.log("Deposit: ", amount);
-  return channel.deposit(amount, async (tx) => await aeternity.signTransactionEx(tx),
+
+  return channel.deposit(amount,
+    async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
       onOwnDepositLocked: onOwnDepositLockedCallback,
@@ -156,6 +161,7 @@ aeternity.deposit = async function (channel, amount, onChainTxCallback, onOwnDep
 
 aeternity.withdraw = async function (channel, amount, onChainTxCallback, onOwnWithdrawLockedCallback) {
   console.log("Withdraw: ", amount);
+
   return channel.withdraw(amount, async (tx) => await aeternity.signTransactionEx(tx),
     {
       onOnChainTx: onChainTxCallback,
@@ -165,9 +171,10 @@ aeternity.withdraw = async function (channel, amount, onChainTxCallback, onOwnWi
 }
 
 aeternity.closeChannel = async function (channel, onChainTxCallback) {
-  return channel.shutdown(async (tx) => await aeternity.signTransactionEx(tx), {
-    onOnChainTx: onChainTxCallback
-  });
+  console.log("onChainTxCallback", onChainTxCallback)
+  const tx = await channel.shutdown(async (tx) => await aeternity.signTransactionEx(tx));
+  onChainTxCallback(tx);
+  return { accepted: true };
 }
 
 aeternity.waitForChannelStatus = async function (channel, status, timeout) {

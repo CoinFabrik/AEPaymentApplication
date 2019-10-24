@@ -337,6 +337,7 @@ export default {
     async createChannel() {
       this.$store.commit("setChannelOpenDone", false);
       try {
+        window.eventBus.$once("channel-rejected-by-user", this.cancel);
         await this.$store.dispatch("createChannel");
 
         if (this.$isMerchantAppRole && !this.$isOnDemandMode) {
