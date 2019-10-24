@@ -29,6 +29,9 @@ import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import { sleep, trimHash } from "../util/tools";
 import copy from "copy-to-clipboard";
+import NoSleep from "nosleep.js";
+
+let noSleep = new NoSleep();
 
 export default {
   name: "CommitAndWaitTx",
@@ -90,14 +93,7 @@ export default {
   watch: {},
   mounted: async function() {
     try {
-      await this.commitTransaction();
-    } catch (e) {
-      this.displayError(e);
-      this.$router.replace("main-menu");
-    }
-  },
-  mounted: async function() {
-    try {
+      this.noSleep = new NoSleep()
       await this.commitTransaction();
     } catch (e) {
       this.$displayError(
@@ -215,6 +211,7 @@ export default {
 
       const onChainCallback = async tx => {
         console.log("Posted " + this.txKind + " Onchain TX: ", tx);
+        this.noSleep.enable();
         this.setStatusTrackProgress(tx);
       };
 
@@ -253,19 +250,35 @@ export default {
         if (r.accepted) {
           console.log("Accepted transaction");
         } else {
+          this.noSleep.disable();
           throw new Error("This transaction has been rejected");
         }
       } catch (e) {
+        this.noSleep.disable();
         console.log(e.toString());
         if (aeternity.rejectedByUser) {
           if (this.$isOnDemandMode) {
-            await this.$store.dispatch("leaveChannel");
+            // trigger conflict to reset state
+            await func(
+              this.$store.state.channel,
+              ...params,
+              ...callbacks
+            ).catch(e => {
+              console.log("Conflict-trigger delivered: " + e.toString());
+              if (e.error.code === 3) {
+                this.$store.dispatch("leaveChannel").then(() => {
+                  this.onRejectedByUser();
+                });
+              }
+            });
           }
-          await this.onRejectedByUser();
           return;
         }
 
         throw new Error("Cannot commit transaction. Reason: " + e.toString());
+        if (this.$isOnDemandMode) {
+          await this.$store.dispatch("leaveChannel");
+        }
       }
     }
   }

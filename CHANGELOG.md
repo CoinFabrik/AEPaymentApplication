@@ -186,10 +186,23 @@ KNOWN ISSUES
 + Tested with 5.0.0-rc5 Testnet Node and Hub.
 + New app icons
 
-0.9.20
-------
+0.9.20 (191025)
+---------------
 
 + Updated SDK to 6.0.0
 + Restored Deposit/Withdrawal functionality. This should already work with nodes >= 5.0.0-rc5.
-+ Supports cancellation of base-aepp SIGN dialog at Channel Open request
++ Supports cancellation of base-aepp SIGN dialog at Channel Open request.
++ Fixed an issue where merchant payment notifications may get lost
++ Close channel/Deposit/Withdraw screens won't let display to sleep to prevent connection gone broke.
+
+KNOWN ISSUES
+
++ Scrolling issues with Android. Please switch to floating keyboard if needed.
++ When OnDemand mode is active, Withdraw  is not available.
++ Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
++ Do not switch subaccounts except before channel opening.
++ Page Refresh/Exit may cause problems if a channel operation is underway. This should be fixed with future 5.1.0  node Release.  This is currently mitigated by keeping display and CPU active in certain operations.
+
+
+
 
