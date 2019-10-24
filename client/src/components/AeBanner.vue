@@ -11,12 +11,13 @@
               src="./../assets/images/aeternity-logo-vector-black-bg-horizontal03.svg"
             />
           </b-col>
+         
           <b-col>
             <ae-text
               align="right"
               fill="primary"
               face="uppercase-base"
-            >{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }}</ae-text>
+            >{{ this.$isMerchantAppRole ? "Merchant" : "Customer" }} <br>v{{ appVersion }}</ae-text>
           </b-col>
         </b-row>
       </div>
@@ -50,6 +51,11 @@ import { AeText } from "@aeternity/aepp-components";
 export default {
   name: "AeBanner",
   components: { AeText },
+  computed: {
+    appVersion() {
+      return process.env.VUE_APP_VERSION;
+    }
+  },
   methods: {
     goHome() {
       this.$swal
