@@ -122,8 +122,10 @@ export class RepoService {
       for (const mca of await repo.find()) {
         const merchant = mca.merchant;
 
-        if (merchant == null) {
-          continue;
+        if ((merchant == null) || (mca.customer == null)) {
+            // ignore customers
+            // and ignore merchant deposits
+            continue;
         }
 
         current = balances[merchant];
