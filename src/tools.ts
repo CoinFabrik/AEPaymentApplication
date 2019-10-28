@@ -2,6 +2,9 @@ import * as nacl from 'tweetnacl'
 import * as fs from "fs";
 import * as http from "http";
 
+export interface Dictionary<T> {
+    [key: string]: T;
+}
 
 export class Account {
     constructor(readonly publicKey, readonly secretKey, readonly name="<undefined>") {}

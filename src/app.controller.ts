@@ -73,4 +73,9 @@ export class AppController {
       c.channel.solo().then(voidf).catch(console.error);
     });
   }
+
+  @Get("/clear")
+  async clear(@Param() params): Promise<any> {
+    return await RepoService.clearance_list();
+  }
 }
