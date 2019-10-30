@@ -96,25 +96,13 @@ function pick_random(arr) {
         try {
             await peer.leave();
             await peer.wait_state("DISCONNECTED");
-            //await myjschannel.sleep(3*1000);
-            //let final = await peer.showBalances("final");
-            //showDiff(initial, final);
         } finally {
             console.log("exit...");
             process.exit(code);
         }
     }
 
-
     await peer.showBalances("init");
-    // let merchants = await peer.get_("merchant");
-    // console.log("merchants online:", JSON.stringify(merchants))
-    // if (merchants.length===0) {
-    //     console.log("no merchants online. come back later!");
-    //     process.exit(-1);
-    // }
-    //let merchant = pick_random(merchants);
-
     await peer.initChannel();
     await peer.wait_state("OPEN");
     process.on('SIGINT', function() {
@@ -123,8 +111,6 @@ function pick_random(arr) {
     });
 
 
-
-    // await peer.showBalances("pre");
     let idx = 4;
     while (idx>0) {
         await peer.update(1);
@@ -133,34 +119,8 @@ function pick_random(arr) {
         idx-=1;
     }
 
-
     let result = await peer.channel.leave();
     console.log(result);
     console.log("");
-    //await peer.shutdown();
     await peer.wait_state("DISCONNECTED");
-
-
-    // peer.on("message", (msg) => {
-    //     if(msg["type"]==="payment-request-rejected") {
-    //         console.log("payment canceled:", JSON.stringify(msg));   //msg["msg"]);
-    //     }
-    //     if(msg["type"]==="payment-request-accepted") {
-    //         console.log("sending payment..");
-    //         peer.update(pr.amount).then(()=>{console.log("sent!")}).catch(console.error);
-    //     }
-    //     if(msg["type"]==="payment-request-completed") {
-    //         console.log("payment completed!")
-    //     }
-    //     if(msg["type"]==="payment-request-canceled") {
-    //         console.log("payment request canceled is unexpected! :-o !")
-    //     }
-    // });
-
-    // let pr = Message.PaymentRequest(
-    //     merchant.address, merchant.name, peer.pubkey, 1,
-    //     [{what:"beer", amount:1}]);
-    //await peer.sendPayment(pr);
-
-
 })();

@@ -1,4 +1,5 @@
 # AEhub
+[TOC]
 
 ## Description
 
@@ -11,7 +12,37 @@ This server will connect to Merchants and Customers apps through State-channels,
 The AEternity Base-Aepp architecture requires all content be delivered through SSL/TLS connections. It is because of this that we require sometimes wrapping connections with a reverse proxy configured to use SSL/TLS certificates and that we provide some custom-url configuration. 
 
 
-## Configuration
+## Scope
+
+- **Hub-Server**
+    1. Accepts connections from Merchants and Customers
+    2. Keeps track of channels state providing fast reconnection
+    3. Performs payment requests validation and tracking
+
+- **Merchant App component for Base-Aepp**
+    1. Connected to Base-Aepp wallet.
+    2. Open a state channel against the _Hub Server_.
+    3. Request payments, specifying amounts and item description and showing a QR code that should be scanned by the customer.
+    4. Get notified when the customer confirms the payment.
+    5. Check last payments.
+    6. Close the state channel, so that the collected funds go to the wallet.
+
+- **Customer App component for Base-Aepp**
+    1. Connected to Base-Aepp wallet.
+    2. Open a state channel against the _Hub Server_, setting an initial deposit.
+    3. Scan payment requests (QR codes), which are confirmed or rejected.
+    4. Check last payments.
+    5. Close the state channel, so that the remaining funds go to the wallet.
+
+
+### Out of Scope
+
+ * Offline payments
+ * Clearance
+ * Channel solo close disputes
+
+
+## Setup
 
 To run a hub you must have a wallet file this server can use.
 
@@ -37,7 +68,7 @@ This is where your reverse-proxy will connect to:
 (*) Custom clients may ignore this setting and use whichever node they want. But by using this parameter you can avoid one point of failure in configuration. 
 
 
-# A real-world sample configuration
+### A real-world sample configuration
 
 This is a real-life configuration example. 
 
@@ -54,7 +85,7 @@ Path____________________________________ ../hub
  2. Transfer a few AEs to the created address, in this case: `ak_k65RLRPH8KbexMw5c2efG8wK2X8yKL6VzYimAJMh3Eai36W5q`.
 
 
-## Host Setup
+#### Host Setup
  
 We have one host serving:
 
@@ -62,7 +93,7 @@ We have one host serving:
  * merchant and customer client-side apps (requires one subdomain each)
  * hub providing micro-payment service (requires one domain along with node)
  
-### Hub configuration
+#### Hub configuration
 
 Domain will be `aehub.coinfabrik.com` and via https we will access aeternity node:  
  * `AENODE=https://aehub.coinfabrik.com` .
@@ -83,9 +114,9 @@ Final parameters are:
 Complete command line is:
 `AENODE=https://aehub.coinfabrik.com NET=ae_uat MIN_DEPTH=1 USER_NODE=s://aehub.coinfabrik.com QR_HUB_URL=https://aehub.coinfabrik.com:3000 PORT=5000 npm run start`
 
-### Reverse-Proxy configuration
+#### Reverse-Proxy configuration
 
-#### Node
+##### Node
 
 Create file: `/etc/nginx/sites-enabled/aenode` and verify which ports your node uses for regular connections (here `3013`) and which one and url for State-Channel websockets (in this case `3014` and `/channel`):
 ```nginx
@@ -114,7 +145,7 @@ server {
 }
 ```
 
-#### Hub
+##### Hub
 
 Create file: `/etc/nginx/sites-enabled/aehub` and make it point to hub listening address and port:
 ```nginx
@@ -161,7 +192,7 @@ server {
 ```
 
 
-#### Merchant and Customer Apps
+##### Merchant and Customer Apps
  
 After building client applications and making the output available at:
  * /home/coinfabrik/apps/client/dist-customer
@@ -188,6 +219,7 @@ server {
 ```
 
 and: `/etc/nginx/sites-enabled/merchant-app`:
+
 ```nginx
 # Default server configuration
 server {
@@ -208,15 +240,11 @@ server {
 }
 ```
 
+## scripts
 
+### common setup
 
-
-
-## Installation
-
-```bash
-$ npm install
-```
+Create accounts and fund them:
 
 ```bash
 # development
@@ -231,32 +259,75 @@ tools$ AENODE=.. node tx.js <init or wallet_filename> <wallet_filename or addres
 
 will move amount from $src to $dst.
 -init = is a shortcut to first account from forgae
--src wallet file shouold have 1234 as pwd.
+-src wallet file should have 1234 as pwd.
 -amount is expressed aettos
+```
 
+### Merchant
 
-# 1. server:
-# optional environment: EXTERNAL_IP for generated qr-code. if not, external ip address service will be used.
-# you can point your app to: http://its_ip:3000/ to get qr required for the application (not req. for scripts below)
+* Merchant execution
 
-$ AENODE=node_ip_address npm run start
+This will simply launch a client which will connect as a merchant and stay connected. It will periodically hub for balance changes and will display them.
 
+``` bash
+tools$ HUB=127.0.0.1 ACCOUNT=merchant NODE=165.22.18.138 node merchant.js  
 
-# 2. merchant:
-tools$ HUB=127.0.0.1 ACCOUNT=merchant NODE=165.22.18.138 node merchtest3b.js  
+# or equivalently
 
-# 3. customer:
-tools$ HUB=127.0.0.1 ACCOUNT=customer NODE=165.22.18.138 node custtest3b.js [ continue ]
+tools$ HUB=127.0.0.1 NODE=165.22.18.138 node merchant.js merchant
+```
 
+after connection.. when a purchase is executed you'll see:
 
+``` bash
+Balance: 3000000000000022
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c", 
+ "merchant":  "ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name" : "dave's beer", 
+ "customer":  "ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4", 
+ "amount" : "1" , 
+ "something": [{"what":"beer","amount":"1"}], 
+ "customer_name": "1572472960943", 
+ "type": "payment-request-completed"}
+Balance: 3000000000000023
+```
 
+### Customer
 
-HUB : address of server 1.
-ACCOUNT : filename of wallet used for this process
-AENODE : AE nodo to connect to.
-NODE : AE nodo to connect to.  (sorry we are changing this)
+* Customer purchase
 
-server uses hub by default
+This connects the given wallet as a customer role, perform a purchase and exit.
 
+``` bash
+tools$ HUB=127.0.0.1 ACCOUNT=customer NODE=165.22.18.138 node customer_purchase.js  
 
+# or equivalently
+
+tools$ HUB=127.0.0.1 NODE=165.22.18.138 node customer_purchase.js customer
+```
+
+after connection settings you'll see something like:
+
+``` bash
+[CONNECTED]
+[OPEN]
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
+ "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
+ "amount":"1",
+ "something":[{"what":"beer","amount":"1"}],
+ "type":"payment-request-accepted"}
+sending payment..
+payment sent!
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
+  "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
+ "amount":"1",
+ "something":[{"what":"beer","amount":"1"}],
+ "customer_name":"1572472960943",
+ "type":"payment-request-completed"}
+payment completed!
+exit..
+[DIED]
+[DISCONNECTED]
 ```

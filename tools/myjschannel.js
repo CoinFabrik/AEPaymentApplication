@@ -174,8 +174,7 @@ class MyChannel extends events.EventEmitter {
                 this.launch_hb();
             }
             if (this.STATUS === "DISCONNECTED") {
-                console.log("switching to disconnected...")
-                //process.exit(0);
+                console.log("switched to disconnected...")
             }
         });
 
@@ -196,6 +195,7 @@ class MyChannel extends events.EventEmitter {
                 console.log("cant parse info");
             }
             if (info["type"]==="heartbeat") return;
+            console.log(msg["info"]);
             this.emit("message", info);
         });
         return this.channel;

@@ -10,7 +10,6 @@ const MyChannel = myjschannel.MyChannel;
 class Customer extends MyChannel {
     static async Init(account) {
         let INIT = myjschannel.INITIATOR_MIN_BALANCE;
-        //INIT = "2000000000000000"
         let serverdata = await Customer.register("client", account.publicKey,
                                                         INIT, (Date.now().toString()));
         let address = serverdata["address"];
@@ -49,24 +48,9 @@ class Customer extends MyChannel {
     }
 }
 
-function showDiff(init, final) {
-    console.log( "customer: \t \t \t hub:");
-    let cusdif = final.customer.total.minus(init.customer.total);
-    let hubdif = final.hub.total.minus(init.hub.total);
-
-    //check spending:
-    let open_fee = new BigNumber(  "17520000000000");
-    let close_fee1 = new BigNumber("10000000000000");
-    let close_fee2 = new BigNumber("10000000000000");
-    let result_full = cusdif.plus(open_fee).plus(close_fee1).plus(close_fee2).plus(hubdif);
-    console.log( `${cusdif.toString(10)} \t \t \t ${hubdif.toString(10)}`);
-    console.log( `${result_full.toString(10)} `);
-}
-
 function pick_random(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
-
 
 
 (async function () {
@@ -123,15 +107,15 @@ function pick_random(arr) {
 
     await myjschannel.sleep(1000);
 
-
     let pr = myjschannel.Message.PaymentRequest(
         merchant.address, merchant.name, peer.pubkey, "1",
         [{what:"beer", amount:"1"}]);
 
     await myjschannel.buy(peer, pr, console.log);
 
-
-    await myjschannel.sleep(20000);
+    console.log("exit..")
+    await myjschannel.sleep(1000);
     await peer.leave();
     await peer.wait_state("DISCONNECTED");
+    process.exit(0);
 })();
