@@ -198,9 +198,9 @@ export default {
       this.channelStatus = "cancelling";
       this.viewStatus = STATUS_USER_CANCELLED;
       try {
-        await this.$store.state.channel.disconnect();
+        await window.channel.disconnect();
         await aeternity.waitForChannelStatus(
-          this.$store.state.channel,
+          window.channel,
           "disconnected",
           5000
         );
@@ -231,7 +231,7 @@ export default {
 
       this.viewStatus = STATUS_DISCONNECTED;
 
-      if (this.$store.state.channelOpenDone && this.$isOnDemandMode) {
+      if (this.$store.state.channelOpenDone) {
         console.log("Ignoring handler (disconnect by on-demand LEAVE)");
         return;
       }
@@ -310,9 +310,7 @@ export default {
         }).then(this.$router.replace("main-menu"));
       });
 
-      if (this.$isOnDemandMode) {
         this.$store.dispatch("leaveChannel");
-      }
     },
 
     onChannelStatusChange(status) {
@@ -340,14 +338,7 @@ export default {
         window.eventBus.$once("channel-rejected-by-user", this.cancel);
         await this.$store.dispatch("createChannel");
 
-        if (this.$isMerchantAppRole && !this.$isOnDemandMode) {
-          // Channel created -- if we are merchants  suscribe to global
-          // payment received toast notification on always-connected mode.
-          //
-          // On-demand mode payment receipt is done while QR is shown.
-          // (see ShowPaymentQr.vue)
-          this.suscribeMerchantPaymentEvent();
-        }
+      
         window.eventBus.$on("channel-onchain-tx", this.onChainTx);
       } catch (e) {
         this.status = STATUS_ERROR;

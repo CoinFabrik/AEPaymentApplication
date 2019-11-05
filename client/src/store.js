@@ -8,7 +8,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   plugins: [createPersistedState({
-    paths: ["channel",
+    paths: [
       "channelOptions",
       "hubUrl",
       "hubAddress",
@@ -126,11 +126,14 @@ export default new Vuex.Store({
           }
         )
     },
-    async updateChannelBalances({ dispatch, commit, state, getters }) {
+    async updateChannelBalances({ dispatch, commit, getters }) {
+      if (window.channel == null || typeof (window.channel) === 'undefined') {
+        throw new Error("Channel object not available");
+      }
       return new Promise((resolve, reject) => {
         const iAddr = getters.initiatorAddress;
         const rAddr = getters.responderAddress;
-        state.channel.balances([iAddr, rAddr]).then(
+        window.channel.balances([iAddr, rAddr]).then(
           function (balances) {
             commit('updateInitiatorBalance', balances[iAddr]);
             commit('updateResponderBalance', balances[rAddr]);
@@ -150,8 +153,9 @@ export default new Vuex.Store({
       commit('updateInHubBalance', res.balance);
     },
     async openChannel({ dispatch, commit, state }, ensureReconnectionInfo) {
+
       console.log("action: openChannel [ensureReconnectionInfo " + ensureReconnectionInfo + "]");
-      if (state.channel.status && state.channel.status() === "open") {
+      if (window.channel && window.channel.status() === "open") {
         console.warn("Ignoring action:  channel is already open");
         return;
       }
@@ -184,7 +188,7 @@ export default new Vuex.Store({
         aeternity.createChannel(state.channelOptions).then(
           function (channel) {
             console.log("Channel created successfully.")
-            commit('setChannel', channel);
+            window.channel = channel;
             // Broadcast channel messages
 
             channel.on("error", (error) => {
@@ -230,8 +234,8 @@ export default new Vuex.Store({
                 // accepted/rejected are treated as payment-request-ack
                 // completed/canceled are treated as payment-complete-ack
                 let eventname, eventdata, info;
-                if (infoObj.type === "heartbeat" && state.channel.status() === "open") {
-                  state.channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
+                if (infoObj.type === "heartbeat" && window.channel.status() === "open") {
+                  window.channel.sendMessage('heartbeat_ack', state.channelOptions.responderId);
                   return;
                 }
                 else if (infoObj.type === "payment-request-accepted") {
@@ -260,22 +264,25 @@ export default new Vuex.Store({
         ).catch(err => reject(err));
       });
     },
-    async leaveChannel({ dispatch, commit, state }) {
-      if (state.channel.status() !== "open") {
-        console.warn("Not open! ignored channel LEAVE request (Channel status is: " + state.channel.status() + ")");
+    async leaveChannel({ dispatch, state }) {
+      if (window.channel == null || typeof (window.channel) === 'undefined') {
+        throw new Error("Channel object not available");
+      }
+      if (window.channel.status() !== "open") {
+        console.warn("Not open! ignored channel LEAVE request (Channel status is: " + window.channel.status() + ")");
         return;
       }
       await dispatch('updateChannelBalances');
       await aeternity.sendMessage(
-        state.channel,
+        window.channel,
         "leave",
         state.hubAddress
       );
-      await aeternity.waitForChannelStatus(state.channel, "disconnected", 10000);
+      await aeternity.waitForChannelStatus(window.channel, "disconnected", 10000);
     },
-    triggerUpdate({ dispatch, state, getters }, amount) {
+    triggerUpdate({ dispatch, getters }, amount) {
       console.log('ACTION: triggerUpdate');
-      aeternity.update(state.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
+      aeternity.update(window.channel, getters.initiatorAddress, getters.responderAddress, amount).then(
         function ({ accepted, signedTx }) {
           if (accepted) {
             console.log("Accepted update. tx=" + signedTx);
@@ -286,7 +293,7 @@ export default new Vuex.Store({
         }
       );
     },
-    async storeChannelOptions({ commit, state }, options) {
+    async storeChannelOptions({ commit }, options) {
       let params = options;
       params.sign = aeternity.signFunction;
       params.initiatorId = await aeternity.client.address();
@@ -295,12 +302,6 @@ export default new Vuex.Store({
       console.log("Storing up Channel Parameters:" + JSON.stringify(params));
       commit("loadChannelOptions", options);
 
-    },
-    async getChannel({ dispatch, commit, state }) {
-      if (state.store.channel === null) {
-        await dispatch('createChannel');
-      }
-      return this.store.state.channel;
     }
   }
 })

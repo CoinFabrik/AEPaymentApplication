@@ -17,7 +17,9 @@
     />
     <AeLoader v-show="fetchingName" />
 
-    <ViewButtonSection :buttons="[{name: 'Confirm', action: confirm, fill:'primary', disabled: !isValidInput}]" />
+    <ViewButtonSection
+      :buttons="[{name: 'Confirm', action: confirm, fill:'primary', disabled: !isValidInput}]"
+    />
   </b-container>
 </template>
 
@@ -54,7 +56,11 @@ export default {
         throw new Error(res.error);
       }
 
-      if (res.name != null && (res.name !== undefined || res.name.length > 0)) {
+      if (
+        res.name != "null" &&
+        res.name != null &&
+        (res.name !== undefined || res.name.length > 0)
+      ) {
         console.log("Found Name at Hub for this address: " + res.name);
         this.nameInput = res.name;
       }
@@ -65,10 +71,16 @@ export default {
         "Oops!",
         "We could not connect to the payment hub to query your name. Please try again later. ",
         () => {
-          this.$router.replace({
-            name: "scanqr",
-            params: { subview: "onboarding" }
-          });
+          if (process.env.VUE_APP_AUTO_ONBOARD_HUB_URL) {
+            this.$router.replace({
+              name: "connectToWallet"
+            });
+          } else {
+            this.$router.replace({
+              name: "scanqr",
+              params: { subview: "onboarding" }
+            });
+          }
         }
       );
 

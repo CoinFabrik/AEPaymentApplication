@@ -31,23 +31,6 @@ export default {
     return { isLoading: false };
   },
   async beforeMount() {
-    // restore channel if available.
-
-    //console.log(this.$store.state.channel);
-
-    if (!this.$isOnDemandMode) {
-      if (this.$store.state.channelOpenDone) {
-        try {
-          console.log("beforeMount(): Channel already opened, reconnecting");
-          await this.$store.dispatch("createChannel");
-        } catch (err) {
-          console.error(
-            "Cannot re-connect your channel. Reason: " + e.toString()
-          );
-        }
-      }
-    }
-
     // restore route if available.
     this.$store.state.route &&
       this.$router.replace({

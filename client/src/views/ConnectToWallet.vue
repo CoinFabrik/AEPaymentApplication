@@ -89,10 +89,16 @@ export default {
           aeternity.client
             .balance(myAddress)
             .then(() => {
+              if (process.env.VUE_APP_AUTO_ONBOARD_HUB_URL) {
+                console.warn ("AUTO ONBOARDING active. Address: " + process.env.VUE_APP_AUTO_ONBOARD_HUB_URL)
+                this.$store.commit("loadHubIpAddr", process.env.VUE_APP_AUTO_ONBOARD_HUB_URL);
+                this.$store.commit("setOnboardingQrScan", true);
+                this.$router.replace("register-user");
+              } else {
               this.$router.push({
                 name: "scanqr",
                 params: { subview: "onboarding" }
-              });
+              });}
             })
             .catch(() => {
               this.$swal.fire({

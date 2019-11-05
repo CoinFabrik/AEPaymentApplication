@@ -96,7 +96,7 @@ export default {
         this.$store.getters.initiatorAddress,
         this.$store.getters.responderAddress,
         this.paymentData,
-        this.$store.state.channel
+        window.channel
       );
 
       this.$swal
@@ -211,9 +211,7 @@ export default {
     },
     async connectionLeaveIfRequired() {
       try {
-        if (this.$isOnDemandMode) {
           await this.$store.dispatch("leaveChannel");
-        }
       } catch (e) {
         this.$swal
           .fire({
@@ -230,10 +228,8 @@ export default {
       }
     },
     async ensureConnectionOpen() {
-      if (this.$isOnDemandMode) {
         console.log("Waiting for channel to open...");
         await this.$store.dispatch("openChannel", true);
-      }
     },
     async confirm() {
       var that = this;
@@ -259,7 +255,6 @@ export default {
             });
           });
       } else {
-        if (this.$isOnDemandMode) {
           this.$swal.fire({
             text: "Opening channel...",
             onBeforeOpen: () => {
@@ -267,7 +262,6 @@ export default {
             },
             allowOutsideClick: false
           });
-        }
         try {
           await this.ensureConnectionOpen();
           this.triggerPayment();

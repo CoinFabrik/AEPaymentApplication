@@ -2,38 +2,55 @@
   <!-- This component commits and tracks a transaction progress -->
   <div class="commit-and-wait-tx">
     <ViewTitle fill="primary" :title="getHeaderTitle" />
-    <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
-    <br />
 
-    <AeLoader v-show="confirmPercent != 100" />
-    <br />
-    <AeText face="sans-xs" v-show="this.transactionHash !== null">
-      <br />On-chain transaction hash (click to copy)
-      <b
-        :style="{ color: hashColor }"
-        @click="copyHash"
-      >{{ this.prettyHash }}</b>
-    </AeText>
-    <br />
+    <div v-if="rehydratingChannelObject">
+      <AeText face="sans-s">Restablishing channel, please wait...</AeText>
+      <br />
+      <AeLoader />
+    </div>
+    <div v-else>
+      <div v-if="elapsedBlocks < 0">
+        <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
+      </div>
+      <div v-else>
+        <AeText face="sans-s">Waiting confirmations from the blockchain ({{this.elapsedBlocks}} of {{this.minimum_depth}})...</AeText>
+      </div>
+      <br />
+
+      <AeLoader v-show="txConfirmed === false" />
+      <br />
+      <AeText face="sans-xs" v-show="this.transactionHash !== null">
+        <br />On-chain transaction hash (click to copy)
+        <b
+          :style="{ color: hashColor }"
+          @click="copyHash"
+        >{{ this.prettyHash }}</b>
+      </AeText>
+      <br />
+    </div>
   </div>
 </template>
 
 <script>
 /* eslint-disable no-console */
-const WAIT_BLOCKS = parseInt(process.env.VUE_APP_MINIMUM_DEPTH);
 const POLL_TIME_MSEC = 1000;
-const STATUS_INITIALIZED = 0,
-  STATUS_TRACK_TX_PROGRESS = 1;
+const STATUS_INITIAL = 0,
+  STATUS_TRACK_TX_PROGRESS = 1,
+  STATUS_CONFIRMED = 2,
+  STATUS_CANCELLED_BY_USER = 3,
+  STATUS_ERROR = 255;
 import aeternity from "../controllers/aeternity";
 import { setTimeout } from "timers";
 import { TxBuilder } from "@aeternity/aepp-sdk";
 import { sleep, trimHash } from "../util/tools";
 import copy from "copy-to-clipboard";
 import NoSleep from "nosleep.js";
+import saveState from "vue-save-state";
 
 let noSleep = new NoSleep();
 
 export default {
+  mixins: [saveState],
   name: "CommitAndWaitTx",
   props: {
     txKind: String,
@@ -42,18 +59,21 @@ export default {
   data() {
     return {
       elapsedBlocks: 0,
-      viewStatus: STATUS_INITIALIZED,
-      errorText: null,
+      viewStatus: STATUS_INITIAL,
       transaction: null,
       transactionHash: null,
       hashCopied: false,
-      onchainTxLocked: false
+      onchainTxLocked: false,
+      rehydratingChannelObject: false
     };
   },
   computed: {
+    minimum_depth: function() {
+      return this.$store.state.channelOptions.minimum_depth;
+    },
     confirmPercent: function() {
       return Math.round(
-        Math.min(100.0 * (this.elapsedBlocks / WAIT_BLOCKS), 100)
+        Math.min(100.0 * (this.elapsedBlocks / this.minimum_depth()), 100)
       );
     },
     hashColor() {
@@ -66,9 +86,12 @@ export default {
     },
     txConfirmed() {
       if (this.txKind === "close") {
-        return this.elapsedBlocks >= WAIT_BLOCKS;
+        return this.elapsedBlocks >= this.minimum_depth();
       } else if (this.txKind === "deposit" || this.txKind === "withdraw") {
-        return this.onchainTxLocked;
+        return (
+          this.onchainTxLocked ||
+          this.elapsedBlocks >= this.minimum_depth()
+        );
       } else throw new Error("Transaction type is unknown");
     },
     getHeaderTitle() {
@@ -92,10 +115,64 @@ export default {
   },
   watch: {},
   mounted: async function() {
-    try {
-      this.noSleep = new NoSleep()
-      await this.commitTransaction();
-    } catch (e) {
+    switch (this.viewStatus) {
+      case STATUS_INITIAL:
+        try {
+          this.noSleep = new NoSleep();
+          await this.commitTransaction();
+        } catch (e) {
+          this.viewStatus = STATUS_ERROR;
+          this.showError(e);
+        }
+        break;
+
+      case STATUS_ERROR:
+        this.showError(e);
+        break;
+
+      case STATUS_CONFIRMED:
+        await this.confirmAndNavigateOut();
+        break;
+
+      case STATUS_TRACK_TX_PROGRESS:
+        await this.rehydrateChannelObject();
+        this.trackTxProgress();
+        break;
+
+      case STATUS_CANCELLED_BY_USER:
+        this.showCanceledByUser();
+        break;
+    }
+  },
+  methods: {
+    async rehydrateChannelObject() {
+      // if (window.channel == null || typeof window.channel === "undefined") {
+      //   try {
+      //     this.rehydratingChannelObject = true;
+      //     await this.$store.dispatch("openChannel", true);
+      //     this.rehydratingChannelObject = false;
+      //   } catch (e) {
+      //     this.viewStatus = STATUS_ERROR;
+      //     this.rehydratingChannelObject = false;
+      //     showError(e);
+      //   }
+      // }
+    },
+    resetView() {
+      this.elapsedBlocks = 0;
+      this.viewStatus = STATUS_INITIAL;
+      this.transaction = null;
+      this.transactionHash = null;
+      this.hashCopied = false;
+      this.onchainTxLocked = false;
+    },
+    getSaveStateConfig() {
+      return {
+        cacheKey: "payapp.view.CommitAndWaitTx",
+        ignoreProperties: ["hashCopied", "elapsedBlocks"]
+      };
+    },
+    showError(e) {
       this.$displayError(
         "Oops!",
         "We could not submit your " +
@@ -105,9 +182,18 @@ export default {
           e.toString()
       );
       this.$router.replace("main-menu");
-    }
-  },
-  methods: {
+      this.resetView();
+    },
+    showCanceledByUser() {
+      this.$swal.fire({
+        type: "info",
+        text: "You cancelled your request.",
+        onClose: async () => {
+          await this.$router.replace("main-menu");
+          this.resetView();
+        }
+      });
+    },
     copyHash() {
       if (copy(this.transactionHash)) {
         this.hashCopied = true;
@@ -118,26 +204,38 @@ export default {
         this.transactionHash = TxBuilder.buildTxHash(this.transaction);
         console.log("Obtained TX Hash: ", this.transactionHash);
       }
+      try {
+        this.elapsedBlocks = await aeternity.getTxConfirmations(
+          this.transactionHash
+        );
+      } catch (e) {
+        console.error(
+          "Cannot get TX confirmations. Reason: " +
+            e.toString() +
+            "... RETRYING."
+        );
+        setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
+      }
 
-      this.elapsedBlocks = await aeternity.getTxConfirmations(
-        this.transactionHash
-      );
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
 
       if (this.txConfirmed) {
-        if (
-          this.$isOnDemandMode &&
+        this.viewStatus = STATUS_CONFIRMED;
+        if 
           (this.txKind === "deposit" || this.tx === "withdraw")
-        ) {
+         {
+          await this.$store.dispatch("openChannel", true);
           await this.$store.dispatch("updateChannelBalances");
           await this.$store.dispatch("leaveChannel");
         }
-        this.navigateOut();
+        this.confirmAndNavigateOut();
       } else {
         setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
       }
     },
-    async navigateOut() {
+    async confirmAndNavigateOut() {
+      this.resetView();
+
       switch (this.txKind) {
         case "deposit":
           await this.$swal.fire({
@@ -171,8 +269,7 @@ export default {
             onClose: async () => {
               await this.$store.dispatch("resetState");
               await this.$router.replace({
-                name: "scanqr",
-                params: { subview: "onboarding" }
+                name: "connect-to-wallet"
               });
             }
           });
@@ -185,34 +282,24 @@ export default {
     setStatusTrackProgress(tx) {
       this.transaction = tx;
       this.viewStatus = STATUS_TRACK_TX_PROGRESS;
-
-      /* Note that we track Close and Deposit/Withdraw differently.
-         With "Close" we will wait for VUE_APP_MINIMUM_DEPTH blocks.
-         With Withdraw / Deposit we will wait for the OnOwnWithdrawLocked/OnOwnDepositLocked callbacks 
-         to trigger the "transaction confirmed" notification */
-
       setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
     },
     async onRejectedByUser() {
-      this.$swal.fire({
-        type: "info",
-        text: "You cancelled your request.",
-        onClose: async () => {
-          if (this.$isOnDemandMode) {
-            await this.$store.dispatch("leaveChannel");
-          }
-          await this.$router.replace("main-menu");
-        }
-      });
+      this.viewStatus = STATUS_CANCELLED_BY_USER;
+      this.showCanceledByUser();
     },
     async commitTransaction() {
       console.log("Committing " + this.txKind + " transaction ... ");
       let func, params, callbacks;
 
       const onChainCallback = async tx => {
-        console.log("Posted " + this.txKind + " Onchain TX: ", tx);
-        this.noSleep.enable();
-        this.setStatusTrackProgress(tx);
+        if (this.viewStatus === STATUS_TRACK_TX_PROGRESS) {
+          console.log("Already received, Ignoring this onChain Callback");
+        } else {
+          console.log("Posted " + this.txKind + " Onchain TX: ", tx);
+          this.noSleep.enable();
+          this.setStatusTrackProgress(tx);
+        }
       };
 
       const onLockedTxCallback = () => {
@@ -240,46 +327,34 @@ export default {
           break;
       }
 
-      try {
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("openChannel");
-        }
+      await this.$store.dispatch("openChannel", true);
 
-        let r = await func(this.$store.state.channel, ...params, ...callbacks);
-        console.log(r);
-        if (r.accepted) {
-          console.log("Accepted transaction");
-        } else {
-          this.noSleep.disable();
-          throw new Error("This transaction has been rejected");
-        }
-      } catch (e) {
-        this.noSleep.disable();
-        console.log(e.toString());
-        if (aeternity.rejectedByUser) {
-          if (this.$isOnDemandMode) {
-            // trigger conflict to reset state
-            await func(
-              this.$store.state.channel,
-              ...params,
-              ...callbacks
-            ).catch(e => {
-              console.log("Conflict-trigger delivered: " + e.toString());
-              if (e.error.code === 3) {
-                this.$store.dispatch("leaveChannel").then(() => {
-                  this.onRejectedByUser();
-                });
-              }
-            });
+      func(window.channel, ...params, ...callbacks)
+        .then(r => {
+          if (r.accepted) {
+            console.log("Accepted transaction");
+          } else {
+            this.noSleep.disable();
+            this.viewStatus = STATUS_ERROR;
+            throw new Error("This transaction has been rejected");
           }
-          return;
-        }
-
-        throw new Error("Cannot commit transaction. Reason: " + e.toString());
-        if (this.$isOnDemandMode) {
-          await this.$store.dispatch("leaveChannel");
-        }
-      }
+        })
+        .catch(e => {
+          this.noSleep.disable();
+          console.log(e.toString());
+          if (aeternity.rejectedByUser) {
+              // trigger conflict to reset state
+              func(window.channel, ...params, ...callbacks).catch(e => {
+                console.log("Conflict-trigger delivered: " + e.toString());
+                if (e.error.code === 3) {
+                  this.onRejectedByUser();
+                }
+              });
+              throw e;
+                this.$store.dispatch("leaveChannel");
+            return;
+          }
+        });
     }
   }
 };

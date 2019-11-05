@@ -14,7 +14,7 @@
     </div>
     <div class="mt-2">
       <AeQRCode :value="messageString" />
-      <div v-if="this.$isOnDemandMode && waitingPayment">
+      <div v-if="waitingPayment">
         <AeText face="sans-xs">Waiting for payment ... {{ timeRemaining }} s</AeText>
         <AeLoader />
       </div>
@@ -55,39 +55,37 @@ export default {
     }
   },
   async mounted() {
-    if (this.$isOnDemandMode) {
-      this.timeRemaining = PAYMENT_TIMEOUT_SECONDS;
-      window.eventBus.$once("payment-complete-ack", e => {
-        this.waitingPayment = false;
-        this.showPaymentReceived(e);
+    this.timeRemaining = PAYMENT_TIMEOUT_SECONDS;
+    window.eventBus.$once("payment-complete-ack", e => {
+      this.waitingPayment = false;
+      this.showPaymentReceived(e);
+    });
+    try {
+      this.$swal.fire({
+        text: "Opening payment channel",
+        allowOutsideClick: false,
+        onBeforeOpen: () => {
+          this.$swal.showLoading();
+        }
       });
-      try {
-        this.$swal.fire({
-          text: "Opening payment channel",
-          allowOutsideClick: false,
-          onBeforeOpen: () => {
-            this.$swal.showLoading();
-          }
-        });
-        await this.$store.dispatch("openChannel", true);
-        this.$swal.close();
-      } catch (e) {
-        this.$swal
-          .fire({
-            type: "error",
-            title: "Oops",
-            text: "We could not open your channel.  Reason is " + e.toString()
-          })
-          .then(async () => {
-            // Do a leave for a clean FSM exit, if required.
+      await this.$store.dispatch("openChannel", true);
+      this.$swal.close();
+    } catch (e) {
+      this.$swal
+        .fire({
+          type: "error",
+          title: "Oops",
+          text: "We could not open your channel.  Reason is " + e.toString()
+        })
+        .then(async () => {
+          // Do a leave for a clean FSM exit, if required.
 
-            await this.$store.dispatch("leaveChannel");
-            this.$router.replace("main-menu");
-          });
-      }
-      this.waitingPayment = true;
-      this.waitEvent();
+          await this.$store.dispatch("leaveChannel");
+          this.$router.replace("main-menu");
+        });
     }
+    this.waitingPayment = true;
+    this.waitEvent();
   },
   beforeDestroy() {
     this.waitingPayment = false;
