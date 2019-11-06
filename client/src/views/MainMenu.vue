@@ -6,7 +6,8 @@
       :wallet-balance="getMyWalletBalanceAE"
       :channel-balance="$isMerchantAppRole ? getTotalBalanceAE : getMyChannelBalanceAE"
       :loading="balanceLoading"
-    />
+      v-on:click.native="refreshBalance()"
+      />
 
     <ViewButtonSection
       v-if="$isClientAppRole"
@@ -69,6 +70,7 @@ export default {
   },
   methods: {
     refreshBalance: async function() {
+      console.log("Refreshing balance . . . ");
       this.balanceLoading = true;
       try {
         await this.$store.dispatch("updateOnchainBalance");

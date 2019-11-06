@@ -1,6 +1,6 @@
 <template>
   <b-container>
-    <AePanel style="padding:0.5rem; height=110%;" @click="on-click">
+    <AePanel style="padding:0.5rem; height=110%;">
       <b-row align-v="center">
         <b-col>
           <AeText
@@ -55,6 +55,6 @@
 <script>
 	export default {
 		name: "ViewBalances",
-		props: ['walletBalance', 'channelBalance', 'loading', 'on-click'],
+		props: ['walletBalance', 'channelBalance', 'loading'],
 	};
 </script>
