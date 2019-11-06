@@ -56,6 +56,7 @@
 /* eslint-disable no-console */
 let hub = null;
 let noSleep = new NoSleep();
+let timerHandle;
 
 const STATUS_INITIAL = 0,
   STATUS_WORKING = 1,
@@ -82,7 +83,8 @@ export default {
       channelStatus: "unknown",
       viewStatus: STATUS_INITIAL,
       txHash: "",
-      hashCopied: false
+      hashCopied: false,
+      txConfirmations: -1
     };
   },
   computed: {
@@ -116,7 +118,10 @@ export default {
           case "half-signed":
             return "Please wait while the transaction is signed by the server...";
           case "signed":
-            return "Waiting confirmations from the blockchain...";
+            if ( this.txConfirmations == -1 )
+              return "Waiting for inclusion in block..."
+            else 
+              return "Waiting confirmations from the blockchain (" + this.txConfirmations + " of " + this.minimum_depth +")...";
           case "open":
             return "Channel successfully opened";
 
@@ -133,13 +138,18 @@ export default {
     },
     prettyHash() {
       return this.txHash !== "" ? trimHash(this.txHash) : "";
+    },
+    minimum_depth: function() {
+      return this.$store.state.channelOptions.minimum_depth;
     }
   },
   mounted: async function() {
     this.viewStatus = STATUS_INITIAL;
     this.noSleep = new NoSleep();
   },
-  beforeDestroy() {
+  beforeDestroy: function() {
+    console.log("beforeDestroy()")
+    clearInterval(this.timerHandle);
     window.eventBus.$off("channel-onchain-tx", this.onChainTx);
     window.eventBus.$off("channel-status-changed", this.onChannelStatusChange);
   },
@@ -194,6 +204,7 @@ export default {
       }
     },
     async cancel() {
+      clearInterval(this.timerHandle);
       this.noSleep.disable();
       this.channelStatus = "cancelling";
       this.viewStatus = STATUS_USER_CANCELLED;
@@ -221,9 +232,14 @@ export default {
     async onChainTx(tx) {
       this.txHash = TxBuilder.buildTxHash(tx);
       console.log("Obtained TX Hash: ", this.txHash);
+      this.timerHandle = setInterval( async () => {
+        this.txConfirmations = await aeternity.getTxConfirmations(this.txHash)
+      }, 1000)
     },
     onChannelDisconnected() {
       this.noSleep.disable();
+      clearInterval(this.timerHandle);
+
 
       if (this.viewStatus === STATUS_USER_CANCELLED) {
         return;
@@ -291,6 +307,7 @@ export default {
         });
     },
     onChannelOpen() {
+      clearInterval(this.timerHandle);
       this.status = STATUS_OPEN;
       this.noSleep.disable();
       this.$store.commit("setChannelOpenDone", true);

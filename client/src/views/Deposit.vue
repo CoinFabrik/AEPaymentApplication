@@ -138,6 +138,7 @@ export default {
             this.$store.commit("setInitialDeposit", inputBN.toFixed(0));
             this.$router.push("channelopen");
           } else {
+            localStorage.removeItem("payapp.view.CommitAndWaitTx")
             this.$router.push({
               name: "commit-and-wait-tx",
               params: {

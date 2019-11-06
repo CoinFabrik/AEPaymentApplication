@@ -203,18 +203,21 @@ KNOWN ISSUES
 + Do not switch subaccounts except before channel opening.
 + Page Refresh/Exit may cause problems if a channel operation is underway. This should be fixed with future 5.1.0  node Release.  This is currently mitigated by keeping display and CPU active in certain operations.
 
-0.9.21 (191102)
+0.9.24 (191106)
 ---------------
-+ When Deposit, Withdraw and Close is in course, application can be suspended and resumed properly.
++ Auto-Onboarding mode is available setting VUE_APP_AUTO_ONBOARD_HUB_URL environment variable at build time. 
 + Ensures that a valid channel to re-connect is available when asking for Deposit, Withdraw and Close operations.
 + Clicking Main Menu balance display will trigger a refresh.
 + Removed "always-connected" mode
-+ Open Channel, Withdraw, Deposit and Close show elapsed and remaining blocks to confirm 
++ Open Channel, Withdraw, Deposit and Close show more detailed progress (inclusion and remaining confirmations)
 
+KNOWN ISSUES
 
++ Navigating out during Withdraw/deposit may trigger failure (See aepp-sdk-js issue #767)
 + Cancelling transactions through Base-Aepp dialog may cause channel to enter inconsistent state.
 + Do not switch subaccounts except before channel opening.
 + Page Refresh/Exit may cause problems if a channel operation is underway. This should be fixed with future 5.1.0  node Release.  This is currently mitigated by keeping display and CPU active in certain operations.
+
 
 
 

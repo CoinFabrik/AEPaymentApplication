@@ -198,6 +198,9 @@ aeternity.getTxConfirmations = async function (tx) {
   await aeternity.connectToBaseApp();
   const txData = await aeternity.client.tx(tx);
   const txHeight = txData.blockHeight;
+  if (txHeight == -1)
+    return -1;
+
   console.log("TxHeight=" + txHeight);
   if (txHeight > 0) {
     const chainHeight = await aeternity.client.height();

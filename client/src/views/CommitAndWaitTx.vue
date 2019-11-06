@@ -10,10 +10,12 @@
     </div>
     <div v-else>
       <div v-if="elapsedBlocks < 0">
-        <AeText face="sans-s">Waiting confirmations from the blockchain...</AeText>
+        <AeText face="sans-s">Waiting for inclusion in block...</AeText>
       </div>
       <div v-else>
-        <AeText face="sans-s">Waiting confirmations from the blockchain ({{this.elapsedBlocks}} of {{this.minimum_depth}})...</AeText>
+        <AeText
+          face="sans-s"
+        >Waiting confirmations from the blockchain ({{elapsedBlocks}} of {{minimumDepth}})...</AeText>
       </div>
       <br />
 
@@ -48,6 +50,7 @@ import NoSleep from "nosleep.js";
 import saveState from "vue-save-state";
 
 let noSleep = new NoSleep();
+let timerHandle;
 
 export default {
   mixins: [saveState],
@@ -58,7 +61,7 @@ export default {
   },
   data() {
     return {
-      elapsedBlocks: 0,
+      elapsedBlocks: -1,
       viewStatus: STATUS_INITIAL,
       transaction: null,
       transactionHash: null,
@@ -68,12 +71,12 @@ export default {
     };
   },
   computed: {
-    minimum_depth: function() {
+    minimumDepth: function() {
       return this.$store.state.channelOptions.minimum_depth;
     },
     confirmPercent: function() {
       return Math.round(
-        Math.min(100.0 * (this.elapsedBlocks / this.minimum_depth()), 100)
+        Math.min(100.0 * (this.elapsedBlocks / this.minimumDepth), 100)
       );
     },
     hashColor() {
@@ -86,12 +89,9 @@ export default {
     },
     txConfirmed() {
       if (this.txKind === "close") {
-        return this.elapsedBlocks >= this.minimum_depth();
+        return this.elapsedBlocks >= this.minimumDepth;
       } else if (this.txKind === "deposit" || this.txKind === "withdraw") {
-        return (
-          this.onchainTxLocked ||
-          this.elapsedBlocks >= this.minimum_depth()
-        );
+        return this.onchainTxLocked || this.elapsedBlocks >= this.minimumDepth;
       } else throw new Error("Transaction type is unknown");
     },
     getHeaderTitle() {
@@ -136,13 +136,16 @@ export default {
 
       case STATUS_TRACK_TX_PROGRESS:
         await this.rehydrateChannelObject();
-        this.trackTxProgress();
+        this.timerHandle = setInterval(this.trackTxProgress, POLL_TIME_MSEC)
         break;
 
       case STATUS_CANCELLED_BY_USER:
         this.showCanceledByUser();
         break;
     }
+  },
+  beforeDestroy() {
+    clearInterval(this.timerHandle);
   },
   methods: {
     async rehydrateChannelObject() {
@@ -159,7 +162,7 @@ export default {
       // }
     },
     resetView() {
-      this.elapsedBlocks = 0;
+      this.elapsedBlocks = -1;
       this.viewStatus = STATUS_INITIAL;
       this.transaction = null;
       this.transactionHash = null;
@@ -214,26 +217,29 @@ export default {
             e.toString() +
             "... RETRYING."
         );
-        setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
       }
 
       console.log("Elapsed TX blocks: " + this.elapsedBlocks);
 
       if (this.txConfirmed) {
+         clearInterval(this.timerHandle);
         this.viewStatus = STATUS_CONFIRMED;
-        if 
-          (this.txKind === "deposit" || this.tx === "withdraw")
-         {
-          await this.$store.dispatch("openChannel", true);
-          await this.$store.dispatch("updateChannelBalances");
-          await this.$store.dispatch("leaveChannel");
+        if (this.txKind === "deposit" || this.tx === "withdraw") {
+          try {
+            await this.$store.dispatch("openChannel", true);
+            await this.$store.dispatch("updateChannelBalances");
+            await this.$store.dispatch("leaveChannel");
+          }
+          catch(e) {
+            this.viewStatus = STATUS_ERROR;
+            this.showError(e);
+          }
         }
         this.confirmAndNavigateOut();
-      } else {
-        setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
       }
     },
     async confirmAndNavigateOut() {
+      clearInterval(this.timerHandle);
       this.resetView();
 
       switch (this.txKind) {
@@ -265,13 +271,11 @@ export default {
             type: "success",
             title: "Thanks for operating with our service",
             text:
-              "If you want to operate with our Payment service again, you will need to redo the onboarding steps.",
-            onClose: async () => {
-              await this.$store.dispatch("resetState");
-              await this.$router.replace({
-                name: "connect-to-wallet"
-              });
-            }
+              "If you want to operate with our Payment service again, you will need to redo the onboarding steps."
+          });
+          await this.$store.dispatch("resetState");
+          await this.$router.replace({
+            name: "connectToWallet"
           });
           break;
 
@@ -282,7 +286,7 @@ export default {
     setStatusTrackProgress(tx) {
       this.transaction = tx;
       this.viewStatus = STATUS_TRACK_TX_PROGRESS;
-      setTimeout(this.trackTxProgress, POLL_TIME_MSEC);
+      this.timerHandle = setInterval(this.trackTxProgress, POLL_TIME_MSEC);
     },
     async onRejectedByUser() {
       this.viewStatus = STATUS_CANCELLED_BY_USER;
@@ -343,15 +347,15 @@ export default {
           this.noSleep.disable();
           console.log(e.toString());
           if (aeternity.rejectedByUser) {
-              // trigger conflict to reset state
-              func(window.channel, ...params, ...callbacks).catch(e => {
-                console.log("Conflict-trigger delivered: " + e.toString());
-                if (e.error.code === 3) {
-                  this.onRejectedByUser();
-                }
-              });
-              throw e;
-                this.$store.dispatch("leaveChannel");
+            // trigger conflict to reset state
+            func(window.channel, ...params, ...callbacks).catch(e => {
+              console.log("Conflict-trigger delivered: " + e.toString());
+              if (e.error.code === 3) {
+                this.onRejectedByUser();
+              }
+            });
+            throw e;
+            this.$store.dispatch("leaveChannel");
             return;
           }
         });
