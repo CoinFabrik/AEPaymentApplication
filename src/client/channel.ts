@@ -14,9 +14,8 @@ const {
     Channel,
     Crypto,
     Universal,
-    TxBuilder: {unpackTx, buildTxHash}
+    TxBuilder: {unpackTx, buildTxHash},
 } = require('@aeternity/aepp-sdk');
-
 
 const MAX_BLOCK_TIME_MINUTES = 11;
 
@@ -65,10 +64,11 @@ const info = 'info';
 const RECONNECT = true;
 
 export interface Pending {
-    mc: MerchantCustomer,
-    resolve: any,
-    reject: any,
-    timeout: any,
+    mc: MerchantCustomer;
+    resolve: any;
+    reject: any;
+    timeout: any;
+    tx_obj: object;
 }
 
 export abstract class ServerChannel extends EventEmitter {
@@ -96,7 +96,7 @@ export abstract class ServerChannel extends EventEmitter {
         if (this.logger == undefined) {
             this.logger = new Logger(this.Name);
         }
-        let nomi = this.client.channelId ? this.client.channelId : this.opposite;
+        const nomi = this.client.channelId ? this.client.channelId : this.opposite;
         this.logger.log(nomi.slice(0, 15) + '|' + msg);
     }
 
@@ -114,7 +114,7 @@ export abstract class ServerChannel extends EventEmitter {
             });
         }
 
-        let balance = await this.nodeuser.balance(ServerChannel.pubkey);
+        const balance = await this.nodeuser.balance(ServerChannel.pubkey);
         this.xlogger.log(`Server: ${this.responder} balance: ${balance}`);
     }
 
@@ -127,7 +127,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     static GetInfo(client: CClient) {
-        let options = this.base_options();
+        const options = this.base_options();
         options['initiatorId'] = client.address;
         options['initiatorAmount'] = client.amount;
         options['url'] = 'ws' + MoreConfig.USER_NODE + '/channel';  // XXX XXX TODO
@@ -139,7 +139,7 @@ export abstract class ServerChannel extends EventEmitter {
         return {
             address: this.address,
             node: MoreConfig.USER_NODE,
-            options: options,
+            options,
         };
     }
 
@@ -175,7 +175,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async hub_balance() {
-        let data = await this.channel.balances([this.address]);
+        const data = await this.channel.balances([this.address]);
         return new BigNumber((data)[this.address]);
     }
 
@@ -200,9 +200,6 @@ export abstract class ServerChannel extends EventEmitter {
                 this.last_update = Date.now();
                 try {
                     msg[info] = JSON.parse(msg[info]);
-                    // if(msg[info]["type"]==="payment-user-cancel") {
-                    //     return this.update_clash();
-                    // }
                     this.hub.emit('user-' + msg[info]['type'], msg, self);
                 } catch (err) {
                     this.log(err);
@@ -211,16 +208,6 @@ export abstract class ServerChannel extends EventEmitter {
                 }
             }
         });
-    }
-
-    update_clash() {
-        let msg = 'triggering update conflict.';
-        this.log(msg);
-        this.update(this.opposite, this.address, 1, msg)
-            .then((result) => this.log('clash-update()= ' + result + JSON.stringify(result)))
-            .catch((err) => {
-                this.log('update clash failed: ' + err);
-            });
     }
 
     get initiator() {
@@ -243,7 +230,7 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     get_options() {
-        let options = ServerChannel.base_options();
+        const options = ServerChannel.base_options();
         options['url'] = WS_URL + '/channel';
         options['initiatorAmount'] = this.client.amount;
         options['role'] = this.role;
@@ -260,14 +247,18 @@ export abstract class ServerChannel extends EventEmitter {
     async customSign(tag, tx, {updates = {}} = {}) {
         this.log('');
         this.log('tag: ' + tag + ' ' + (tx.toString()));
+        let txObj;
         try {
             const {txType, tx: txData} = unpackTx(tx);
+            txObj = txData;
             this.log('tag: ' + tag + '/' + txData['round'] + ': ' + JSON.stringify(txData));
         } catch (err) {
+            console.log('NO TXDATA:');
+            console.log(err);
         }
         if (tag === 'update_ack') {
-            let fupdates: UpdateItem[] = updates as UpdateItem[];
-            for (let update of fupdates) {
+            const fupdates: UpdateItem[] = updates as UpdateItem[];
+            for (const update of fupdates) {
                 if (update['op'] !== 'OffChainTransfer') {
                     throw new InvalidUpdateOperation(update);
                 }
@@ -280,16 +271,15 @@ export abstract class ServerChannel extends EventEmitter {
                 if ((new BigNumber(update['amount'])).isNegative()) {
                     throw new InvalidUpdateNegativeAmount(update);
                 }
-                for (let pending of this.pending_mcs) {
+
+                for (const pending of this.pending_mcs) {
                     if (pending.mc.amount.isEqualTo(new BigNumber(update['amount']))) {
-                        pending.resolve();
+                        pending.tx_obj = txObj;
                     }
                 }
             }
         }
         if (tag === 'shutdown_sign_ack') {
-            const {txType, tx: txData} = unpackTx(tx);
-            this.log('tag: ' + tag + ': ' + JSON.stringify(txData));
             this.log('TX (shutdown): ' + (tx.toString()));
             this.closing = true;
         }
@@ -305,14 +295,14 @@ export abstract class ServerChannel extends EventEmitter {
     }
 
     async _initChannel() {
-        let options = this.get_options();
+        const options = this.get_options();
         if (RECONNECT) {
             this.client.setChannelOptions(options);
         }
         this.log('opts:' + JSON.stringify(options));
         options['sign'] = async (tag, tx, {updates = {}} = {}) => {
             try {
-                let result = await this.customSign(tag, tx, {updates});
+                const result = await this.customSign(tag, tx, {updates});
                 // this.saveState();
                 return result;
             } catch (err) {
@@ -326,6 +316,7 @@ export abstract class ServerChannel extends EventEmitter {
         this.channel.on('statusChanged', (status) => {
             this.onStatusChange(status.toUpperCase());
         });
+
         this.channel.on('error', (error) => {
             this.log('channel-error: ' + error);
         });
@@ -333,9 +324,26 @@ export abstract class ServerChannel extends EventEmitter {
             this.emit('message', msg);
         });
         this.channel.on('stateChanged', (state) => {
-            this.saveState().then(voidf).catch((err => {
-                this.log(err);
-            }));
+            let thisTX;
+            try {
+                const u = unpackTx(state);
+                try {
+                    thisTX = u['tx']['encodedTx']['tx'];
+                    for (const pending of this.pending_mcs) {
+                        if ((pending.tx_obj !== null) &&
+                            (pending.tx_obj['stateHash'] === thisTX['stateHash'])) {
+                                pending.resolve();
+                        }
+                    }
+                } catch (e) {
+                    console.log('ERROR:');
+                    console.log(e);
+                }
+            } finally {
+                this.saveState().then(voidf).catch((err => {
+                    this.log(err);
+                }));
+            }
         });
 
         await this.wait_state('OPEN');
@@ -505,8 +513,8 @@ export abstract class ServerChannel extends EventEmitter {
 
     async pendingPayment(mc: MerchantCustomer, cb, timeout_ms) {
         return new Promise((resolve, reject) => {
-            let timeout = setTimeout(reject, timeout_ms);
-            let pending = {
+            const timeout = setTimeout(reject, timeout_ms);
+            const pending = {
                 mc, resolve: () => {
                     clearTimeout(timeout);
                     try {
@@ -514,7 +522,7 @@ export abstract class ServerChannel extends EventEmitter {
                     } finally {
                         resolve();
                     }
-                }, reject, timeout
+                }, reject, timeout, tx_obj: {},
             };
             mc.pending = pending;
             this.pending_mcs.push(pending);
