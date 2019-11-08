@@ -5,7 +5,6 @@ import {Hub} from './hub';
 import BigNumber from 'bignumber.js';
 import {Pending, ServerChannel} from './channel';
 import {MerchantCustomerAccepted} from './mca.entity';
-const uuidlib = require('uuid');
 
 export class Guid {
   static generate() {
@@ -108,7 +107,6 @@ export class MerchantCustomer {
     msgPaymentAccepted(): object {
         const base = this.base();
         base['type'] = 'payment-request-accepted';
-        base['random'] = uuidlib();
         return base;
     }
 
