@@ -1,4 +1,5 @@
 # AEhub
+
 [TOC]
 
 ## Description
@@ -40,6 +41,28 @@ The AEternity Base-Aepp architecture requires all content be delivered through S
  * Offline payments
  * Clearance
  * Channel solo close disputes
+
+## Endpoints
+
+ * functional
+     * `/clear`: display merchants balances
+     * `/solo`: will solo-close all open channels
+     * `/leaveall`: will disconnect all open channels
+ * informative
+     * `/`: will show onboarding QR
+     * `/all_merchants`: will display all created merchants
+     * `/all_customers`: will display all created customers
+     * `/merchants`: will display all connected merchants
+     * `/clients`: will display all connected customers
+ * products (testing functionality)
+     * `/products`: will display web-defined available products QR-codes
+     * `/products/new`: prompt to allow users to create a new product QR, requires:
+        * unique_id: which is informational 
+        * product-code: `{"something":"", "amount":"10000000000000000", "merchant":"ak_25VJ5qBunt1D5jCs2rxHciRjuPAUqRRsjzQt9ey7zK4Yw4Vs1h","type":"payment-request"}` :
+            * amount: in _aettos_
+            * something: product/s description
+            * merchant: must be the merchant's to register this product to.
+
 
 
 ## Setup
