@@ -1,0 +1,4 @@
+client/node_modules
+posclient/node_modules
+.vscode/launch.json
+.DS_Store

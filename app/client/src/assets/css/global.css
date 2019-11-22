@@ -1,0 +1,201 @@
+html, body {
+  overflow: hidden;
+}
+.container {
+  height: 100%;
+  padding: 0 10px!important;
+}
+
+/* AeBanner */
+
+.banner {
+  padding: 0 0.5em;
+}
+@media only screen and (min-width: 530)
+	.banner {
+		height: 12vh;
+	}
+@media only screen and (min-width: 530)
+	.banner {
+		height: 15vh;
+	}
+	.logo {
+		/* padding-top: 10px; */
+		height: 4vh;
+	}
+
+#content {
+  height: 100%;
+  margin-top: 5%;
+  margin-bottom: 10%;
+  border-collapse: collapse;
+}
+#app {
+  overflow: hidden;
+  height: 100vh;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  background-color: #311B58;
+}
+#main {
+  height: 100vh;
+  min-height: 0vh;
+  width: 100vw;
+  border-radius:30px 30px 0px 0px;
+}
+.ae-main {
+  background: #FFFFFF!important;
+}
+.ae-text.titleHead {
+  /* color: red; */
+}
+/* Tx History */
+/* .history-view {
+  border: 1px solid red;
+} */
+.fixedButton {
+  float: right;
+  position: absolute;
+  right: 1.2em;
+  bottom: 80px;
+}
+.column {
+  flex: 1;
+}
+
+.column-header {
+  flex: 1;
+}
+
+#progress-el {
+  background-color: #FF0D6A !important;
+}
+.scroll {
+  overflow: scroll;
+  max-height: 50vh;
+  padding-bottom: 20;
+}
+.footer {
+  width: 300px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  margin-left: -150px;
+}
+
+/* Merchant views */
+.small-input {
+  min-height: 0px;
+  height: 40px;
+
+}
+.margin {
+  margin-top: 5px;
+}
+
+canvas {
+  width: 70%
+}
+	.margin {
+		margin-top: 10px;
+	}
+/* sweetalert2 AE Sytles */
+.swal2-styled {
+  /* padding: 0.625em 3em !important; */
+}
+.swal2-styled {
+  border-radius: 32px !important;
+  color: #fff;
+  font-size: 1.0625em;
+}
+.swal2-styled.swal2-confirm {
+  background-color: #FF0D6A !important;
+  border: 2px solid #FF0D6A!important;
+  color: #fff;
+}
+.swal2-styled.swal2-cancel {
+  background-color: #FFF !important;
+  border: 2px solid #FF0D6A!important;
+  color: #FF0D6A!important;
+}
+.swal2-styled:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+/* Ae Button */
+.ae-button.neutral[data-v-d0360416] {
+  background: #FFFFFF;
+  color: #FF0D6A;
+  border: 2px solid;
+  border-color: #FF0D6A;
+}
+
+/* Ae Panel */
+.ae-panel[data-v-2591ccdc] {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border: 1px solid #6948a15c;
+}
+
+/* AE Divider  */
+.ae-divider[data-v-328bcfc3] {
+  height: 1px;
+}
+/* Ae Input */
+.ae-input[data-v-103db926] {
+  margin: 10px 0 15px 0;
+
+}
+
+/* Ae Unit display */
+.unit[data-v-43286e6f] {
+  margin-left: 0.1em;
+}
+
+/* QR Scanner */
+#scan_qr_container {
+  height: 40vh;
+  width: 68vh;
+  border-radius: 30px;
+  border: none !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#scan_qr_subcontainer {
+  height: 35vh;
+  width: 35vh;
+  border-radius: 25px;
+  border: 2px dashed #FF0D6A !important;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.qr-code-reader {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 100vh;
+}
+.permission-denied {
+  text-align: center;
+  line-height: 1.56;
+  padding: 0 20px;
+  margin: auto;
+  font-size: 18px;
+}
+.video-wrapper {
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative;
+}
+video {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
