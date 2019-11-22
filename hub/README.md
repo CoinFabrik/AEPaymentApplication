@@ -87,7 +87,14 @@ This is where your reverse-proxy will connect to:
  * `HOST`: host-ip to listen in. default: `0.0.0.0`. You can use `127.0.0.1` or another internal address, provided your
         proxy be still able to reach the hub. 
 
+Also, you will need an Ae-CLI (command line): 
 
+    * git clone https://github.com/aeternity/aepp-cli-js.git
+    * cd aepp-cli-js
+    * npm link 
+    
+ Or you could follow the tutorial at: http://aeternity.com/documentation-hub/tutorials/account-creation-in-ae-cli/
+ 
 (*) Custom clients may ignore this setting and use whichever node they want. But by using this parameter you can avoid one point of failure in configuration. 
 
 
@@ -95,7 +102,9 @@ This is where your reverse-proxy will connect to:
 
 This is a real-life configuration example. 
 
- 1. First create an account for the server (it search for file named hub). Hub will try to use empty or "1234" password to open the created wallet file:
+First clone the repository from: https://gitlab.com/coinfabrik.com/aehu://github.com/CoinFabrik/AEPaymentApplication
+
+ 1. Create an account for the server (it search for file named hub). Hub will try to use empty or "1234" password to open the created wallet file:
 
 ```bash
 $ aecli account create hub
@@ -107,6 +116,95 @@ Path____________________________________ ../hub
 
  2. Transfer a few AEs to the created address, in this case: `ak_k65RLRPH8KbexMw5c2efG8wK2X8yKL6VzYimAJMh3Eai36W5q`.
 
+
+## scripts
+
+### common setup
+
+Create accounts and fund them:
+
+```bash
+# development
+
+# 0.1 create accounts you'll use - we use 1234 as paassword for all (not configurable yet)
+$ aecli account create merchant
+$ aecli account create customer
+
+#  0.2 transfer funds            (src)                      (dst)
+tools$ AENODE=.. node tx.js <init or wallet_filename> <wallet_filename or address>  amount
+(*)
+
+will move amount from $src to $dst.
+-init = is a shortcut to first account from forgae
+-src wallet file should have 1234 as pwd.
+-amount is expressed aettos
+```
+
+(*) In case you do not want to transfer funds through command line, you could always send them using the base application copying the addresses recently created.
+
+### Merchant
+
+* Merchant execution
+
+This will simply launch a client which will connect as a merchant and stay connected. It will periodically hub for balance changes and will display them.
+
+``` bash
+~/aehub/tools$ HUB=127.0.0.1 HUBPORT=5000 ACCOUNT=../merchant NODE=https://aehub.coinfabrik.com NET=ae_uat node merchant.js
+
+```
+This may take up to five minutes, so after connection.. when a purchase is executed you'll see:
+
+``` bash
+Balance: 3000000000000022
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c", 
+ "merchant":  "ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name" : "dave's beer", 
+ "customer":  "ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4", 
+ "amount" : "1" , 
+ "something": [{"what":"beer","amount":"1"}], 
+ "customer_name": "1572472960943", 
+ "type": "payment-request-completed"}
+Balance: 3000000000000023
+```
+
+### Customer
+
+* Customer purchase
+
+This connects the given wallet as a customer role, perform a purchase and exit.
+
+``` bash
+~/aehub/tools$ HUB=127.0.0.1 HUBPORT=5000 ACCOUNT=../customer NODE=https://aehub.coinfabrik.com NET=ae_uat node customer_purchase.js  
+```
+
+Just like with the merchant instruction, this may take up to five minutes, so after connection settings you'll see something like:
+
+``` bash
+[CONNECTED]
+[OPEN]
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
+ "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
+ "amount":"1",
+ "something":[{"what":"beer","amount":"1"}],
+ "type":"payment-request-accepted"}
+sending payment..
+payment sent!
+{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
+  "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
+ "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
+ "amount":"1",
+ "something":[{"what":"beer","amount":"1"}],
+ "customer_name":"1572472960943",
+ "type":"payment-request-completed"}
+payment completed!
+exit..
+[DIED]
+[DISCONNECTED]
+```
+#### Advice
+
+In case you need to shut your computer down, it is a good practice to first disconnect from the channel by pressing "ctrl-c". This way the server side will keep the last state of the merchant channel and consequently, once we try to connect again we will not loose our state and also we will not have to wait the same amount of time as the first one. 
 
 #### Host Setup
  
@@ -263,94 +361,3 @@ server {
 }
 ```
 
-## scripts
-
-### common setup
-
-Create accounts and fund them:
-
-```bash
-# development
-
-# 0.1 create accounts you'll use - we use 1234 as paassword for all (not configurable yet)
-$ aecli account create hub
-$ aecli account create merchant
-$ aecli account create customer
-
-#  0.2 transfer funds            (src)                      (dst)
-tools$ AENODE=.. node tx.js <init or wallet_filename> <wallet_filename or address>  amount
-
-will move amount from $src to $dst.
--init = is a shortcut to first account from forgae
--src wallet file should have 1234 as pwd.
--amount is expressed aettos
-```
-
-### Merchant
-
-* Merchant execution
-
-This will simply launch a client which will connect as a merchant and stay connected. It will periodically hub for balance changes and will display them.
-
-``` bash
-tools$ HUB=127.0.0.1 ACCOUNT=merchant NODE=165.22.18.138 node merchant.js  
-
-# or equivalently
-
-tools$ HUB=127.0.0.1 NODE=165.22.18.138 node merchant.js merchant
-```
-
-after connection.. when a purchase is executed you'll see:
-
-``` bash
-Balance: 3000000000000022
-{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c", 
- "merchant":  "ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
- "merchant_name" : "dave's beer", 
- "customer":  "ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4", 
- "amount" : "1" , 
- "something": [{"what":"beer","amount":"1"}], 
- "customer_name": "1572472960943", 
- "type": "payment-request-completed"}
-Balance: 3000000000000023
-```
-
-### Customer
-
-* Customer purchase
-
-This connects the given wallet as a customer role, perform a purchase and exit.
-
-``` bash
-tools$ HUB=127.0.0.1 ACCOUNT=customer NODE=165.22.18.138 node customer_purchase.js  
-
-# or equivalently
-
-tools$ HUB=127.0.0.1 NODE=165.22.18.138 node customer_purchase.js customer
-```
-
-after connection settings you'll see something like:
-
-``` bash
-[CONNECTED]
-[OPEN]
-{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
- "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
- "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
- "amount":"1",
- "something":[{"what":"beer","amount":"1"}],
- "type":"payment-request-accepted"}
-sending payment..
-payment sent!
-{"id":"df96ddbb-ad17-4415-9ce0-da85d018199c",
-  "merchant":"ak_w38qanGDGxaWXAu5j5Jd5j1cb2Q5hzF8awWFKJZbaxJerupYJ",
- "merchant_name":"dave's beer",  "customer":"ak_XrC9LqQ4jMj96NFkvJ1CgdSpsJTQ1MuYNB2MiavtmURYHwPd4",
- "amount":"1",
- "something":[{"what":"beer","amount":"1"}],
- "customer_name":"1572472960943",
- "type":"payment-request-completed"}
-payment completed!
-exit..
-[DIED]
-[DISCONNECTED]
-```
