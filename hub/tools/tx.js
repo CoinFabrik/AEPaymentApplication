@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------------------
     SIMPLE REVERSI
 ---------------------------------------------------------------------------------- */
-const Users =  require("aehelpers");
-const jstools = require('jstools');
+const Users =  require("hub/tools/aehelpers");
+const jstools = require('hub/tools/jstools');
 const readline = require('readline');
 const {
     Universal
