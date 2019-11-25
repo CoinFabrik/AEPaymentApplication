@@ -10,15 +10,15 @@ This document is a brief guideline to use the Pæy.me application.
 ## Using the Pæy.me application
 ### You are a Merchant
  1. Install the Base æpp from the store:
-   a. On Android, check Google Play Strore
-   b. On iOS, use the web application from https://base.aepps.com
- 1. Based on your preferencies you can choose to use either the default configured Base-Aepp node or one custom. Always check the node is connected to the same network (mainnet/testnet) than the hub you connect to. In case you want to use a custom node:
+    * On Android, check Google Play Strore
+    * On iOS, use the web application from https://base.aepps.com
+ 1. Based on your preferences you can choose to use either the default configured Base-Aepp node or one custom made. Always check the node is connected to the same network (mainnet/testnet) than the hub you are connecting to. In case you want to use a custom node:
      * Tap on **connect to another node**
      * Enter your node, in our case: https://aehub.coinfabrik.com/
  1. Fund your AE account. You will need at least 0.00004 AE every time you open and close a state channel.
- 1. In the Browse tab open the Pæy.me Merchant application. If you don’t find it in the featured applications menu, open the following url: https://m.pay.coinfabrik.com
+ 1. In the **Browse** tab open the Pæy.me Merchant application. If you don’t find it in the featured applications menu, open the following url: https://m.pay.coinfabrik.com
  1. Connect your Pæy.me application to your wallet. An access request is shown, press ALLOW.
- 1. Depending on apps configuration, you may need to scan an onboarding code to connect to the Payment Hub or it will be automatic. In the first case check the *Onboarding Section* below.
+ 1. Depending on apps configuration, you may need to scan an onboarding code to connect to the Payment Hub or it will be automatic. In the first case check the **Onboarding Section** below.
  1. Enter the name of your store, which will allow customers to identify your payment requests.
  1. Open the state channel. You will be asked to confirm the transaction. This operation could take from 3 to 5 minutes, until the transaction is confirmed in the blockchain (a new block must be mined). Do not close the application, because the channel's FiniteStateMachine could reach an invalid state.
  1. Your Channel Balance is 0.00 AE. Every time you are paid, this balance will grow. Once you close the channel, all the funds go from you Channel Balance to your Wallet Balance.
@@ -30,15 +30,15 @@ This document is a brief guideline to use the Pæy.me application.
 ### You are a Customer
 
  1. Install the Base æpp from the store
-    a. On Android, check Google Play Strore
-    b. On iOS, use the web application from https://base.aepps.com
- 1. Based on your preferencies you can choose to use either the default configured Base-Aepp node or one custom. Always check the node is connected to the same network (mainnet/testnet) than the hub you connect to. In case you want to use a custom node:
+    * On Android, check Google Play Strore
+    * On iOS, use the web application from https://base.aepps.com
+ 1. Based on your preferences you can choose to use either the default configured Base-Aepp node or one custom made. Always check the node is connected to the same network (mainnet/testnet) than the hub you are connecting to. In case you want to use a custom node:
      * Tap on **connect to another node**
      * Enter your node, in our case: https://aehub.coinfabrik.com/
  1. Fund your AE account. You will need at least 0.00004 AE every time you open and close a state channel, plus the amount of AEs you are planning to spend with your purchases.
  1. In the Browse tab open the Pæy.me Merchant application. If you don’t find it in the featured applications menu, open the following url: https://c.pay.coinfabrik.com
  1. Connect your Pæy.me application to your wallet. An access request is shown, press ALLOW.
- 1. Depending on apps configuration, you may need to scan an onboarding code to connect to the Payment Hub or it will be automatic. In the first case check the *Onboarding Section* below.
+ 1. Depending on apps configuration, you may need to scan an onboarding code to connect to the Payment Hub or it will be automatic. In the first case check the **Onboarding Section** below.
  1. Enter your name, which will allow merchants to identify your payments.
  1. Deposit AEs into your channel. Set the amount you want to deposit in order to make purchases.
  1. Open the state channel. You will be asked to confirm the transaction. This operation could take from 3 to 5 minutes, until the transaction is confirmed in the blockchain (a new block must be mined). Do not close the application, because the node (FSM) could reach an invalid state.
