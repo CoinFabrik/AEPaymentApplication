@@ -1,4 +1,4 @@
-# AeApplication introduction: 
+# AEHub Payment Application: 
 
 This is a payment application through state channels inside the **Aeternity blockchain application**. Before putting our hands to work, let's understand the complexity of the application: 
 
