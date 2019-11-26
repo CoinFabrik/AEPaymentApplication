@@ -6,20 +6,22 @@ This is a payment application built on **AEternity blockchain** state channels. 
  * Payment Aepps
  * Payment Hub
 
-To start let's focus on the environment where our featured applications will be running; the **Base-Aepp**. This is the Aeternity blockchain official application where the complete features of this blockchain will be available; from creating accounts, wallets, to sending and receiving transactions and so on. However, and luckily for us, this app allows adding special applications, aeapps, which will be running onhttps://www.guitars101.com/forums/f145/neil-young-perfect-echo-sbd-flac-12-cds-146174.htmle at a time in each phone, to upgrade the app. 
+To start let's focus on the environment where our featured applications will be running; the **Base-Aepp**. This is the Aeternity blockchain official application where complete features of this blockchain will be available, eg: creating accounts, sending and receiving transactions, etc. It also allows adding specially built applications to interact with the blockchain in custom ways as it is shown in this example. 
 
 ## Payment Aepps
 
-Two featured applications have been developed to work together inside this app, resulting in what it is called a payment application through state channels. If you want to test them either by using our node or the aeternity testnet node you must follow the [AEternity Payments Application handbook guide](https://github.com/CoinFabrik/AEPaymentApplication/blob/master/docs/AEternity%20Payments%20Application%20Handbook.md). 
+Two featured applications have been developed to work together each one has a different purpose: one is for merchants and the other for customers.
 
-This tutorial will take you through a series of instructions to test the aeapps in a simple and straightforward way. We suggest having two cell phones at the time of testing them, otherwise, you would not be able to appreciate the results and the potential of these aeapps. However, if this is something not available for you, we remind you that it is possible to test the aepps separately, one at a time on your phone. 
+To test them either you should follow the [AEternity Payments Application handbook guide](https://github.com/CoinFabrik/AEPaymentApplication/blob/master/docs/AEternity%20Payments%20Application%20Handbook.md). 
+
+This tutorial will take you through a series of instructions to test the Aepps in a simple and straightforward way. We suggest having two mobile phones at the same time while testing them, otherwise, you would not be able to test it smoothly. However, if this is not possible, remember that you can test the Aepps separately, and you can use the Base-Aepp inside your web-browser [here](https://base.aepps.com/) instead of one phone. 
 
 ## Payment Hub
 
-The aeternity base application connects to a server which is assigned automatically when the app is started. It is possible to reassign the server address to one of your own choice. This leads us to our third and final step to complete the application, the AEHub payment hub to work with state channels. 
+This component allows Aepps to connect and distribute payments among them. The Aepps automatically connect to it. However it is possible for you to deploy your own Payment-Hub in which case you'll have to modify the address that the Aepps will connect to, and recompile them. 
 
-For starters, we recommend reading and testing the [AEhub tutorial](https://github.com/CoinFabrik/AEPaymentApplication/blob/master/docs/AEhub.md). This guide will allow you to start your server in your computer, and once this is achieved, it will replicate the behavior of the base aeapp locally and securely. 
+For starters, we recommend reading and testing the [AEhub tutorial](https://github.com/CoinFabrik/AEPaymentApplication/blob/master/docs/AEhub.md). This guide will allow you to start your Payment Hub in your computer. 
 
-To conclude, once you are ready to complete the process to start your own AEHub payment application, then you must follow the host setup and hub configuration guide, including the reverse proxy configuration to get any phone connected to your server./(TODO).
+To conclude, once you are ready to complete the process to start your own AEHub payment application, you must follow the host setup and hub configuration guide, including the reverse proxy configuration to get any phone connected to your server.
 
 
